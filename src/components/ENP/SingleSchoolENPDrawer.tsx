@@ -88,13 +88,16 @@ export function SingleSchoolENPDrawer({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 text-left">
-          
-          <div>
-            <ENPSummary 
-              actualENP={schoolData.snp.percentage} 
-              benchmarkENP={schoolData.snpTarget} 
-            />
-          </div>
+  
+  <div>
+    <ENPSummary 
+      actualENP={schoolData.snp.percentage} 
+      benchmarkENP={schoolData.snpTarget} 
+      // Added these two missing props to fix the crash
+      totalEnrollment={schoolData.totalEnrollment}
+      totalSNPCount={schoolData.snp.count}
+    />
+  </div>
 
           <div>
             <ENPProgramGrid 

@@ -109,12 +109,13 @@ export function ENPDetails({
       />
       
       <ENPProgramGrid 
-        isExpanded={isProgramExpanded}
-        onToggle={() => setIsProgramExpanded(!isProgramExpanded)}
-        sortedProgramData={sortedProgramData}
-        programSortConfig={programSortConfig}
-        onSort={handleProgramSort}
-      />
+  isExpanded={isProgramExpanded}
+  onToggle={() => setIsProgramExpanded(!isProgramExpanded)}
+  sortedProgramData={sortedProgramData}
+  programSortConfig={programSortConfig}
+  onSort={handleProgramSort}
+  benchmarkENP={benchmarkENP} // ADD THIS LINE
+/>
 
       <ENPSchoolGrid 
         isExpanded={isSchoolExpanded}
