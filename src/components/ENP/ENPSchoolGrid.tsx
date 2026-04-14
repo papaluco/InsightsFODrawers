@@ -71,12 +71,12 @@ export function ENPSchoolGrid({
                   </th>
                   <th onClick={() => onSort('snp.percentage')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
                     <div className="flex items-center justify-center gap-2 uppercase">
-                      SNP {schoolSortConfig?.key === 'snp.percentage' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                      ENP {schoolSortConfig?.key === 'snp.percentage' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
                   <th onClick={() => onSort('snpTarget')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
                     <div className="flex items-center justify-center gap-2 uppercase">
-                      SNP Target {schoolSortConfig?.key === 'snpTarget' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                      ENP Target {schoolSortConfig?.key === 'snpTarget' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
                     </div>
                   </th>
                   <th onClick={() => onSort('snpDelta')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
