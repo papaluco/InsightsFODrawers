@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, Search, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 
 interface ENPSchoolGridProps {
   isExpanded: boolean;
@@ -29,10 +29,20 @@ export function ENPSchoolGrid({
 }: ENPSchoolGridProps) {
   const itemsPerPage = rowsPerPage === 'All' ? totalSchools : rowsPerPage;
 
+  // Helper to render Chevrons instead of arrows
+  const renderSortIcon = (key: string) => {
+    if (schoolSortConfig?.key !== key) {
+      return <ChevronUp className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" />;
+    }
+    return schoolSortConfig.direction === 'asc' 
+      ? <ChevronUp className="w-4 h-4 ml-1 text-blue-600" /> 
+      : <ChevronDown className="w-4 h-4 ml-1 text-blue-600" />;
+  };
+
   return (
     <div className="space-y-4" >
       <div className="flex items-center justify-between w-full mb-4">
-        <button onClick={onToggle} className="flex items-center gap-2 group">
+        <button onClick={onToggle} className="flex items-center gap-2 group outline-none">
           <h3 className="text-lg font-semibold text-gray-900">Details by School</h3>
           <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
         </button>
@@ -58,35 +68,49 @@ export function ENPSchoolGrid({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th onClick={() => onSort('schoolName')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                    <div className="flex items-center gap-2">
-                      School {schoolSortConfig?.key === 'schoolName' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                  <th 
+                    onClick={() => onSort('schoolName')} 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 group"
+                  >
+                    <div className="flex items-center">
+                      School {renderSortIcon('schoolName')}
                     </div>
                   </th>
-                  {/* ADDED ENROLLMENT HEADER */}
-                  <th onClick={() => onSort('totalEnrollment')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                    <div className="flex items-center justify-center gap-2">
-                      Enrollment {schoolSortConfig?.key === 'totalEnrollment' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                  <th 
+                    onClick={() => onSort('totalEnrollment')} 
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 group"
+                  >
+                    <div className="flex items-center justify-center">
+                      Enrollment {renderSortIcon('totalEnrollment')}
                     </div>
                   </th>
-                  <th onClick={() => onSort('snp.percentage')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                    <div className="flex items-center justify-center gap-2 uppercase">
-                      ENP {schoolSortConfig?.key === 'snp.percentage' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                  <th 
+                    onClick={() => onSort('snp.percentage')} 
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 group"
+                  >
+                    <div className="flex items-center justify-center uppercase">
+                      ENP {renderSortIcon('snp.percentage')}
                     </div>
                   </th>
-                  <th onClick={() => onSort('snpTarget')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                    <div className="flex items-center justify-center gap-2 uppercase">
-                      ENP Target {schoolSortConfig?.key === 'snpTarget' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                  <th 
+                    onClick={() => onSort('snpTarget')} 
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 group"
+                  >
+                    <div className="flex items-center justify-center uppercase">
+                      ENP Target {renderSortIcon('snpTarget')}
                     </div>
                   </th>
-                  <th onClick={() => onSort('snpDelta')} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                    <div className="flex items-center justify-center gap-2 uppercase">
-                      Diff {schoolSortConfig?.key === 'snpDelta' && (schoolSortConfig.direction === 'asc' ? '↑' : '↓')}
+                  <th 
+                    onClick={() => onSort('snpDelta')} 
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 group"
+                  >
+                    <div className="flex items-center justify-center uppercase">
+                      Diff {renderSortIcon('snpDelta')}
                     </div>
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200 text-left">
                 {currentSchools.length > 0 ? (
                   currentSchools.map((school) => (
                     <tr 
@@ -97,12 +121,11 @@ export function ENPSchoolGrid({
                       <td className="px-6 py-4 text-sm font-medium text-blue-600 group-hover:text-blue-800 underline-offset-2 decoration-blue-300">
                         {school.schoolName}
                       </td>
-                      {/* ADDED ENROLLMENT DATA CELL */}
                       <td className="px-6 py-4 text-sm text-center text-gray-600">
                         {school.totalEnrollment.toLocaleString()}
                       </td>
                       <td className="px-6 py-4 text-sm text-center">
-                        <div>{school.snp.count.toLocaleString()}</div>
+                        <div className="font-bold text-gray-900">{school.snp.count.toLocaleString()}</div>
                         <div className={`text-xs font-semibold ${school.snp.percentage > benchmarkENP ? 'text-red-600' : 'text-emerald-600'}`}>
                           {school.snp.percentage.toFixed(2)}%
                         </div>
@@ -128,7 +151,7 @@ export function ENPSchoolGrid({
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <span>Showing {startIndex + 1}-{Math.min(startIndex + (itemsPerPage as number), totalSchools)} of {totalSchools}</span>
               <select 
-                className="border border-gray-200 rounded-lg text-xs p-1 outline-none bg-white"
+                className="border border-gray-200 rounded-lg text-xs p-1 outline-none bg-white cursor-pointer"
                 value={rowsPerPage}
                 onChange={(e) => onRowsPerPageChange(e.target.value)}
               >
@@ -141,11 +164,11 @@ export function ENPSchoolGrid({
 
             {rowsPerPage !== 'All' && (
               <div className="flex items-center gap-2">
-                <button onClick={() => onPageChange('prev')} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50">
+                <button onClick={() => onPageChange('prev')} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                   <ChevronLeft className="w-5 h-5 text-gray-600" />
                 </button>
                 <span className="text-sm text-gray-700 font-medium">Page {currentPage} of {totalPages}</span>
-                <button onClick={() => onPageChange('next')} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50">
+                <button onClick={() => onPageChange('next')} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
