@@ -30,7 +30,7 @@ export function ENPDrawer({
       
       {/* Drawer Panel */}
       <div 
-        className={`fixed inset-y-0 right-0 w-full max-w-4xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 w-full max-w-6xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"

@@ -1,5 +1,7 @@
 import React from 'react';
 import { ChevronDown, Search, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
+// Updated imports to use the new modular data files
+import { SchoolENPData } from '../../data/ENPDataTypes';
 
 interface ENPSchoolGridProps {
   isExpanded: boolean;
@@ -7,7 +9,7 @@ interface ENPSchoolGridProps {
   searchTerm: string;
   onSearchChange: (val: string) => void;
   searchInputRef: React.RefObject<HTMLInputElement>;
-  currentSchools: any[];
+  currentSchools: SchoolENPData[]; // Updated from any[]
   schoolSortConfig: { key: string; direction: 'asc' | 'desc' } | null;
   onSort: (key: string) => void;
   onOpenSingleSchool: (schoolName: string) => void;
@@ -29,7 +31,7 @@ export function ENPSchoolGrid({
 }: ENPSchoolGridProps) {
   const itemsPerPage = rowsPerPage === 'All' ? totalSchools : rowsPerPage;
 
-  // Helper to render Chevrons instead of arrows
+  // Helper to render Chevrons
   const renderSortIcon = (key: string) => {
     if (schoolSortConfig?.key !== key) {
       return <ChevronUp className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400" />;
@@ -40,7 +42,7 @@ export function ENPSchoolGrid({
   };
 
   return (
-    <div className="space-y-4" >
+    <div className="space-y-4">
       <div className="flex items-center justify-between w-full mb-4">
         <button onClick={onToggle} className="flex items-center gap-2 group outline-none">
           <h3 className="text-lg font-semibold text-gray-900">Details by School</h3>
@@ -141,7 +143,11 @@ export function ENPSchoolGrid({
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">No schools found matching "{searchTerm}"</td></tr>
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">
+                      No schools found matching "{searchTerm}"
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -164,11 +170,19 @@ export function ENPSchoolGrid({
 
             {rowsPerPage !== 'All' && (
               <div className="flex items-center gap-2">
-                <button onClick={() => onPageChange('prev')} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                <button 
+                  onClick={() => onPageChange('prev')} 
+                  disabled={currentPage === 1} 
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                >
                   <ChevronLeft className="w-5 h-5 text-gray-600" />
                 </button>
                 <span className="text-sm text-gray-700 font-medium">Page {currentPage} of {totalPages}</span>
-                <button onClick={() => onPageChange('next')} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                <button 
+                  onClick={() => onPageChange('next')} 
+                  disabled={currentPage === totalPages} 
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                >
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
               </div>

@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, Target, Loader2, ChevronLeft } from 'lucide-react';
-import { mockSchoolENPData } from '../../data/mockENPData'; 
+
+// --- UPDATED IMPORT ---
+// Switched from the old mockENPData to the new modular school data file
+import { mockSchoolENPData } from '../../data/mockENPSchoolData'; 
+
 import { ENPAbout } from './ENPAbout';
 import { ENPSummary } from './ENPSummary';
 import { ENPProgramGrid } from './ENPProgramGrid';
@@ -22,6 +26,7 @@ export function SingleSchoolENPDrawer({
 }: SingleSchoolENPDrawerProps) {
   const [isProgramExpanded, setIsProgramExpanded] = useState(true);
 
+  // Still uses the same find logic, just pointing to the new mockSchoolENPData array
   const schoolData = useMemo(() => {
     if (!schoolName) return null;
     return mockSchoolENPData.find(s => s.schoolName === schoolName);
@@ -54,9 +59,9 @@ export function SingleSchoolENPDrawer({
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-black/20 transition-opacity" onClick={onClose} />
 
-      <div className="absolute inset-y-0 right-0 max-w-4xl w-full bg-white shadow-xl flex flex-col">
+      <div className="absolute inset-y-0 right-0 max-w-6xl w-full bg-white shadow-xl flex flex-col">
         
-        {/* Header - Fixed: Added padding and bottom border to stop the squishing */}
+        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 text-left">
@@ -88,22 +93,20 @@ export function SingleSchoolENPDrawer({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 text-left">
-  
-  <div>
-    <ENPSummary 
-      actualENP={schoolData.snp.percentage} 
-      benchmarkENP={schoolData.snpTarget} 
-      // Added these two missing props to fix the crash
-      totalEnrollment={schoolData.totalEnrollment}
-      totalSNPCount={schoolData.snp.count}
-    />
-  </div>
+          
+          <div>
+            <ENPSummary 
+              actualENP={schoolData.snp.percentage} 
+              benchmarkENP={schoolData.snpTarget} 
+              totalEnrollment={schoolData.totalEnrollment}
+              totalSNPCount={schoolData.snp.count}
+            />
+          </div>
 
           <div>
             <ENPProgramGrid 
               isExpanded={isProgramExpanded}
               onToggle={() => setIsProgramExpanded(!isProgramExpanded)}
-              sortedProgramData={schoolData.eligibilityBreakdown}
               benchmarkENP={schoolData.snpTarget}
               onSort={() => {}} 
               programSortConfig={null}

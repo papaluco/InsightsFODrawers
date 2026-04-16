@@ -1,24 +1,31 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
-import { programByEligibilityData, mockSchoolENPData, districtTotalEnrollment } from '../../data/mockENPData';
+
+// --- NEW MODULAR IMPORTS (No reference to old mockENPData) ---
+//import { ProgramByEligibility } from '../../data/ENPDataTypes';
+import { 
+  programByEligibilityData, 
+  districtTotalEnrollment 
+} from '../../data/mockENPProgramData';
+import { mockSchoolENPData } from '../../data/mockENPSchoolData';
+
 import { ENPSummary } from './ENPSummary';
 import { ENPProgramGrid } from './ENPProgramGrid';
 import { ENPSchoolGrid } from './ENPSchoolGrid';
 import { ENPAbout } from './ENPAbout';
 
+
 interface ENPDetailsProps {
   actualENP: number;
   benchmarkENP: number;
-  totalEnrollment?: number; 
   onOpenSingleSchool: (schoolName: string) => void;
-  onClose?: () => void;
   isLoading?: boolean;
 }
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null;
 
 export function ENPDetails({ 
-  actualENP, benchmarkENP, onOpenSingleSchool, onClose, isLoading = false 
+  actualENP, benchmarkENP, onOpenSingleSchool, isLoading = false 
 }: ENPDetailsProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number | 'All'>(5);
@@ -33,45 +40,33 @@ export function ENPDetails({
     if (isSchoolExpanded && searchInputRef.current) searchInputRef.current.focus();
   }, [isSchoolExpanded]);
 
-  // Extract the total SNP count for the summary box
+  // Derived from the 'ENP' row in mockENPProgramData.ts
   const totalSNPCount = useMemo(() => {
-    const totalRow = programByEligibilityData.find(row => row.eligibility === 'Total');
-    return totalRow ? totalRow.total.count : 0;
+    const enpRow = programByEligibilityData.find(row => row.eligibility === 'ENP');
+    return enpRow ? enpRow.total.count : 0;
   }, []);
 
-  const sortedProgramData = useMemo(() => {
-    const dataRows = programByEligibilityData.filter(row => row.eligibility !== 'Total');
-    const totalRow = programByEligibilityData.find(row => row.eligibility === 'Total');
-    if (programSortConfig !== null) {
-      dataRows.sort((a: any, b: any) => {
-        const aValue = programSortConfig.key.includes('.') ? programSortConfig.key.split('.').reduce((obj, key) => obj[key], a) : a[programSortConfig.key];
-        const bValue = programSortConfig.key.includes('.') ? programSortConfig.key.split('.').reduce((obj, key) => obj[key], b) : b[programSortConfig.key];
-        if (aValue < bValue) return programSortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return programSortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return totalRow ? [...dataRows, totalRow] : dataRows;
-  }, [programSortConfig]);
-
-  const filteredSchools = useMemo(() => 
-    (mockSchoolENPData || []).filter(s => s.schoolName.toLowerCase().includes(searchTerm.toLowerCase())), 
-    [searchTerm]
-  );
-
+  // Filter and Sort Schools using mockSchoolENPData.ts
   const sortedSchools = useMemo(() => {
-    const items = [...filteredSchools];
+    const items = (mockSchoolENPData || []).filter(s => 
+      s.schoolName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     if (schoolSortConfig !== null) {
       items.sort((a: any, b: any) => {
-        const aValue = schoolSortConfig.key.includes('.') ? schoolSortConfig.key.split('.').reduce((obj, key) => obj[key], a) : a[schoolSortConfig.key];
-        const bValue = schoolSortConfig.key.includes('.') ? schoolSortConfig.key.split('.').reduce((obj, key) => obj[key], b) : b[schoolSortConfig.key];
+        const aValue = schoolSortConfig.key.includes('.') 
+          ? schoolSortConfig.key.split('.').reduce((obj, key) => obj[key], a) 
+          : a[schoolSortConfig.key];
+        const bValue = schoolSortConfig.key.includes('.') 
+          ? schoolSortConfig.key.split('.').reduce((obj, key) => obj[key], b) 
+          : b[schoolSortConfig.key];
+          
         if (aValue < bValue) return schoolSortConfig.direction === 'asc' ? -1 : 1;
         if (aValue > bValue) return schoolSortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
     return items;
-  }, [filteredSchools, schoolSortConfig]);
+  }, [searchTerm, schoolSortConfig]);
 
   const itemsPerPage = rowsPerPage === 'All' ? sortedSchools.length : rowsPerPage;
   const totalPages = Math.ceil(sortedSchools.length / (itemsPerPage || 1));
@@ -104,18 +99,19 @@ export function ENPDetails({
       <ENPSummary 
         actualENP={actualENP} 
         benchmarkENP={benchmarkENP} 
-        totalEnrollment={districtTotalEnrollment}
+        totalEnrollment={districtTotalEnrollment} // From mockENPProgramData
         totalSNPCount={totalSNPCount}
       />
+
+   
       
       <ENPProgramGrid 
-  isExpanded={isProgramExpanded}
-  onToggle={() => setIsProgramExpanded(!isProgramExpanded)}
-  sortedProgramData={sortedProgramData}
-  programSortConfig={programSortConfig}
-  onSort={handleProgramSort}
-  benchmarkENP={benchmarkENP} // ADD THIS LINE
-/>
+        isExpanded={isProgramExpanded}
+        onToggle={() => setIsProgramExpanded(!isProgramExpanded)}
+        benchmarkENP={benchmarkENP}
+        onSort={handleProgramSort}
+        programSortConfig={programSortConfig}
+      />
 
       <ENPSchoolGrid 
         isExpanded={isSchoolExpanded}
@@ -137,7 +133,9 @@ export function ENPDetails({
         }}
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={(dir) => setCurrentPage(prev => dir === 'next' ? Math.min(totalPages, prev + 1) : Math.max(1, prev - 1))}
+        onPageChange={(dir) => 
+          setCurrentPage(prev => dir === 'next' ? Math.min(totalPages, prev + 1) : Math.max(1, prev - 1))
+        }
       />
 
       <ENPAbout />
