@@ -50,19 +50,22 @@ Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`,
         <li><strong>Meal Equivalents (MEQs):</strong> The current count is 0, falling short of the benchmark by 683.</li>
         <li><strong>Economically Disadvantaged (EcoDis):</strong> The current participation rate is 0%, which is below the target of 1%.</li>
       </ul>
-
-      <h2>Informational KPIs</h2>
-      <ul>
-        <li><strong>Inventory Value:</strong> Inventory is currently valued at $0. This KPI serves as informational only.</li>
-        <li><strong>Inventory Turnover Rate:</strong> The turnover rate is 0 (1 day). Benchmarks vary by site, so this KPI is for ongoing monitoring.</li>
-      </ul>
-      <p>Overall, the KPIs indicate room for growth in meal participation, revenue generation, and engagement of economically disadvantaged students. Continued monitoring and strategic interventions will be essential to closing performance gaps.</p>
     `
   },
-  {
-    id: 'mplh',
-    name: 'MPLH',
-    promptText: 'Analyze Meals Per Labor Hour (MPLH) based on {site_data}...',
-    previewOutput: '<h2>MPLH Analysis</h2><p>Your labor efficiency is within the top 10% of the district.</p>'
-  }
+  { id: 'insights', name: 'Insights', promptText: 'Provide high-level insights across all active KPIs...', previewOutput: '<h2>Insights</h2><p>Overview of district-wide trends.</p>' },
+  { id: 'eco_dis', name: 'Eco Dis', promptText: 'Identify trends in Economically Disadvantaged student participation...', previewOutput: '<h2>Eco Dis Analysis</h2><p>Summary of participation trends.</p>' },
+  { id: 'breakfast', name: 'Breakfast', promptText: 'Analyze Breakfast ADP against the 20% benchmark...', previewOutput: '<h2>Breakfast ADP</h2><p>Detailed breakfast participation analysis.</p>' },
+  { id: 'lunch', name: 'Lunch', promptText: 'Evaluate Lunch participation and service efficiency...', previewOutput: '<h2>Lunch Analysis</h2><p>Service efficiency report.</p>' },
+  { id: 'snack', name: 'Snack', promptText: 'Review Snack program performance and growth...', previewOutput: '<h2>Snack Program</h2><p>Performance and growth metrics.</p>' },
+  { id: 'supper', name: 'Supper', promptText: 'Assess Supper program reaching and meal counts...', previewOutput: '<h2>Supper Program</h2><p>Reach and count assessment.</p>' },
+  { id: 'revenue', name: 'Revenue', promptText: 'Perform a deep dive into revenue vs projected benchmarks...', previewOutput: '<h2>Revenue Deep Dive</h2><p>Projected vs Actual report.</p>' },
+  { id: 'waste', name: 'Waste', promptText: 'Identify areas of excessive food waste and cost recovery...', previewOutput: '<h2>Waste Analysis</h2><p>Cost recovery opportunities.</p>' },
+  { id: 'meals', name: 'Meals', promptText: 'Track total meal counts and service trends...', previewOutput: '<h2>Meal Counts</h2><p>Total service trends.</p>' },
+  { id: 'meqs', name: 'MEQs', promptText: 'Calculate and analyze Meal Equivalents (MEQs) efficiency...', previewOutput: '<h2>MEQ Efficiency</h2><p>Meal Equivalent calculations.</p>' },
+  { id: 'inv_value', name: 'Inv. Value', promptText: 'Report on current inventory value across all sites...', previewOutput: '<h2>Inventory Value</h2><p>Current site valuations.</p>' },
+  { id: 'inv_turnover', name: 'Inv. Turnover', promptText: 'Analyze how quickly inventory is moving through the system...', previewOutput: '<h2>Inventory Turnover</h2><p>Flow analysis report.</p>' },
+  { id: 'inv_discrepancy', name: 'Inv. Discrepancy', promptText: 'Identify gaps between physical and system inventory counts...', previewOutput: '<h2>Inventory Discrepancy</h2><p>Gap identification report.</p>' },
+  { id: 'mplh', name: 'MPLH', promptText: 'Analyze Meals Per Labor Hour against district efficiency targets...', previewOutput: '<h2>MPLH Analysis</h2><p>Labor efficiency targets.</p>' },
+  { id: 'pna', name: 'PNA', promptText: 'Evaluate Participation-to-Non-Adjustment ratios...', previewOutput: '<h2>PNA Ratios</h2><p>Participation adjustment analysis.</p>' },
+  { id: 'enp', name: 'ENP', promptText: 'Assess Estimated National Participation metrics...', previewOutput: '<h2>ENP Metrics</h2><p>National participation estimates.</p>' }
 ];
