@@ -60,7 +60,6 @@ export function ENPDrawer({
               actualENP={actualENP} 
               benchmarkENP={benchmarkENP} 
               onOpenSingleSchool={onOpenSingleSchool}
-              onClose={onClose}
             />
           </div>
         </div>

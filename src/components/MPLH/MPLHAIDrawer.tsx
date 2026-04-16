@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bike, CheckCircle2, AlertCircle } from 'lucide-react';
-import { SchoolieIcon } from '../components/Common/Icons';
 
 interface MPLHAIDrawerProps {
   dateRange: string;
