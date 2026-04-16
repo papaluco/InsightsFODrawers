@@ -7,9 +7,10 @@ interface PNADrawerProps {
   onClose: () => void;
   actualPNA: number;
   targetPNA: number;
-  onOpenSingleSchool: () => void;
+  // Change this from () => void to:
+  onOpenSingleSchool: (schoolName: string) => void; 
   dateRange?: string;
-  isLoading?: boolean; // Added for Pro-level consistency
+  isLoading?: boolean;
 }
 
 export function PNADrawer({ 
