@@ -1,7 +1,8 @@
 import React from 'react';
-import { Target, CalendarCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { mockSchoolieData } from '../../data/mockSchoolieData';
 import { DemoSchoolSelector } from '../Common/DemoSchoolSelector'; 
+import { TimeframeSelector } from '../Common/TimeframeSelector'; // Import the new selector
 
 interface FiltersProps {
   selectedKPI: string;
@@ -24,7 +25,6 @@ export const AIPromptFilters = ({
   };
 
   return (
-    /* Removed overflow-hidden to allow the dropdown to pop out */
     <section className="border border-gray-200 rounded-xl bg-white shadow-sm relative z-40">
       
       {/* Collapsible Header */}
@@ -41,10 +41,9 @@ export const AIPromptFilters = ({
 
       {/* Filter Body */}
       {isExpanded && (
-        /* Added overflow-visible to ensure animation doesn't clip the dropdown */
         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-2 duration-300 overflow-visible">
           
-          {/* 1. Schoolie Prompt Selector - RESTORED LIST */}
+          {/* 1. Schoolie Prompt Selector */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
               Schoolie Prompt
@@ -54,7 +53,6 @@ export const AIPromptFilters = ({
               onChange={(e) => setSelectedKPI(e.target.value)}
               className="w-full p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm cursor-pointer"
             >
-              {/* Mapping through your actual prompts array again */}
               {prompts.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -63,8 +61,19 @@ export const AIPromptFilters = ({
             </select>
           </div>
 
-          {/* 2. Real Demo School Selector - High Z-Index Column */}
+          {/* 2. Test Date Range - MOVED HERE */}
           <div className="space-y-1.5 relative z-50">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              Test Date Context
+            </label>
+            <div className="w-full">
+              <TimeframeSelector />
+            </div>
+            <p className="text-[9px] text-gray-400 italic">Matches Workspace Mock Data</p>
+          </div>
+
+          {/* 3. Real Demo School Selector */}
+          <div className="space-y-1.5 relative z-40">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
               Test Site Context
             </label>
@@ -72,17 +81,6 @@ export const AIPromptFilters = ({
               <DemoSchoolSelector onApply={handleSchoolChange} />
             </div>
             <p className="text-[9px] text-gray-400 italic">Simulating production site filtering</p>
-          </div>
-
-          {/* 3. Test Date Range */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-              <CalendarCheck size={12} className="text-amber-500" /> Test Date Range
-            </label>
-            <div className="p-2.5 bg-gray-100 border border-gray-200 text-gray-500 text-sm font-medium rounded-lg">
-              Mar 20, 2026
-            </div>
-            <p className="text-[9px] text-gray-400 italic">Matches Workspace Mock Data</p>
           </div>
 
         </div>

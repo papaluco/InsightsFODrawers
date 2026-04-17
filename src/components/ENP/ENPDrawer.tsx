@@ -1,4 +1,4 @@
-import React from 'react';
+import  { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { ENPDetails } from './ENPDetails';
 
@@ -17,6 +17,25 @@ export function ENPDrawer({
   benchmarkENP, 
   onOpenSingleSchool 
 }: ENPDrawerProps) {
+
+  // Handle Escape key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    // Clean up listener
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   return (
     <>
       {/* Overlay */}
@@ -30,7 +49,7 @@ export function ENPDrawer({
       
       {/* Drawer Panel */}
       <div 
-        className={`fixed inset-y-0 right-0 w-full max-w-4xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 w-full max-w-6xl bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"
@@ -60,7 +79,7 @@ export function ENPDrawer({
               actualENP={actualENP} 
               benchmarkENP={benchmarkENP} 
               onOpenSingleSchool={onOpenSingleSchool}
-              onClose={onClose}
+              onClose={onClose} // Passed back in case you decide to use it inside
             />
           </div>
         </div>
