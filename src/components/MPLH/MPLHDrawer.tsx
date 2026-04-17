@@ -3,6 +3,7 @@ import { X, Target, Loader2, Sparkles, ChevronLeft } from 'lucide-react';
 import { MPLHDetails } from './MPLHDetails';
 import { MPLHAIDrawer } from './MPLHAIDrawer'; 
 import { SchoolMPLHData } from '../../data/mockMPLHData';
+import { SchoolieIcon } from '../Common/Icons';
 
 interface MPLHDrawerProps {
   isOpen: boolean;
@@ -94,12 +95,12 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
               */}
               {showAIAssistant && view === 'details' && (
                 <button
-                  onClick={() => setView('ai_analysis')}
-                  className="flex items-center space-x-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-100 mr-2 font-bold text-sm animate-in fade-in zoom-in duration-300"
-                >
-                  <Sparkles className="w-4 h-4 text-indigo-500" />
-                  <span>Ask Schoolie</span>
-                </button>
+                onClick={() => setView('ai_analysis')}
+                className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm animate-in fade-in zoom-in duration-300 group"
+              >
+                {/* Replacing Sparkles with your Schoolie Icon once ready */}
+                <SchoolieIcon size={60}  />
+              </button>
               )}
               <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-500" />

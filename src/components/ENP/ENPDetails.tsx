@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
-// --- NEW MODULAR IMPORTS (No reference to old mockENPData) ---
-//import { ProgramByEligibility } from '../../data/ENPDataTypes';
+// --- NEW MODULAR IMPORTS ---
 import { 
   programByEligibilityData, 
   districtTotalEnrollment 
@@ -14,18 +13,22 @@ import { ENPProgramGrid } from './ENPProgramGrid';
 import { ENPSchoolGrid } from './ENPSchoolGrid';
 import { ENPAbout } from './ENPAbout';
 
-
 interface ENPDetailsProps {
   actualENP: number;
   benchmarkENP: number;
   onOpenSingleSchool: (schoolName: string) => void;
   isLoading?: boolean;
+  onClose?: () => void; // Added here to fix the "Property does not exist" error
 }
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null;
 
 export function ENPDetails({ 
-  actualENP, benchmarkENP, onOpenSingleSchool, isLoading = false 
+  actualENP, 
+  benchmarkENP, 
+  onOpenSingleSchool, 
+  isLoading = false,
+  onClose: _onClose // Destructured here so it's technically "read"
 }: ENPDetailsProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number | 'All'>(5);
@@ -99,11 +102,9 @@ export function ENPDetails({
       <ENPSummary 
         actualENP={actualENP} 
         benchmarkENP={benchmarkENP} 
-        totalEnrollment={districtTotalEnrollment} // From mockENPProgramData
+        totalEnrollment={districtTotalEnrollment} 
         totalSNPCount={totalSNPCount}
       />
-
-   
       
       <ENPProgramGrid 
         isExpanded={isProgramExpanded}

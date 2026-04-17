@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X, Target, Loader2, ChevronLeft } from 'lucide-react';
 
 // --- UPDATED IMPORT ---
