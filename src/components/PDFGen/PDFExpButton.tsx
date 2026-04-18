@@ -44,10 +44,10 @@ export const PDFExpButton: React.FC<PDFExpButtonProps> = ({
           />
           <div className="flex flex-col text-left">
             <span className="font-medium whitespace-nowrap text-slate-700">
-              {loading ? 'Generating...' : 'Download PDF (.pdf)'}
+              {loading ? 'Generating...' : 'Drawer Visualization (.pdf)'}
             </span>
             <span className="text-[10px] text-slate-400">
-              High-fidelity visual report
+              Download a PDF of this drawer
             </span>
           </div>
         </div>

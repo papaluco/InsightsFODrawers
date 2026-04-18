@@ -41,7 +41,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ children }) => {
 
       {isOpen && (
         <div 
-          className="absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden transform origin-top-right transition-all"
+          className="absolute right-0 mt-2 w-64 rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden transform origin-top-right transition-all"
           onClick={handleContentClick} // Any click inside the menu triggers the timer
         >
           <div className="bg-slate-50 px-4 py-2 border-b border-slate-100">

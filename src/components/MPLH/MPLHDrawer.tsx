@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'; // Added useMemo
+import React, { useEffect, useState, useMemo } from 'react';
 import { X, Target, Loader2, Sparkles, ChevronLeft } from 'lucide-react';
 import { MPLHDetails } from './MPLHDetails';
 import { MPLHAIDrawer } from './MPLHAIDrawer'; 
@@ -7,16 +7,17 @@ import { SchoolieIcon } from '../Common/Icons';
 
 // --- NEW IMPORTS FOR EXPORT ENGINE ---
 import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
-import { PDFExpButton } from '../PDFGen/PDFExpButton';
 import { PDFMPLHAdapter } from '../PDFGen/adapters/PDFMPLHAdapter';
+import { PDFExpButton } from '../PDFGen/PDFExpButton';
+import { CSVExpButton } from '../CSVGen/CSVExpButton';
+import { CSVMPLHAdapter } from '../CSVGen/adapters/CSVMPLHAdapter'; // Import the adapter here
 
 interface MPLHDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   actualMPLH: number;
   targetMPLH: number;
-  schoolData: SchoolMPLHData[]; // This usually contains the site-type summary
-  detailedSchoolData?: any[];   // Pass the full school list here
+  schoolData: SchoolMPLHData[]; 
   onOpenSingleSchool: (schoolName: string) => void;
   dateRange?: string;
   isLoading?: boolean;
@@ -36,27 +37,34 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
 }) => {
   const [view, setView] = useState<'details' | 'ai_analysis'>('details');
 
-  // --- FIXED PDF DATA MAPPING ---
-const pdfData = useMemo(() => {
-  return PDFMPLHAdapter(
-    { 
-      siteTypeSummary: schoolData,        // Use summary data for Table 1
-      actualMPLH, 
-      benchmark: targetMPLH, 
-      diffValue: (actualMPLH - targetMPLH).toFixed(2),
-      isHigher: actualMPLH > targetMPLH,
-      percentage: ((actualMPLH/targetMPLH) * 100).toFixed(0),
-      subTitle: `Analysis for ${dateRange}`
-    }, 
-    "Johnathon", 
-    "Katy ISD"
-  );
-}, [schoolData, actualMPLH, targetMPLH]); 
+  // --- PDF DATA MAPPING ---
+  const pdfData = useMemo(() => {
+    return PDFMPLHAdapter(
+      { 
+        siteTypeSummary: schoolData,
+        actualMPLH, 
+        benchmark: targetMPLH, 
+        diffValue: (actualMPLH - targetMPLH).toFixed(2),
+        isHigher: actualMPLH > targetMPLH,
+        percentage: ((actualMPLH/targetMPLH) * 100).toFixed(0),
+        subTitle: `Analysis for ${dateRange}`
+      }, 
+      "Johnathon", 
+      "Katy ISD"
+    );
+  }, [schoolData, actualMPLH, targetMPLH, dateRange]); 
+
+  // --- CSV DATA MAPPING (Generic Approach) ---
+  const csvTypeData = useMemo(() => 
+    CSVMPLHAdapter(schoolData, 'Type'), 
+  [schoolData]);
+
+  const csvSchoolData = useMemo(() => 
+    CSVMPLHAdapter(schoolData, 'School'), 
+  [schoolData]);
 
   useEffect(() => {
-    if (!isOpen) {
-      setView('details');
-    }
+    if (!isOpen) setView('details');
   }, [isOpen]);
 
   useEffect(() => {
@@ -112,16 +120,37 @@ const pdfData = useMemo(() => {
               
               {/* --- EXPORT MENU --- */}
               {showAIAssistant && view === 'details' && (
-              <ExportMenu>
-                  <PDFExpButton 
-                    data={pdfData} 
-                  />
+                <ExportMenu>
+                  {/* Visual Section */}
+                  <div className="px-4 py-1.5 bg-slate-50 border-b border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Visual Report</p>
+                  </div>
+                  <PDFExpButton data={pdfData} />
+
+                  {/* Data Section */}
+                  <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Data Exports</p>
+                  </div>
+                  <CSVExpButton 
+      title="Summary by Type (.csv)"
+      subtext="Download grid data as seen"
+      csvData={csvTypeData} 
+      onClose={onClose}
+    />
+
+    <CSVExpButton 
+      title="Summary by School (.csv)"
+      subtext="Download grid data as seen"
+      csvData={csvSchoolData} 
+      onClose={onClose}
+    />
                 </ExportMenu>
-)}
+              )}
+
               {showAIAssistant && view === 'details' && (
                 <button
                   onClick={() => setView('ai_analysis')}
-                  className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm animate-in fade-in zoom-in duration-300 group"
+                  className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
                 >
                   <SchoolieIcon size={60} />
                 </button>
