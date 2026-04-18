@@ -1,16 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react'; // Added useMemo
 import { X, Target, Loader2, Sparkles, ChevronLeft } from 'lucide-react';
 import { MPLHDetails } from './MPLHDetails';
 import { MPLHAIDrawer } from './MPLHAIDrawer'; 
 import { SchoolMPLHData } from '../../data/mockMPLHData';
 import { SchoolieIcon } from '../Common/Icons';
 
+// --- NEW IMPORTS FOR EXPORT ENGINE ---
+import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
+import { PDFExpButton } from '../PDFGen/PDFExpButton';
+import { PDFMPLHAdapter } from '../PDFGen/adapters/PDFMPLHAdapter';
+
 interface MPLHDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   actualMPLH: number;
   targetMPLH: number;
-  schoolData: SchoolMPLHData[];
+  schoolData: SchoolMPLHData[]; // This usually contains the site-type summary
+  detailedSchoolData?: any[];   // Pass the full school list here
   onOpenSingleSchool: (schoolName: string) => void;
   dateRange?: string;
   isLoading?: boolean;
@@ -28,17 +34,31 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
   isLoading = false,
   showAIAssistant = false,
 }) => {
-  // FIX: Always start with 'details' view regardless of showAIAssistant prop
   const [view, setView] = useState<'details' | 'ai_analysis'>('details');
 
-  // Reset view to 'details' whenever the drawer is closed so it's fresh for next open
+  // --- FIXED PDF DATA MAPPING ---
+const pdfData = useMemo(() => {
+  return PDFMPLHAdapter(
+    { 
+      siteTypeSummary: schoolData,        // Use summary data for Table 1
+      actualMPLH, 
+      benchmark: targetMPLH, 
+      diffValue: (actualMPLH - targetMPLH).toFixed(2),
+      isHigher: actualMPLH > targetMPLH,
+      percentage: ((actualMPLH/targetMPLH) * 100).toFixed(0),
+      subTitle: `Analysis for ${dateRange}`
+    }, 
+    "Johnathon", 
+    "Katy ISD"
+  );
+}, [schoolData, actualMPLH, targetMPLH]); 
+
   useEffect(() => {
     if (!isOpen) {
       setView('details');
     }
   }, [isOpen]);
 
-  // Escape key listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -89,19 +109,24 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* The Button Logic: 
-                  - If showAIAssistant is true (from dashboard button), the button is visible.
-                  - If we are already looking at AI Analysis, hide the button.
-              */}
+              
+              {/* --- EXPORT MENU --- */}
+              {showAIAssistant && view === 'details' && (
+              <ExportMenu>
+                  <PDFExpButton 
+                    data={pdfData} 
+                  />
+                </ExportMenu>
+)}
               {showAIAssistant && view === 'details' && (
                 <button
-                onClick={() => setView('ai_analysis')}
-                className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm animate-in fade-in zoom-in duration-300 group"
-              >
-                {/* Replacing Sparkles with your Schoolie Icon once ready */}
-                <SchoolieIcon size={60}  />
-              </button>
+                  onClick={() => setView('ai_analysis')}
+                  className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm animate-in fade-in zoom-in duration-300 group"
+                >
+                  <SchoolieIcon size={60} />
+                </button>
               )}
+              
               <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-500" />
               </button>

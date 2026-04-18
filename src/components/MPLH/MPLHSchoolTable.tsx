@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 // Added ChevronUp to the imports below
 import { ChevronDown, ChevronUp, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { SchoolMPLHData } from '../data/mockMPLHData';
+import { SchoolMPLHData } from '../../data/mockMPLHData';
 import { MPLHOtherMeals } from './MPLHOtherMeals';
 
 interface MPLHSchoolTableProps {
