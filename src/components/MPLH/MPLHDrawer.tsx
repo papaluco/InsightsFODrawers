@@ -10,7 +10,8 @@ import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
 import { PDFMPLHAdapter } from '../PDFGen/adapters/PDFMPLHAdapter';
 import { PDFExpButton } from '../PDFGen/PDFExpButton';
 import { CSVExpButton } from '../CSVGen/CSVExpButton';
-import { CSVMPLHAdapter } from '../CSVGen/adapters/CSVMPLHAdapter'; // Import the adapter here
+import { CSVMPLHAdapter } from '../CSVGen/adapters/CSVMPLHAdapter'; 
+import { CSVFullExpButton } from '../CSVGen/CSVFullExpButton';
 
 interface MPLHDrawerProps {
   isOpen: boolean;
@@ -144,6 +145,11 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
       csvData={csvSchoolData} 
       onClose={onClose}
     />
+
+    <CSVFullExpButton 
+  title="Full Raw Data (.csv)"
+  subtext="Download all underlying data"
+/>
                 </ExportMenu>
               )}
 
