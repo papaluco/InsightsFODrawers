@@ -1,11 +1,11 @@
 import { useState, lazy, Suspense, useCallback } from 'react';
 import { SimpleHeader } from '../components/InsightsDashboard/SimpleHeader';
-import { MPLHCard } from '../components/InsightsDashboard/MPLHCard';
-import { PNACard } from '../components/InsightsDashboard/PNACard';
-import { ENPCard } from '../components/InsightsDashboard/ENPCard';
+import { KPICards } from '../components/InsightsDashboard/KPICards';
+import { SchoolPerformanceGrid } from '../components/InsightsDashboard/SchoolPerformanceGrid'; // New Import
+import { TestLinks } from '../components/InsightsDashboard/TestLinks';
+import { PerformanceTrends } from '../components/InsightsDashboard/PerformanceTrends';
 import { generateMockMPLHData, calculateDistrictMPLH } from '../data/mockMPLHData';
 import { districtENPActual, districtENPBenchmark } from '../data/mockENPProgramData';
-import { ChevronRight, Sparkles } from 'lucide-react'; // Added Sparkles
 
 // --- LAZY LOADED COMPONENTS ---
 const MPLHDrawer = lazy(() => import('../components/MPLH/MPLHDrawer').then(m => ({ default: m.MPLHDrawer })));
@@ -27,7 +27,7 @@ function InsightsPage() {
   const [isENPDrawerOpen, setIsENPDrawerOpen] = useState(false);
   const [isSingleSchoolENPDrawerOpen, setIsSingleSchoolENPDrawerOpen] = useState(false);
   
-  // --- NEW: AI STATE ---
+  // AI State
   const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   // Navigation State
@@ -53,16 +53,16 @@ function InsightsPage() {
     if (navOrigin === 'ENP_LIST') setIsENPDrawerOpen(true);
   }, [navOrigin]);
 
-  // --- NEW: AI CLICK HANDLER ---
+  // AI CLICK HANDLER
   const handleOpenMPLHWithAI = () => {
     setShowAIAssistant(true);
     setIsDrawerOpen(true);
   };
 
-  // --- UPDATED: CLOSE HANDLER ---
+  // CLOSE HANDLER
   const handleCloseMPLHDrawer = () => {
     setIsDrawerOpen(false);
-    setShowAIAssistant(false); // Reset AI state on close
+    setShowAIAssistant(false); 
   };
 
   const openSingleFromDashboard = (metric: 'MPLH' | 'PNA' | 'ENP') => {
@@ -96,71 +96,34 @@ function InsightsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-left">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 text-left p-6">
+      <div className="w-full mx-auto">
         <SimpleHeader />
 
-        <div className="max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* MPLH Column */}
-          <div className="space-y-4">
-            <MPLHCard
-              actualMPLH={actualMPLH}
-              targetMPLH={targetMPLH}
-              onClick={() => setIsDrawerOpen(true)}
-            />
-            
-            <button 
-              onClick={() => openSingleFromDashboard('MPLH')} 
-              className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all p-4 flex items-center justify-between group"
-            >
-              <span className="text-base font-semibold text-gray-900">Single School MPLH</span>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
-            </button>
+        {/* --- KPI SECTION --- */}
+        <KPICards
+          actualMPLH={actualMPLH} 
+          targetMPLH={targetMPLH}
+          actualPNA={actualPNA}
+          targetPNA={targetPNA}
+          districtENPActual={districtENPActual}
+          districtENPBenchmark={districtENPBenchmark}
+          onOpenMPLH={() => setIsDrawerOpen(true)}
+          onOpenPNA={() => setIsPNADrawerOpen(true)}
+          onOpenENP={() => setIsENPDrawerOpen(true)}
+        />
 
-            {/* --- NEW: ASK SCHOOLIE BUTTON --- */}
-            <button 
-              onClick={handleOpenMPLHWithAI} 
-              className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all p-4 flex items-center justify-between group"
-            >
-              <div className="flex items-center space-x-3">
-                <span className="text-base font-semibold text-gray-900">MPLH with Schoolie</span>
-              </div>
-              <ChevronRight className="w-5 h-5 text-indigo-200 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
+        {/* --- SCHOOL PERFORMANCE GRID --- */}
+        <SchoolPerformanceGrid />
 
-          {/* PNA Column */}
-          <div className="space-y-4">
-            <PNACard
-              actualPNA={actualPNA}
-              targetPNA={targetPNA}
-              onClick={() => setIsPNADrawerOpen(true)}
-            />
-            <button 
-              onClick={() => openSingleFromDashboard('PNA')} 
-              className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all p-4 flex items-center justify-between group"
-            >
-              <span className="text-base font-semibold text-gray-900">Single School PNA</span>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
-            </button>
-          </div>
+        {/* --- PERFORMANCE Trends --- */}
+        <PerformanceTrends />
 
-          {/* ENP Column */}
-          <div className="space-y-4">
-            <ENPCard
-              actualENP={districtENPActual}
-              benchmarkENP={districtENPBenchmark}
-              onClick={() => setIsENPDrawerOpen(true)}
-            />
-            <button 
-              onClick={() => openSingleFromDashboard('ENP')} 
-              className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-all p-4 flex items-center justify-between group"
-            >
-              <span className="text-base font-semibold text-gray-900">Single School ENP</span>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
-            </button>
-          </div>
-        </div>
+        {/* --- NAVIGATION LINKS --- */}
+        <TestLinks 
+          onOpenSingle={openSingleFromDashboard} 
+          onOpenAI={handleOpenMPLHWithAI} 
+        />
       </div>
 
       <Suspense fallback={<div className="fixed inset-0 bg-black/20 z-50" />}>
@@ -168,12 +131,12 @@ function InsightsPage() {
         {isDrawerOpen && (
           <MPLHDrawer
             isOpen={isDrawerOpen}
-            onClose={handleCloseMPLHDrawer} // Using updated handler
+            onClose={handleCloseMPLHDrawer}
             actualMPLH={actualMPLH}
             targetMPLH={targetMPLH}
             schoolData={schoolData}
             onOpenSingleSchool={handleOpenSingleSchoolMPLH}
-            showAIAssistant={showAIAssistant} // Passing AI mode
+            showAIAssistant={showAIAssistant}
           />
         )}
 
@@ -187,7 +150,7 @@ function InsightsPage() {
           />
         )}
 
-        {/* PNA and ENP Drawers remain unchanged... */}
+        {/* PNA Drawers */}
         {isPNADrawerOpen && (
           <PNADrawer
             isOpen={isPNADrawerOpen}
@@ -207,6 +170,7 @@ function InsightsPage() {
           />
         )}
 
+        {/* ENP Drawers */}
         {isENPDrawerOpen && (
           <ENPDrawer
             isOpen={isENPDrawerOpen}

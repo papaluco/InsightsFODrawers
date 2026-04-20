@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bot, BarChart3, User, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Bot, ArrowRight } from 'lucide-react';
 import { AIConfigDrawer } from '../components/AI/AIConfigDrawer';
 
 const SettingPage = () => {
