@@ -10,12 +10,12 @@ import { IPDFReportData } from './PDFContract';
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 36,
     fontFamily: 'Helvetica',
     fontSize: 10,
     color: '#334155',
   },
-  headerContainer: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderBottom: 2,
@@ -25,24 +25,10 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, color: '#1e293b' },
   subTitle: { fontSize: 10, marginTop: 4, color: '#64748b' },
-  metricsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  metricCard: {
-    padding: 10,
-    backgroundColor: '#f8fafc',
-    borderRadius: 4,
-    width: '30%',
-    textAlign: 'center',
-    border: 1,
-    borderColor: '#e2e8f0',
-  },
-  metricLabel: { fontSize: 8, textTransform: 'uppercase', color: '#64748b', marginBottom: 4 },
-  metricValue: { fontSize: 14 },
-  
-  sectionContainer: {
+  districtName: { fontSize: 10},
+
+// Section Styles
+   sectionContainer: {
     marginBottom: 30,
   },
   sectionTitle: { 
@@ -53,7 +39,41 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5 
   },
+
+  // Metric Card Styles
+  metricsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  metricCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: '#f8fafc',
+    borderRadius: 4,
+    width: '23%',
+    textAlign: 'center',
+    border: 1,
+    borderColor: '#e2e8f0',
+  },
+  metricLabel: { 
+    fontSize: 8, 
+    color: '#64748b', 
+    textTransform: 'uppercase', 
+    marginBottom: 4,
+    letterSpacing: 0.8,
+    fontWeight: 'bold',
+  },
+  metricValue: { 
+    fontSize: 14, 
+  },
+    benchmarkText: {
+    fontSize: 6,
+    color: '#64748b',
+    marginTop: 2,
+  },
   
+   // Table Styles 
   table: { display: 'flex', width: 'auto' },
   tableHeader: { 
     flexDirection: 'row', 
@@ -61,21 +81,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, 
     borderBottomColor: '#cbd5e1',
     alignItems: 'center',
-    height: 24,
+    paddingVertical: 6, // Use padding instead of height for flexibility
   },
   tableRow: { 
     flexDirection: 'row', 
     borderBottomWidth: 0.5, 
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#f1f5f9',
     alignItems: 'center',
-    minHeight: 22,
+    paddingVertical: 4, // Flexible height: row grows with content
+    minHeight: 18,
   },
-  totalRow: { 
-    backgroundColor: '#F1F5F9', 
-    borderTopWidth: 1.5,
-    borderTopColor: '#94a3b8',
-  },
-  
   tableCell: { 
     paddingHorizontal: 4,
     fontSize: 7, 
@@ -84,6 +99,11 @@ const styles = StyleSheet.create({
   headerCellText: {
     color: '#475569', 
     fontWeight: 'bold',
+  },
+    totalRow: { 
+    backgroundColor: '#F1F5F9', 
+    borderTopWidth: 1.5,
+    borderTopColor: '#94a3b8',
   },
   textLeft: { textAlign: 'left' },
   textCenter: { textAlign: 'center' },
@@ -94,12 +114,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
+    bottom: 20,
+    left: 36,
+    right: 36,
     borderTopWidth: 0.5,
     borderTopColor: '#cbd5e1',
-    paddingTop: 10,
+    paddingTop: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -111,17 +131,17 @@ export const PDFRenderer: React.FC<{ data: IPDFReportData }> = ({ data }) => {
     <Document 
       title={String(data.reportTitle)} 
       author="Schoolie AI"
-      subject="Operational Efficiency Analysis"
+      subject="Workspace Insights Visualizations"
     >
-      <Page size="A4" style={styles.page}>
+      <Page size="LETTER" style={styles.page}>
         
         {/* Header */}
-        <View style={styles.headerContainer}>
+        <View style={styles.header}>
           <View>
             <Text style={styles.title}>{String(data.reportTitle)}</Text>
             {data.subTitle && <Text style={styles.subTitle}>{String(data.subTitle)}</Text>}
           </View>
-          <Text style={{ fontSize: 10 }}>{String(data.districtName)}</Text>
+          <Text style={styles.districtName}>{data.districtName}</Text>
         </View>
 
         {/* KPI Overview Grid */}
@@ -136,7 +156,8 @@ export const PDFRenderer: React.FC<{ data: IPDFReportData }> = ({ data }) => {
               ]}>
                 {String(m.primaryValue)}
               </Text>
-              {m.secondaryValue && <Text style={{ fontSize: 7, color: '#64748b' }}>{String(m.secondaryValue)}</Text>}
+              {m.secondaryValue && 
+              <Text style={styles.benchmarkText}>{String(m.secondaryValue)}</Text>}
             </View>
           ))}
         </View>
@@ -148,6 +169,7 @@ export const PDFRenderer: React.FC<{ data: IPDFReportData }> = ({ data }) => {
             
             {section.type === 'table' ? (
               <View style={styles.table}>
+                {/* Table Header */}
                 <View style={styles.tableHeader}>
                   {section.headers?.map((h, hIdx) => (
                     <Text 
@@ -163,6 +185,7 @@ export const PDFRenderer: React.FC<{ data: IPDFReportData }> = ({ data }) => {
                   ))}
                 </View>
 
+{/* Table Rows */}
                 {section.rows?.map((row, rIdx) => {
                   const isTotal = section.hasTotalRow && rIdx === section.rows!.length - 1;
                   return (

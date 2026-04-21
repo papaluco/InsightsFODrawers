@@ -42,7 +42,7 @@ export const PerformanceTrends: React.FC = () => {
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-lg font-bold text-gray-800">Performance Trends</h3>
-        <select 
+        <select
           value={selectedKPI}
           onChange={(e) => setSelectedKPI(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -61,37 +61,56 @@ export const PerformanceTrends: React.FC = () => {
             margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-            
-            <XAxis 
-              dataKey="name" 
+
+            <XAxis
+              dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              tick={{
+                fill: '#0f172a', // Slate-900 (Much darker/higher contrast)
+                fontSize: 9,
+                fontWeight: 400,
+                letterSpacing: '0.1em'
+              }}
               angle={-45}
               textAnchor="end"
+              height={60}
               dy={10}
             />
-            
-            <YAxis 
+
+            <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              tick={{
+                fill: '#0f172a', // Slate-900 
+                fontSize: 9,
+                fontWeight: 400,
+                letterSpacing: '0.1em'
+              }}
               tickFormatter={(val) => val.toLocaleString()}
-              label={{ 
-                value: 'Number', 
-                angle: -90, 
-                position: 'insideLeft', 
-                style: { fill: '#6b7280', fontSize: 12, fontWeight: 500 } 
+              width={60}
+              label={{
+                value: 'NUMBER',
+                angle: -90,
+                position: 'insideLeft',
+                offset: 0,
+                style: {
+                  fill: '#0f172a', // Matching the dark Slate-900
+                  fontSize: 10,
+                  fontWeight: 400,
+                  letterSpacing: '0.2em',
+                  textAnchor: 'middle'
+                }
               }}
             />
 
-            <Tooltip 
+            <Tooltip
               cursor={{ fill: '#f9fafb' }}
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
             />
 
-            <Legend 
-              verticalAlign="bottom" 
+            <Legend
+              verticalAlign="bottom"
               align="right"
               iconType="circle"
               wrapperStyle={{ paddingTop: '40px' }}
@@ -100,9 +119,9 @@ export const PerformanceTrends: React.FC = () => {
             {/* Bars for Actual Values */}
             <Bar dataKey="value" name="Actual" barSize={25} radius={[4, 4, 0, 0]}>
               {MOCK_CHART_DATA.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={getBarColor(entry.value, entry.benchmark)} 
+                <Cell
+                  key={`cell-${index}`}
+                  fill={getBarColor(entry.value, entry.benchmark)}
                 />
               ))}
             </Bar>
@@ -122,7 +141,7 @@ export const PerformanceTrends: React.FC = () => {
       </div>
 
       {/* X-Axis Central Label */}
-      <div className="text-center text-sm font-medium text-indigo-900 mt-2">
+      <div className="text-center text-xs font-normal text-slate-900 uppercase tracking-widest mt-3">
         Months
       </div>
     </div>

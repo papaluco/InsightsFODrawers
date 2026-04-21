@@ -1,9 +1,22 @@
-import { useState, lazy, Suspense, useCallback } from 'react';
+import { useState, lazy, Suspense, useCallback, useRef  } from 'react';
+import { pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
+import { DASHBOARD_METRICS, DASHBOARD_GRID_DATA } from '../data/mockDashData';
+import { toPng } from 'html-to-image'; // You will need to npm install html-to-image
+
+// Components
 import { SimpleHeader } from '../components/InsightsDashboard/SimpleHeader';
 import { KPICards } from '../components/InsightsDashboard/KPICards';
-import { SchoolPerformanceGrid } from '../components/InsightsDashboard/SchoolPerformanceGrid'; // New Import
+import { SchoolPerformanceGrid } from '../components/InsightsDashboard/SchoolPerformanceGrid';
 import { TestLinks } from '../components/InsightsDashboard/TestLinks';
 import { PerformanceTrends } from '../components/InsightsDashboard/PerformanceTrends';
+
+// PDF Logic
+import { PDFDashRenderer } from '../components/PDFGen/PDFDashRenderer';
+import { prepareDashboardPDFData } from '../components/PDFGen/adapters/PDFDashAdapter';
+import { ExportOptions } from '../components/Common/ExportMenu/DashExportMenu';
+
+// Data
 import { generateMockMPLHData, calculateDistrictMPLH } from '../data/mockMPLHData';
 import { districtENPActual, districtENPBenchmark } from '../data/mockENPProgramData';
 
@@ -19,6 +32,8 @@ const SingleSchoolENPDrawer = lazy(() => import('../components/ENP/SingleSchoolE
 type NavOrigin = 'DASHBOARD' | 'MPLH_LIST' | 'PNA_LIST' | 'ENP_LIST';
 
 function InsightsPage() {
+  const chartRef = useRef<HTMLDivElement>(null); // 1. Initialize the Ref
+
   // Drawer States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSingleSchoolDrawerOpen, setIsSingleSchoolDrawerOpen] = useState(false);
@@ -29,6 +44,9 @@ function InsightsPage() {
   
   // AI State
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+
+  // PDF Export State
+  const [isExporting, setIsExporting] = useState(false);
 
   // Navigation State
   const [navOrigin, setNavOrigin] = useState<NavOrigin>('DASHBOARD');
@@ -41,6 +59,40 @@ function InsightsPage() {
   const { actualMPLH, targetMPLH } = calculateDistrictMPLH(schoolData);
   const actualPNA = 11.85;
   const targetPNA = 10.00;
+
+  // --- PDF EXPORT HANDLER ---
+  const handleDashboardExport = async (options: ExportOptions) => {
+    setIsExporting(true);
+
+    try {
+      // 1. Capture the chart image as a Base64 string
+      let chartImage = '';
+      if (chartRef.current) {
+        // We use a higher pixelRatio to make sure the chart looks crisp in the PDF
+        chartImage = await toPng(chartRef.current, { 
+          pixelRatio: 5, quality: 1, backgroundColor: '#ffffff' });
+      }
+
+      // 1. Prepare data via Adapter with ALL dashboard metrics
+      const pdfData = prepareDashboardPDFData(
+        DASHBOARD_GRID_DATA,
+        DASHBOARD_METRICS,
+        options,
+        chartImage // <--- THE MISSING LINK
+      );
+
+  // 2. Generate PDF Blob
+  const doc = <PDFDashRenderer data={pdfData} />;
+  const blob = await pdf(doc).toBlob();
+ 
+  // 3. Trigger Download
+ saveAs(blob, `Schoolie_Insights_${new Date().toISOString().split('T')[0]}.pdf`);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    setIsExporting(false);
+  }
+ };
 
   // --- REUSABLE BACK HANDLER ---
   const handleBack = useCallback(() => {
@@ -98,7 +150,10 @@ function InsightsPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-left p-6">
       <div className="w-full mx-auto">
-        <SimpleHeader />
+        <SimpleHeader 
+          onExportTriggered={handleDashboardExport}
+          isGenerating={isExporting}
+        />
 
         {/* --- KPI SECTION --- */}
         <KPICards
@@ -117,7 +172,9 @@ function InsightsPage() {
         <SchoolPerformanceGrid />
 
         {/* --- PERFORMANCE Trends --- */}
-        <PerformanceTrends />
+        <div ref={chartRef}>
+          <PerformanceTrends />
+        </div>
 
         {/* --- NAVIGATION LINKS --- */}
         <TestLinks 

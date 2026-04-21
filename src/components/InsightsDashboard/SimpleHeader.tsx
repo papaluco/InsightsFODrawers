@@ -3,8 +3,17 @@ import { BarChart2, Settings, Target } from 'lucide-react';
 import { DemoSchoolSelector } from '../Common/DemoSchoolSelector'; 
 import { TimeframeSelector } from '../Common/TimeframeSelector';
 import { SchoolieIcon } from '../Common/Icons';
+import { DashExportMenu, ExportOptions } from '../Common/ExportMenu/DashExportMenu';
 
-export const SimpleHeader: React.FC = () => {
+interface SimpleHeaderProps {
+  onExportTriggered: (options: ExportOptions) => void;
+  isGenerating?: boolean;
+}
+
+export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ 
+  onExportTriggered, 
+  isGenerating = false 
+}) => {
   const handleSchoolChange = (filters: any) => {
     console.log("Header Filter Update:", filters);
   };
@@ -36,6 +45,12 @@ export const SimpleHeader: React.FC = () => {
 
         {/* Action Buttons Group (White Tiled Look) */}
         <div className="flex items-center gap-2 ml-2">
+          
+          <DashExportMenu 
+            isGenerating={isGenerating} 
+            onExport={onExportTriggered} 
+          />
+
           <button 
             title="Configure KPIs"
             className="p-2 bg-white rounded-lg text-gray-500 hover:text-indigo-600 hover:shadow-sm transition-all border-none"
