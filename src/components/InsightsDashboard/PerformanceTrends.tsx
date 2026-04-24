@@ -54,8 +54,8 @@ export const PerformanceTrends: React.FC = () => {
       </div>
 
       {/* Chart Container */}
-      <div className="h-[400px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[400px] min-h-[400px] w-full">
+        <ResponsiveContainer width="100%" height="100%" debounce={1}>
           <ComposedChart
             data={MOCK_CHART_DATA}
             margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
