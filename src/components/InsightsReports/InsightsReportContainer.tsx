@@ -6,9 +6,11 @@ import ReportListTable from './ReportListTable';
 import StarredReportsGrid from './StarredReportsGrid';
 import ReportSidebar from './ReportSidebar';
 import ReportFilters from './ReportFilters';
+
+// Lazy Imports
 const RecentReportsDrawer = React.lazy(() => import('./RecentReportsDrawer'));
 const ViewConfigDrawer = React.lazy(() => import('./ViewConfigDrawer'));
-
+const ReportViewerDrawer = React.lazy(() => import('./ReportViewerDrawer'));
 
 const InsightsReportsContainer: React.FC = () => {
   // --- STATE ---
@@ -18,7 +20,7 @@ const InsightsReportsContainer: React.FC = () => {
   const [selectedSource, setSelectedSource] = useState<ReportSource | 'All'>('All');
   const [selectedDataSource, setSelectedDataSource] = useState('All');
   
-  // --- HISTORY DRAWER STATE ---
+  // --- DRAWER STATES ---
   const [historyDrawer, setHistoryDrawer] = useState<{ 
     isOpen: boolean; 
     reportId: string | null; 
@@ -29,8 +31,15 @@ const InsightsReportsContainer: React.FC = () => {
     reportName: null
   });
 
-  // --- 2. CONFIG DRAWER STATE ---
   const [configDrawer, setConfigDrawer] = useState<{
+    isOpen: boolean;
+    report: UnifiedReport | null;
+  }>({
+    isOpen: false,
+    report: null
+  });
+
+  const [viewerDrawer, setViewerDrawer] = useState<{
     isOpen: boolean;
     report: UnifiedReport | null;
   }>({
@@ -78,16 +87,10 @@ const InsightsReportsContainer: React.FC = () => {
     setHistoryDrawer(prev => ({ ...prev, isOpen: false }));
   };
 
-// --- 3. CONFIG DRAWER HANDLERS ---
   const handleViewConfig = (reportId: string) => {
-    // Find the full report object from your main reports state
     const report = reports.find(r => r.id === reportId);
-    
     if (report) {
-      // 1. Close the history drawer so the config drawer isn't hidden behind it
       setHistoryDrawer(prev => ({ ...prev, isOpen: false }));
-      
-      // 2. Open the config drawer with the found report
       setConfigDrawer({
         isOpen: true,
         report: report
@@ -97,6 +100,17 @@ const InsightsReportsContainer: React.FC = () => {
 
   const closeConfigDrawer = () => {
     setConfigDrawer(prev => ({ ...prev, isOpen: false }));
+  };
+
+  const openReportViewer = (report: UnifiedReport) => {
+    setViewerDrawer({
+      isOpen: true,
+      report: report
+    });
+  };
+
+  const closeReportViewer = () => {
+    setViewerDrawer(prev => ({ ...prev, isOpen: false }));
   };
 
   // Helper for Last Run date retrieval
@@ -158,11 +172,9 @@ const InsightsReportsContainer: React.FC = () => {
   const totalStarredPages = Math.ceil(starredReports.length / itemsPerPage);
   const pagedStarredReports = starredReports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
- 
   const pagedDirectoryReports = dirItemsPerPage === -1 
     ? sortedDirectoryReports 
     : sortedDirectoryReports.slice((dirCurrentPage - 1) * dirItemsPerPage, dirCurrentPage * dirItemsPerPage);
-
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto px-4 pb-20">
@@ -182,7 +194,7 @@ const InsightsReportsContainer: React.FC = () => {
             reports={pagedStarredReports}
             totalStarredCount={starredReports.length}
             onToggleStar={toggleStar}
-            onRunReport={() => { }}
+            onRunReport={(report) => openReportViewer(report)}
             onDistributeReport={() => { }}
 
             // Paging Props
@@ -206,7 +218,7 @@ const InsightsReportsContainer: React.FC = () => {
             totalReportsCount={sortedDirectoryReports.length}
 
             // Handlers
-            onRunReport={() => { }}
+            onRunReport={(report) => openReportViewer(report)}
             onDistributeReport={() => { }}
             onToggleStar={toggleStar}
             onViewHistory={openHistoryDrawer}
@@ -221,7 +233,7 @@ const InsightsReportsContainer: React.FC = () => {
               setDirCurrentPage(1);
             }}
 
-            // Sorting State - Mapped to your 'directorySort' object
+            // Sorting State
             sortField={directorySort.key}
             sortDirection={directorySort.direction}
             onSort={handleDirSort}
@@ -241,7 +253,6 @@ const InsightsReportsContainer: React.FC = () => {
       
       <React.Suspense fallback={null}>
         {/* RECENT REPORTS DRAWER */}
-        {/* Only download and render the History Drawer when it is actually open */}
         {historyDrawer.isOpen && (
           <RecentReportsDrawer
             isOpen={historyDrawer.isOpen}
@@ -252,13 +263,26 @@ const InsightsReportsContainer: React.FC = () => {
           />
         )}
 
-        {/* 5. ADDED THE NEW CONFIG DRAWER HERE */}
-        {/* Only download and render the Config Drawer when it is actually open */}
+        {/* CONFIG DRAWER */}
         {configDrawer.isOpen && (
           <ViewConfigDrawer
             isOpen={configDrawer.isOpen}
             onClose={closeConfigDrawer}
             reportName={configDrawer.report?.name}
+          />
+        )}
+
+        {/* REPORT VIEWER DRAWER */}
+        {viewerDrawer.isOpen && (
+          <ReportViewerDrawer
+            isOpen={viewerDrawer.isOpen}
+            onClose={closeReportViewer}
+            reportInfo={{
+              name: viewerDrawer.report?.name || '',
+              module: viewerDrawer.report?.module || '',
+              source: viewerDrawer.report?.dataSource?.toString() || '',
+              reportType: viewerDrawer.report?.sourceType
+            }}
           />
         )}
       </React.Suspense>

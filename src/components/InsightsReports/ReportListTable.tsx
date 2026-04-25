@@ -131,7 +131,10 @@ const ReportListTable: React.FC<Props> = ({
                       <td className="w-32 px-4 py-4 text-sm text-slate-600">{latestRun ? formatLastRun(latestRun.runDate) : "Never"}</td>
                       <td className="w-40 px-4 py-4">
                         <div className="flex justify-end gap-2 items-center">
-                          <RunNowButton onClick={() => onRunReport(report)} reportName={report.name} />
+                          <RunNowButton 
+                            onClick={() => onRunReport(report)} 
+                            variant='full' 
+                          />
                           <ReportActionMenu 
                             report={report} 
                             onViewHistory={onViewHistory} 

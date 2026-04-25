@@ -4,7 +4,6 @@ import { mockReportHistoryData } from '../../data/mockReportHistoryData';
 import { formatLastRun } from '../../utils/dateUtils';
 import { getReportSourceStyle } from '../../utils/reportUtils';
 import { 
-  EmailIcon, 
   StarIcon, 
   SortIcon, 
   ChevronUpIcon, 
@@ -14,6 +13,7 @@ import {
 } from '../Common/Icons';
 import { RunNowButton } from './RunNowButton';
 import { DistributeNowButton } from './DistributeNowButton';
+import { EmailReportAction } from './EmailReportAction';
 
 interface Props {
   reports: UnifiedReport[];
@@ -111,31 +111,37 @@ const StarredReportsGrid: React.FC<Props> = ({
                           <span className="text-[10px] font-medium text-primary">{formatLastRun(latestSuccess?.runDate || null)}</span>
                         </div>
                       </div>
-                      {/* 4. FOOTER ACTIONS */}
-<div className="flex items-center justify-center mt-auto pt-3 border-t border-gray-100">
-  <div className="flex gap-6">
-    {/* Run Button */}
-    <RunNowButton 
-      onClick={() => onRunReport(report)} 
-      reportName={report.name} 
-    />
-    
-    {/* Distribute Button */}
-    <DistributeNowButton 
-      onClick={() => onDistributeReport(report)} // Keep this as is if they share logic, or point to onDistribute
-      reportName={report.name} 
-    />
 
-    {/* RESTORED: Email Button */}
-    <button 
-      className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 transition-colors group"
-      onClick={() => console.log('Email triggered for:', report.name)} // Hook up your email logic here
-    >
-      <EmailIcon size={14} className="group-hover:stroke-[3px]" />
-      <span className="text-[10px] font-bold uppercase tracking-tight">Email</span>
-    </button>
-  </div>
+                      {/* 4. FOOTER ACTIONS */}
+                      <div className="mt-auto pt-3 border-t border-gray-100 px-2">
+                        <div className="grid grid-cols-3 gap-1">
+
+                          {/* Run Button - Left */}
+                          <div className="flex justify-start min-w-0">
+                            <RunNowButton
+                              onClick={() => onRunReport(report)}
+                              variant='icon'
+                            />
+                          </div>
+
+                          {/* Distribute Button - Center */}
+                          <div className="flex justify-center min-w-0">
+                            <DistributeNowButton
+                              onClick={() => onDistributeReport(report)}
+                              reportName={report.name}
+                            />
+                          </div>
+
+                          {/* Email Button - Right */}
+<div className="flex justify-end min-w-0">
+  <EmailReportAction 
+    variant="card" 
+    reportInfo={report} 
+  />
 </div>
+
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
