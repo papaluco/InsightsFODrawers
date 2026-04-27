@@ -75,6 +75,16 @@ const InsightsReportsContainer: React.FC = () => {
     ));
   };
 
+  const filteredHistory = useMemo(() => {
+  return mockReportHistoryData.filter(h => {
+    const matchesModule = selectedModule === 'All' || h.module === selectedModule;
+    const matchesSource = selectedSource === 'All' || h.sourceType === selectedSource;
+    const matchesSearch = searchTerm === '' || h.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesModule && matchesSource && matchesSearch;
+  });
+}, [selectedModule, selectedSource, searchTerm]);
+
   const openHistoryDrawer = (id: string | null = null, name: string | null = null) => {
     setHistoryDrawer({
       isOpen: true,
@@ -243,11 +253,7 @@ const InsightsReportsContainer: React.FC = () => {
         <aside className="col-span-12 lg:col-span-4 xl:col-span-3 sticky top-6">
           <ReportSidebar 
             onViewAllHistory={() => openHistoryDrawer()}
-            history={mockReportHistoryData.filter(h => 
-              (selectedModule === 'All' || h.module === selectedModule) &&
-              (selectedSource === 'All' || h.sourceType === selectedSource) &&
-              (searchTerm === '' || h.name.toLowerCase().includes(searchTerm.toLowerCase()))
-            )} 
+            history={filteredHistory} 
           />
         </aside>
       </div>
