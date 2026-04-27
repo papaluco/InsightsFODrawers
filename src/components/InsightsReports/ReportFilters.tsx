@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { ReportSource } from '../../data/ReportTypes';
-// Assuming icons are imported from your Icons.tsx file as discussed
 import { FilterIcon, ChevronDownIcon, ChevronUpIcon } from '../Common/Icons'; 
 
 interface Props {
@@ -137,7 +136,7 @@ const ReportFilters: React.FC<Props> = ({
                 onChange={(e) => setSelectedSource(e.target.value === 'All' ? 'All' : Number(e.target.value))}
               >
                 <option value="All">All Types</option>
-                <option value={ReportSource.Custom}>Custom</option>
+                <option value={ReportSource.Custom}>Custom Reports</option>
                 <option value={ReportSource.ManagedView}>Managed View</option>
                 <option value={ReportSource.PowerBI}>Power BI</option>
                 <option value={ReportSource.Insights}>Insights</option>

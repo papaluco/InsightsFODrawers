@@ -245,7 +245,8 @@ const InsightsReportsContainer: React.FC = () => {
             onViewAllHistory={() => openHistoryDrawer()}
             history={mockReportHistoryData.filter(h => 
               (selectedModule === 'All' || h.module === selectedModule) &&
-              (selectedSource === 'All' || h.sourceType === selectedSource)
+              (selectedSource === 'All' || h.sourceType === selectedSource) &&
+              (searchTerm === '' || h.name.toLowerCase().includes(searchTerm.toLowerCase()))
             )} 
           />
         </aside>
