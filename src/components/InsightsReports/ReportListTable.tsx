@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { UnifiedReport, ReportSource } from '../../data/ReportTypes';
 import { mockReportHistoryData } from '../../data/mockReportHistoryData';
 import { formatLastRun } from '../../utils/dateUtils';
@@ -68,6 +68,44 @@ const ReportListTable: React.FC<Props> = ({
     );
   };
 
+const sortedReports = useMemo(() => {
+  const data = [...reports];
+  // Map your props to the keys used in your original logic
+  const key = sortField; 
+  const direction = sortDirection;
+
+  data.sort((a: any, b: any) => {
+    let valA = a[key];
+    let valB = b[key];
+
+    // Reuse your specific 'lastRun' logic
+    if (key === 'lastRun') {
+      // Helper to find the date from the history data
+      const getLR = (id: string) => {
+        const history = mockReportHistoryData
+          .filter(h => h.reportId === id)
+          .sort((x, y) => new Date(y.runDate).getTime() - new Date(x.runDate).getTime());
+        return history[0]?.runDate ? new Date(history[0].runDate).getTime() : 0;
+      };
+      valA = getLR(a.id);
+      valB = getLR(b.id);
+    }
+
+    if (valA < valB) return direction === 'asc' ? -1 : 1;
+    if (valA > valB) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  // 3. APPLY THE PAGING SLICE (This fixes the "Showing All" issue)
+  // If itemsPerPage is -1 (the "All" option), we don't slice
+  if (itemsPerPage === -1) return data;
+
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  
+  return data.slice(start, end);
+}, [reports, sortField, sortDirection, currentPage, itemsPerPage]);
+
   return (
     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* HEADER SECTION - MOVED FROM CONTAINER */}
@@ -107,18 +145,27 @@ const ReportListTable: React.FC<Props> = ({
                   >
                     <div className="flex items-center">DATA SOURCE <SortIndicator column="dataSource" /></div>
                   </th>
-                  <th className="w-32 px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider">LAST RUN</th>
+                  <th 
+                    className="w-32 px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-slate-800"
+                    onClick={() => onSort('lastRun')}
+                  >
+                    <div className="flex items-center">LAST RUN <SortIndicator column="lastRun" /></div> {/* ADDED INDICATOR */}
+                  </th>
                   <th className="w-40 px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
-                {reports.map((report) => {
+                {sortedReports.map((report) => {
                   const latestRun = mockReportHistoryData
                     .filter(h => h.reportId === report.id && h.status === 'Success')
                     .sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime())[0];
 
                   return (
-                    <tr key={report.id} className="hover:bg-gray-50 transition-colors group">
+                    <tr 
+                      key={report.id} 
+                      className="hover:bg-slate-50/80 transition-colors border-b border-slate-100"
+                      style={{ contentVisibility: 'auto', containIntrinsicSize: '0 52px' }} // 52px is approx row height
+                    >
                       <td className="w-10 px-4 py-4">
                         <button onClick={() => onToggleStar(report.id)} className="focus:outline-none">
                           <StarIcon size={18} className={report.isStarred ? "text-orange-400 fill-orange-400" : "text-gray-200 hover:text-gray-300"} />
@@ -165,4 +212,4 @@ const ReportListTable: React.FC<Props> = ({
   );
 };
 
-export default ReportListTable;
+export default React.memo(ReportListTable);

@@ -181,4 +181,4 @@ const LatestReportsSidebar: React.FC<Props> = ({ history, onViewAllHistory }) =>
   );
 };
 
-export default LatestReportsSidebar;
+export default React.memo(LatestReportsSidebar);

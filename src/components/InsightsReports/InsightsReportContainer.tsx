@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { mockReportData } from '../../data/mockReportData';
 import { mockReportHistoryData } from '../../data/mockReportHistoryData';
 import { UnifiedReport, ReportSource } from '../../data/ReportTypes';
@@ -67,14 +67,7 @@ const InsightsReportsContainer: React.FC = () => {
     setCurrentPage(1);
     setDirCurrentPage(1);
   }, [searchTerm, selectedModule, selectedSource, selectedDataSource]);
-
-  // --- HANDLERS ---
-  const toggleStar = (id: string) => {
-    setReports(prev => prev.map(report => 
-      report.id === id ? { ...report, isStarred: !report.isStarred } : report
-    ));
-  };
-
+  
   const filteredHistory = useMemo(() => {
   return mockReportHistoryData.filter(h => {
     const matchesModule = selectedModule === 'All' || h.module === selectedModule;
@@ -85,19 +78,26 @@ const InsightsReportsContainer: React.FC = () => {
   });
 }, [selectedModule, selectedSource, searchTerm]);
 
-  const openHistoryDrawer = (id: string | null = null, name: string | null = null) => {
+  // --- HANDLERS ---
+  const toggleStar = useCallback((id: string) => {
+    setReports(prev => prev.map(report => 
+      report.id === id ? { ...report, isStarred: !report.isStarred } : report
+    ));
+  }, []);
+
+  const openHistoryDrawer = useCallback((id: string | null = null, name: string | null = null) => {
     setHistoryDrawer({
       isOpen: true,
       reportId: id,
       reportName: name
     });
-  };
+  }, []);
 
   const closeHistoryDrawer = () => {
     setHistoryDrawer(prev => ({ ...prev, isOpen: false }));
   };
 
-  const handleViewConfig = (reportId: string) => {
+  const handleViewConfig = useCallback((reportId: string) => {
     const report = reports.find(r => r.id === reportId);
     if (report) {
       setHistoryDrawer(prev => ({ ...prev, isOpen: false }));
@@ -106,18 +106,18 @@ const InsightsReportsContainer: React.FC = () => {
         report: report
       });
     }
-  };
+  }, []);
 
   const closeConfigDrawer = () => {
     setConfigDrawer(prev => ({ ...prev, isOpen: false }));
   };
 
-  const openReportViewer = (report: UnifiedReport) => {
+  const openReportViewer = useCallback((report: UnifiedReport) => {
     setViewerDrawer({
       isOpen: true,
       report: report
     });
-  };
+  }, []);
 
   const closeReportViewer = () => {
     setViewerDrawer(prev => ({ ...prev, isOpen: false }));
@@ -150,25 +150,6 @@ const InsightsReportsContainer: React.FC = () => {
     return result;
   }, [reports, searchTerm, selectedModule, selectedSource, selectedDataSource, sortBy]);
 
-  const sortedDirectoryReports = useMemo(() => {
-    const data = [...filteredReports];
-    const { key, direction } = directorySort;
-
-    data.sort((a: any, b: any) => {
-      let valA = a[key];
-      let valB = b[key];
-
-      if (key === 'lastRun') {
-        valA = getLastRunDate(a.id);
-        valB = getLastRunDate(b.id);
-      }
-
-      if (valA < valB) return direction === 'asc' ? -1 : 1;
-      if (valA > valB) return direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-    return data;
-  }, [filteredReports, directorySort]);
 
   const handleDirSort = (key: string) => {
     setDirectorySort(prev => ({
@@ -182,9 +163,7 @@ const InsightsReportsContainer: React.FC = () => {
   const totalStarredPages = Math.ceil(starredReports.length / itemsPerPage);
   const pagedStarredReports = starredReports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const pagedDirectoryReports = dirItemsPerPage === -1 
-    ? sortedDirectoryReports 
-    : sortedDirectoryReports.slice((dirCurrentPage - 1) * dirItemsPerPage, dirCurrentPage * dirItemsPerPage);
+ 
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto px-4 pb-20">
@@ -224,8 +203,8 @@ const InsightsReportsContainer: React.FC = () => {
 
           {/* FULL REPORT DIRECTORY SECTION */}
           <ReportListTable
-            reports={pagedDirectoryReports}
-            totalReportsCount={sortedDirectoryReports.length}
+            reports={filteredReports} 
+            totalReportsCount={filteredReports.length}
 
             // Handlers
             onRunReport={(report) => openReportViewer(report)}

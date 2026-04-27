@@ -186,4 +186,4 @@ const StarredReportsGrid: React.FC<Props> = ({
   );
 };
 
-export default StarredReportsGrid;
+export default React.memo(StarredReportsGrid);

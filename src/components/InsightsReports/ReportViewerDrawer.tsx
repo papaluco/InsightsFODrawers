@@ -185,7 +185,7 @@ useEffect(() => {
         ),
         [filteredAndSortedData, visibleColumns, reportInfo?.name]);
 
-    const [showExportMenu, setShowExportMenu] = useState(false);
+    const [_showExportMenu, setShowExportMenu] = useState(false);
     const exportMenuRef = useRef<HTMLDivElement>(null); // To handle clicking outside
 
     return (
