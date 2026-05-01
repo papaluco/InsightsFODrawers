@@ -1,15 +1,14 @@
-import React from 'react';
-import { Target, ChevronDown, ChevronUp } from 'lucide-react';
-import { mockSchoolieData } from '../../data/mockSchoolieData';
-import { DemoSchoolSelector } from '../Common/DemoSchoolSelector'; 
-import { TimeframeSelector } from '../Common/TimeframeSelector'; // Import the new selector
+import { ChevronDownIcon, ChevronUpIcon, TargetIcon } from '../../Common/Icons';
+import { mockSchoolieDat } from '../../../data/mockSchoolieData';
+import { DemoSchoolSelector } from '../../Common/DemoSchoolSelector'; 
+import { TimeframeSelector } from '../../Common/TimeframeSelector'; // Import the new selector
 
 interface FiltersProps {
   selectedKPI: string;
   setSelectedKPI: (val: string) => void;
   isExpanded: boolean;
   setIsExpanded: (val: boolean) => void;
-  prompts: mockSchoolieData[];
+  prompts: mockSchoolieDat[];
 }
 
 export const AIPromptFilters = ({ 
@@ -33,10 +32,10 @@ export const AIPromptFilters = ({
         className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors rounded-t-xl"
       >
         <div className="flex items-center gap-2 font-bold text-gray-700 uppercase tracking-tight text-sm">
-          <Target size={18} className="text-amber-500" />
+          <TargetIcon size={18} className="text-primary" />
           AI Prompt Configuration
         </div>
-        {isExpanded ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+        {isExpanded ? <ChevronDownIcon size={20} /> : <ChevronUpIcon size={20} />}
       </button>
 
       {/* Filter Body */}

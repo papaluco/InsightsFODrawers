@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bot, ArrowRight } from 'lucide-react';
-import { AIConfigDrawer } from '../components/AI/AIConfigDrawer';
+import { AIConfigDrawer } from '../components/Settings/AI/AIConfigDrawer';
 
 const SettingPage = () => {
   const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);

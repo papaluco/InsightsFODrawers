@@ -1,5 +1,4 @@
-import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { SparklesIcon } from '../../Common/Icons';
 
 export const AIPreviewPanel = ({ isTesting, showResult }: { isTesting: boolean; showResult: boolean }) => {
   if (isTesting) {
@@ -14,7 +13,7 @@ export const AIPreviewPanel = ({ isTesting, showResult }: { isTesting: boolean; 
   if (!showResult) {
     return (
       <div className="h-full border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-12 text-center text-gray-400">
-        <Sparkles size={40} className="mb-4 opacity-20" />
+        <SparklesIcon size={40} className="mb-4 opacity-20" />
         <p className="text-sm font-medium">Run a test to see the preview here.</p>
       </div>
     );
@@ -23,7 +22,7 @@ export const AIPreviewPanel = ({ isTesting, showResult }: { isTesting: boolean; 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center gap-3 text-indigo-600 pb-4 border-b">
-        <Sparkles size={20} />
+        <SparklesIcon size={20} />
         <h3 className="text-lg font-bold">Schoolie Insights</h3>
       </div>
       

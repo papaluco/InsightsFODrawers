@@ -1,5 +1,4 @@
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangleIcon } from '../../Common/Icons';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -21,7 +20,7 @@ export const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel }: Co
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="p-6 text-center">
           <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle size={24} />
+            <AlertTriangleIcon size={24} />
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
           <p className="text-sm text-gray-500 leading-relaxed">

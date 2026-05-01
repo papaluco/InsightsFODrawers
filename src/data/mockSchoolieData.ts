@@ -1,14 +1,20 @@
-export interface mockSchoolieData {
+export interface mockSchoolieDat {
   id: string;
   name: string;
+  version: number;
   promptText: string;
   previewOutput: string;
+  updatedBy: string;
+  updatedAt: string;
 }
 
-export const initialSchooliePrompts: mockSchoolieData[] = [
+export const initialSchooliePrompts: mockSchoolieDat[] = [
   {
     id: 'workspace',
     name: 'Workspace',
+    version: 4,
+    updatedBy: 'John Smith',
+    updatedAt: '2026-03-20',
     promptText: `You are an AI Assistant to the K-12 School Nutrition Director of Child Nutrition Programs.
 You are here to provide a short summary of KPI analysis to Child Nutrition data for the following KPIs.
 The following are the KPIs with their value and benchmarks.
@@ -55,6 +61,9 @@ Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`,
   { 
     id: 'insights', 
     name: 'Insights', 
+    version: 3,
+    updatedBy: 'Bob Johnson',
+    updatedAt: '2026-03-20',
     promptText: `You are an AI Assistant to the K-12 School Nutrition Director of Child Nutrition Programs.
 You are here to provide a short summary of KPI analysis to Child Nutrition data for the following KPIs.
 The following are the KPIs with their value and benchmarks.
@@ -79,6 +88,9 @@ Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`,
   { 
     id: 'eco_dis', 
     name: 'Eco Dis', 
+    version: 1,
+    updatedBy: 'Bill Williams',
+    updatedAt: '2026-03-20',
     promptText: `You are an AI Assistant to the K-12 School Nutrition Director of Child Nutrition Programs.
 You are here to provide a short summary of KPI analysis to Child Nutrition data for the following KPIs.
 The following are the KPIs with their value and benchmarks.
@@ -91,21 +103,24 @@ Analyze the following data and provide a response that is clear, concise, and fo
 Format the response using valid, well-structured HTML with all tags properly opened and closed.
 Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`, 
     previewOutput: `<h2>Eco Dis Analysis</h2><p>Participation among economically disadvantaged students is currently below the 1% benchmark at 0%.</p>` 
-  },
-  { id: 'breakfast', name: 'Breakfast', promptText: 'Analyze Breakfast ADP against the 20% benchmark...', previewOutput: '<h2>Breakfast ADP</h2><p>Detailed breakfast participation analysis.</p>' },
-  { id: 'lunch', name: 'Lunch', promptText: 'Evaluate Lunch participation and service efficiency...', previewOutput: '<h2>Lunch Analysis</h2><p>Service efficiency report.</p>' },
-  { id: 'snack', name: 'Snack', promptText: 'Review Snack program performance and growth...', previewOutput: '<h2>Snack Program</h2><p>Performance and growth metrics.</p>' },
-  { id: 'supper', name: 'Supper', promptText: 'Assess Supper program reaching and meal counts...', previewOutput: '<h2>Supper Program</h2><p>Reach and count assessment.</p>' },
-  { id: 'revenue', name: 'Revenue', promptText: 'Perform a deep dive into revenue vs projected benchmarks...', previewOutput: '<h2>Revenue Deep Dive</h2><p>Projected vs Actual report.</p>' },
-  { id: 'waste', name: 'Waste', promptText: 'Identify areas of excessive food waste and cost recovery...', previewOutput: '<h2>Waste Analysis</h2><p>Cost recovery opportunities.</p>' },
-  { id: 'meals', name: 'Meals', promptText: 'Track total meal counts and service trends...', previewOutput: '<h2>Meal Counts</h2><p>Total service trends.</p>' },
-  { id: 'meqs', name: 'MEQs', promptText: 'Calculate and analyze Meal Equivalents (MEQs) efficiency...', previewOutput: '<h2>MEQ Efficiency</h2><p>Meal Equivalent calculations.</p>' },
-  { id: 'inv_value', name: 'Inv. Value', promptText: 'Report on current inventory value across all sites...', previewOutput: '<h2>Inventory Value</h2><p>Current site valuations.</p>' },
-  { id: 'inv_turnover', name: 'Inv. Turnover', promptText: 'Analyze how quickly inventory is moving through the system...', previewOutput: '<h2>Inventory Turnover</h2><p>Flow analysis report.</p>' },
-  { id: 'inv_discrepancy', name: 'Inv. Discrepancy', promptText: 'Identify gaps between physical and system inventory counts...', previewOutput: '<h2>Inventory Discrepancy</h2><p>Gap identification report.</p>' },
+},
+  { id: 'breakfast', name: 'Breakfast', version: 1,updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Analyze Breakfast ADP against the 20% benchmark...', previewOutput: '<h2>Breakfast ADP</h2><p>Detailed breakfast participation analysis.</p>' },
+  { id: 'lunch', name: 'Lunch', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Evaluate Lunch participation and service efficiency...', previewOutput: '<h2>Lunch Analysis</h2><p>Service efficiency report.</p>' },
+  { id: 'snack', name: 'Snack', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Review Snack program performance and growth...', previewOutput: '<h2>Snack Program</h2><p>Performance and growth metrics.</p>' },
+  { id: 'supper', name: 'Supper', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Assess Supper program reaching and meal counts...', previewOutput: '<h2>Supper Program</h2><p>Reach and count assessment.</p>' },
+  { id: 'revenue', name: 'Revenue', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Perform a deep dive into revenue vs projected benchmarks...', previewOutput: '<h2>Revenue Deep Dive</h2><p>Projected vs Actual report.</p>' },
+  { id: 'waste', name: 'Waste', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Identify areas of excessive food waste and cost recovery...', previewOutput: '<h2>Waste Analysis</h2><p>Cost recovery opportunities.</p>' },
+  { id: 'meals', name: 'Meals', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Track total meal counts and service trends...', previewOutput: '<h2>Meal Counts</h2><p>Total service trends.</p>' },
+  { id: 'meqs', name: 'MEQs', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Calculate and analyze Meal Equivalents (MEQs) efficiency...', previewOutput: '<h2>MEQ Efficiency</h2><p>Meal Equivalent calculations.</p>' },
+  { id: 'inv_value', name: 'Inv. Value', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Report on current inventory value across all sites...', previewOutput: '<h2>Inventory Value</h2><p>Current site valuations.</p>' },
+  { id: 'inv_turnover', name: 'Inv. Turnover', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Analyze how quickly inventory is moving through the system...', previewOutput: '<h2>Inventory Turnover</h2><p>Flow analysis report.</p>' },
+  { id: 'inv_discrepancy', name: 'Inv. Discrepancy', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Identify gaps between physical and system inventory counts...', previewOutput: '<h2>Inventory Discrepancy</h2><p>Gap identification report.</p>' },
   { 
     id: 'mplh', 
     name: 'MPLH', 
+    version: 3,
+    updatedBy: 'Joan Doe',
+    updatedAt: '2026-03-20',
     promptText: `You are an AI Assistant to the K-12 School Nutrition Director. Analyze the following:
 Meals Per Labor Hour (MPLH) is 12.5 and its benchmark is 15.0. 
 Provide a concise HTML summary of labor efficiency.`, 
@@ -114,6 +129,9 @@ Provide a concise HTML summary of labor efficiency.`,
   { 
     id: 'pna', 
     name: 'PNA', 
+    version: 1,
+    updatedBy: 'Betty Brown',
+    updatedAt: '2026-03-20',
     promptText: `You are an AI Assistant to the K-12 School Nutrition Director. Analyze the following:
 Participation-to-Non-Adjustment (PNA) Ratio is 0.95 and its benchmark is 1.0.
 Provide a concise HTML summary of the adjustment ratio.`, 
@@ -122,6 +140,9 @@ Provide a concise HTML summary of the adjustment ratio.`,
   { 
     id: 'enp', 
     name: 'ENP', 
+    version: 1,
+    updatedBy: 'Bere Smith',
+    updatedAt: '2026-03-20',
     promptText: `You are an AI Assistant to the K-12 School Nutrition Director. Analyze the following:
 Estimated National Participation (ENP) is 62% and its benchmark is 65%.
 Provide a concise HTML summary of national participation trends.`, 
