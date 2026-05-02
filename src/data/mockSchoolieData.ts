@@ -115,6 +115,8 @@ Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`,
   { id: 'inv_value', name: 'Inv. Value', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Report on current inventory value across all sites...', previewOutput: '<h2>Inventory Value</h2><p>Current site valuations.</p>' },
   { id: 'inv_turnover', name: 'Inv. Turnover', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Analyze how quickly inventory is moving through the system...', previewOutput: '<h2>Inventory Turnover</h2><p>Flow analysis report.</p>' },
   { id: 'inv_discrepancy', name: 'Inv. Discrepancy', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Identify gaps between physical and system inventory counts...', previewOutput: '<h2>Inventory Discrepancy</h2><p>Gap identification report.</p>' },
+  { id: 'compare_sites', name: 'Compare Sites', version: 1, updatedBy: 'Bob Jones', updatedAt: '2026-02-21', promptText: 'Compare performance metrics across different sites...', previewOutput: '<h2>Site Comparison</h2><p>Performance metrics report.</p>' },
+  { id: 'trend_analysis', name: 'Trend Analysis', version: 1, updatedBy: 'Jude Law', updatedAt: '2026-01-01', promptText: 'Analyze trends in performance metrics over time...', previewOutput: '<h2>Trend Analysis</h2><p>Performance trends report.</p>' },
   { 
     id: 'mplh', 
     name: 'MPLH', 
