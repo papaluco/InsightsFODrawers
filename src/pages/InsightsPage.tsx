@@ -44,6 +44,8 @@ function InsightsPage() {
   
   // AI State
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showENPAIAssistant, setShowENPAIAssistant] = useState(false);
+  const [showPNAAIAssistant, setShowPNAAIAssistant] = useState(false);
 
   // PDF Export State
   const [isExporting, setIsExporting] = useState(false);
@@ -105,16 +107,36 @@ function InsightsPage() {
     if (navOrigin === 'ENP_LIST') setIsENPDrawerOpen(true);
   }, [navOrigin]);
 
-  // AI CLICK HANDLER
+  // AI CLICK HANDLERS
   const handleOpenMPLHWithAI = () => {
     setShowAIAssistant(true);
     setIsDrawerOpen(true);
   };
 
-  // CLOSE HANDLER
+  const handleOpenENPWithAI = () => {
+    setShowENPAIAssistant(true);
+    setIsENPDrawerOpen(true);
+  };
+
+  const handleOpenPNAWithAI = () => {
+    setShowPNAAIAssistant(true);
+    setIsPNADrawerOpen(true);
+  };
+
+  // CLOSE HANDLERS
   const handleCloseMPLHDrawer = () => {
     setIsDrawerOpen(false);
-    setShowAIAssistant(false); 
+    setShowAIAssistant(false);
+  };
+
+  const handleCloseENPDrawer = () => {
+    setIsENPDrawerOpen(false);
+    setShowENPAIAssistant(false);
+  };
+
+  const handleClosePNADrawer = () => {
+    setIsPNADrawerOpen(false);
+    setShowPNAAIAssistant(false);
   };
 
   const openSingleFromDashboard = (metric: 'MPLH' | 'PNA' | 'ENP') => {
@@ -177,9 +199,11 @@ function InsightsPage() {
         </div>
 
         {/* --- NAVIGATION LINKS --- */}
-        <TestLinks 
-          onOpenSingle={openSingleFromDashboard} 
-          onOpenAI={handleOpenMPLHWithAI} 
+        <TestLinks
+          onOpenSingle={openSingleFromDashboard}
+          onOpenAI={handleOpenMPLHWithAI}
+          onOpenAIENP={handleOpenENPWithAI}
+          onOpenAIPNA={handleOpenPNAWithAI}
         />
       </div>
 
@@ -211,10 +235,11 @@ function InsightsPage() {
         {isPNADrawerOpen && (
           <PNADrawer
             isOpen={isPNADrawerOpen}
-            onClose={() => setIsPNADrawerOpen(false)}
+            onClose={handleClosePNADrawer}
             actualPNA={actualPNA}
             targetPNA={targetPNA}
             onOpenSingleSchool={handleOpenSingleSchoolPNA}
+            showAIAssistant={showPNAAIAssistant}
           />
         )}
 
@@ -231,10 +256,11 @@ function InsightsPage() {
         {isENPDrawerOpen && (
           <ENPDrawer
             isOpen={isENPDrawerOpen}
-            onClose={() => setIsENPDrawerOpen(false)}
+            onClose={handleCloseENPDrawer}
             actualENP={districtENPActual}
             benchmarkENP={districtENPBenchmark}
             onOpenSingleSchool={handleOpenSingleSchoolENP}
+            showAIAssistant={showENPAIAssistant}
           />
         )}
 
