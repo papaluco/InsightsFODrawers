@@ -1,4 +1,4 @@
-import { SchoolENPData } from './ENPDataTypes';
+import { SchoolENPData } from '../types/ENPDataTypes';
 
 export const mockSchoolENPData: SchoolENPData[] = [
   {

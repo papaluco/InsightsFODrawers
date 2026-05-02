@@ -1,6 +1,8 @@
-import  { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { ENPDetails } from './ENPDetails';
+import { SchoolieIcon } from '../Common/Icons';
+import { AIKPIDrawer } from '../Settings/AI/AIKPIDrawer';
 
 interface ENPDrawerProps {
   isOpen: boolean;
@@ -8,20 +10,29 @@ interface ENPDrawerProps {
   actualENP: number;
   benchmarkENP: number;
   onOpenSingleSchool: (schoolName: string) => void;
+  dateRange?: string;
+  showAIAssistant?: boolean;
 }
 
-export function ENPDrawer({ 
-  isOpen, 
-  onClose, 
-  actualENP, 
-  benchmarkENP, 
-  onOpenSingleSchool 
+export function ENPDrawer({
+  isOpen,
+  onClose,
+  actualENP,
+  benchmarkENP,
+  onOpenSingleSchool,
+  dateRange = 'Jul 1, 2025 - Apr 3, 2026',
+  showAIAssistant = false,
 }: ENPDrawerProps) {
 
-  // Handle Escape key press
+  const [isAIOpen, setIsAIOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) setIsAIOpen(false);
+  }, [isOpen]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !isAIOpen) {
         onClose();
       }
     };
@@ -30,11 +41,10 @@ export function ENPDrawer({
       window.addEventListener('keydown', handleKeyDown);
     }
 
-    // Clean up listener
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, isAIOpen, onClose]);
 
   return (
     <>
@@ -60,30 +70,50 @@ export function ENPDrawer({
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
             <div>
               <h2 className="text-xl font-bold text-gray-900">District ENP Details</h2>
-              <p className="text-sm text-gray-500">
-                Analysis for Jul 1, 2025 - Apr 3, 2026
-              </p>
+              <p className="text-sm text-gray-500">Analysis for {dateRange}</p>
             </div>
-            <button 
-              onClick={onClose} 
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Close drawer"
-            >
-              <X className="w-6 h-6 text-gray-500" />
-            </button>
+            <div className="flex items-center space-x-2">
+              {showAIAssistant && (
+                <button
+                  onClick={() => setIsAIOpen(true)}
+                  className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
+                >
+                  <SchoolieIcon size={60} />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close drawer"
+              >
+                <X className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
           </div>
 
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto p-6">
-            <ENPDetails 
-              actualENP={actualENP} 
-              benchmarkENP={benchmarkENP} 
+            <ENPDetails
+              actualENP={actualENP}
+              benchmarkENP={benchmarkENP}
               onOpenSingleSchool={onOpenSingleSchool}
-              onClose={onClose} // Passed back in case you decide to use it inside
+              onClose={onClose}
             />
           </div>
         </div>
       </div>
+
+      <AIKPIDrawer
+        isOpen={isAIOpen}
+        onClose={onClose}
+        onBack={() => setIsAIOpen(false)}
+        title="Schoolie AI Analysis"
+        subtitle="Eligible Not Participating"
+        kpiKey="ENP"
+        kpiName="Eligible Not Participating"
+        districtName="Mercer County District"
+        dateRange={dateRange}
+      />
     </>
   );
 }

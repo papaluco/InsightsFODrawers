@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
-import { MEAL_TYPES, ProgramByEligibility } from '../../data/ENPDataTypes';
+import { MEAL_TYPES, ProgramByEligibility } from '../../types/ENPDataTypes';
 import { programByEligibilityData } from '../../data/mockENPProgramData';
 
 interface ENPProgramGridProps {

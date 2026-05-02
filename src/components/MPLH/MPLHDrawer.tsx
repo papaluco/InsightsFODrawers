@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { X, Target, Loader2, Sparkles, ChevronLeft } from 'lucide-react';
+import { X, Target, Loader2 } from 'lucide-react';
 import { MPLHDetails } from './MPLHDetails';
-import { MPLHAIDrawer } from './MPLHAIDrawer'; 
 import { SchoolMPLHData } from '../../data/mockMPLHData';
 import { SchoolieIcon } from '../Common/Icons';
+import { AIKPIDrawer } from '../Settings/AI/AIKPIDrawer';
 
 // --- NEW IMPORTS FOR EXPORT ENGINE ---
 import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
@@ -36,7 +36,7 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
   isLoading = false,
   showAIAssistant = false,
 }) => {
-  const [view, setView] = useState<'details' | 'ai_analysis'>('details');
+  const [isAIOpen, setIsAIOpen] = useState(false);
 
   // --- PDF DATA MAPPING ---
   const pdfData = useMemo(() => {
@@ -65,16 +65,16 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
   [schoolData]);
 
   useEffect(() => {
-    if (!isOpen) setView('details');
+    if (!isOpen) setIsAIOpen(false);
   }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
+      if (e.key === 'Escape' && isOpen && !isAIOpen) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, isAIOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -95,32 +95,19 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {view === 'ai_analysis' && (
-                <button 
-                  onClick={() => setView('details')} 
-                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-              )}
-              
-              <div className={`p-2 rounded-full ${view === 'ai_analysis' ? 'bg-indigo-100' : 'bg-blue-100'}`}>
-                {view === 'ai_analysis' ? <Sparkles className="h-5 w-5 text-indigo-600" /> : <Target className="h-5 w-5 text-blue-600" />}
+              <div className="p-2 rounded-full bg-blue-100">
+                <Target className="h-5 w-5 text-blue-600" />
               </div>
               <div className="text-left">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {view === 'ai_analysis' ? 'Schoolie AI Analysis' : 'Meals Per Labor Hour'}
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {view === 'ai_analysis' ? 'Advanced KPI Insights' : `Analysis for ${dateRange}`}
-                </p>
+                <h2 className="text-lg font-semibold text-gray-900">Meals Per Labor Hour</h2>
+                <p className="text-sm text-gray-500">Analysis for {dateRange}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              
+
               {/* --- EXPORT MENU --- */}
-              {showAIAssistant && view === 'details' && (
+              {showAIAssistant && (
                 <ExportMenu>
                   {/* Visual Section */}
                   <div className="px-4 py-1.5 bg-slate-50 border-b border-slate-100">
@@ -132,20 +119,18 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
                   <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Data Exports</p>
                   </div>
-                  <CSVExpButton 
+                  <CSVExpButton
                     title="Summary by Type (.csv)"
                     subtext="Download grid data as seen"
                     csvData={csvTypeData}
                     onClose={onClose}
                   />
-
                   <CSVExpButton
                     title="Summary by School (.csv)"
                     subtext="Download grid data as seen"
                     csvData={csvSchoolData}
                     onClose={onClose}
                   />
-
                   <CSVFullExpButton
                     title="Full Raw Data (.csv)"
                     subtext="Download all underlying data"
@@ -153,15 +138,15 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
                 </ExportMenu>
               )}
 
-              {showAIAssistant && view === 'details' && (
+              {showAIAssistant && (
                 <button
-                  onClick={() => setView('ai_analysis')}
+                  onClick={() => setIsAIOpen(true)}
                   className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
                 >
                   <SchoolieIcon size={60} />
                 </button>
               )}
-              
+
               <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -171,20 +156,28 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
 
         {/* Content Section */}
         <div className="px-6 py-6 flex-1 bg-gray-50/30 overflow-y-auto">
-          {view === 'details' ? (
-            <div className="animate-in fade-in duration-300">
-              <MPLHDetails
-                actualMPLH={actualMPLH}
-                targetMPLH={targetMPLH}
-                schoolData={schoolData}
-                onOpenSingleSchool={onOpenSingleSchool}
-              />
-            </div>
-          ) : (
-            <MPLHAIDrawer dateRange={dateRange} />
-          )}
+          <div className="animate-in fade-in duration-300">
+            <MPLHDetails
+              actualMPLH={actualMPLH}
+              targetMPLH={targetMPLH}
+              schoolData={schoolData}
+              onOpenSingleSchool={onOpenSingleSchool}
+            />
+          </div>
         </div>
       </div>
+
+      <AIKPIDrawer
+        isOpen={isAIOpen}
+        onClose={onClose}
+        onBack={() => setIsAIOpen(false)}
+        title="Schoolie AI Analysis"
+        subtitle="Meals Per Labor Hour"
+        kpiKey="MPLH"
+        kpiName="Meals Per Labor Hour"
+        districtName="Mercer County District"
+        dateRange={dateRange}
+      />
     </>
   );
 };

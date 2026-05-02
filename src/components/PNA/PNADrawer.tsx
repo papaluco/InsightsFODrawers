@@ -1,36 +1,44 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Target, Loader2 } from 'lucide-react';
 import { PNADetails } from './PNADetails';
+import { SchoolieIcon } from '../Common/Icons';
+import { AIKPIDrawer } from '../Settings/AI/AIKPIDrawer';
 
 interface PNADrawerProps {
   isOpen: boolean;
   onClose: () => void;
   actualPNA: number;
   targetPNA: number;
-  // Change this from () => void to:
-  onOpenSingleSchool: (schoolName: string) => void; 
+  onOpenSingleSchool: (schoolName: string) => void;
   dateRange?: string;
   isLoading?: boolean;
+  showAIAssistant?: boolean;
 }
 
-export function PNADrawer({ 
-  isOpen, 
-  onClose, 
-  actualPNA, 
-  targetPNA, 
+export function PNADrawer({
+  isOpen,
+  onClose,
+  actualPNA,
+  targetPNA,
   onOpenSingleSchool,
   dateRange = 'Jul 1, 2025 - Apr 3, 2026',
-  isLoading = false
+  isLoading = false,
+  showAIAssistant = false,
 }: PNADrawerProps) {
-  
-  // 1. KEYBOARD NAVIGATION: Close on Escape Key
+
+  const [isAIOpen, setIsAIOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) setIsAIOpen(false);
+  }, [isOpen]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
+      if (e.key === 'Escape' && isOpen && !isAIOpen) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, isAIOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -79,25 +87,47 @@ export function PNADrawer({
               </div>
             </div>
             
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Close drawer"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
+            <div className="flex items-center space-x-2">
+              {showAIAssistant && (
+                <button
+                  onClick={() => setIsAIOpen(true)}
+                  className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
+                >
+                  <SchoolieIcon size={60} />
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close drawer"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Content - PNADetails remains completely untouched */}
+        {/* Content */}
         <div className="px-6 py-6 flex-1">
-          <PNADetails 
-            actualPNA={actualPNA} 
-            targetPNA={targetPNA} 
-            onOpenSingleSchool={onOpenSingleSchool} 
+          <PNADetails
+            actualPNA={actualPNA}
+            targetPNA={targetPNA}
+            onOpenSingleSchool={onOpenSingleSchool}
           />
         </div>
       </div>
+
+      <AIKPIDrawer
+        isOpen={isAIOpen}
+        onClose={onClose}
+        onBack={() => setIsAIOpen(false)}
+        title="Schoolie AI Analysis"
+        subtitle="Paid Not Applied"
+        kpiKey="PAID_NOT_APPLIED"
+        kpiName="Paid Not Applied"
+        districtName="Mercer County District"
+        dateRange={dateRange}
+      />
     </>
   );
 }

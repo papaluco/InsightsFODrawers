@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown, Search, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 // Updated imports to use the new modular data files
-import { SchoolENPData } from '../../data/ENPDataTypes';
+import { SchoolENPData } from '../../types/ENPDataTypes';
 
 interface ENPSchoolGridProps {
   isExpanded: boolean;

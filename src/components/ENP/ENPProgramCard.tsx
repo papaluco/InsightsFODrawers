@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { ProgramByEligibility } from '../../data/ENPDataTypes';
+import { ProgramByEligibility } from '../../types/ENPDataTypes';
 import { programByEligibilityData } from '../../data/mockENPProgramData';
-import { MEAL_TYPES } from '../../data/ENPDataTypes';
+import { MEAL_TYPES } from '../../types/ENPDataTypes';
 
 const DataCell = ({ 
   count, 

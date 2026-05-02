@@ -1,4 +1,4 @@
-import { ProgramByEligibility } from './ENPDataTypes';
+import { ProgramByEligibility } from '../types/ENPDataTypes';
 
 export const districtTotalEnrollment = 3998;
 export const districtENPActual = 3.90; 
