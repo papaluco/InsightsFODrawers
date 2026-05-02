@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon, TargetIcon } from '../../Common/Icons';
-import { mockSchoolieDat } from '../../../data/mockSchoolieData';
+import { SchooliePrompt as mockSchoolieDat } from '../../../types/SchoolieTypes';
 import { DemoSchoolSelector } from '../../Common/DemoSchoolSelector'; 
 import { TimeframeSelector } from '../../Common/TimeframeSelector'; // Import the new selector
 

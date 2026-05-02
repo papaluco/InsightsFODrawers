@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { mockReportData } from '../../data/mockReportData';
-import { mockReportHistoryData } from '../../data/mockReportHistoryData';
-import { UnifiedReport, ReportSource } from '../../types/ReportTypes';
+import { UnifiedReport, ReportSource, ReportHistoryItem } from '../../types/ReportTypes';
+import { getReports, getReportHistory, toggleStarReport } from '../../services/insightsReportService';
 import ReportListTable from './ReportListTable';
 import StarredReportsGrid from './StarredReportsGrid';
 import ReportSidebar from './ReportSidebar';
@@ -14,7 +13,8 @@ const ReportViewerDrawer = React.lazy(() => import('./ReportViewerDrawer'));
 
 const InsightsReportsContainer: React.FC = () => {
   // --- STATE ---
-  const [reports, setReports] = useState<UnifiedReport[]>(mockReportData);
+  const [reports, setReports] = useState<UnifiedReport[]>([]);
+  const [reportHistory, setReportHistory] = useState<ReportHistoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedModule, setSelectedModule] = useState('All');
   const [selectedSource, setSelectedSource] = useState<ReportSource | 'All'>('All');
@@ -62,27 +62,32 @@ const InsightsReportsContainer: React.FC = () => {
   const [dirCurrentPage, setDirCurrentPage] = useState(1);
   const [dirItemsPerPage, setDirItemsPerPage] = useState(5);
 
+  // Load data from service on mount
+  useEffect(() => {
+    getReports().then(setReports);
+    getReportHistory().then(setReportHistory);
+  }, []);
+
   // Reset paging on filter change
   useEffect(() => {
     setCurrentPage(1);
     setDirCurrentPage(1);
   }, [searchTerm, selectedModule, selectedSource, selectedDataSource]);
-  
+
   const filteredHistory = useMemo(() => {
-  return mockReportHistoryData.filter(h => {
+  return reportHistory.filter(h => {
     const matchesModule = selectedModule === 'All' || h.module === selectedModule;
     const matchesSource = selectedSource === 'All' || h.sourceType === selectedSource;
     const matchesSearch = searchTerm === '' || h.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesModule && matchesSource && matchesSearch;
   });
-}, [selectedModule, selectedSource, searchTerm]);
+}, [reportHistory, selectedModule, selectedSource, searchTerm]);
 
   // --- HANDLERS ---
   const toggleStar = useCallback((id: string) => {
-    setReports(prev => prev.map(report => 
-      report.id === id ? { ...report, isStarred: !report.isStarred } : report
-    ));
+    setReports(prev => prev.map(r => r.id === id ? { ...r, isStarred: !r.isStarred } : r));
+    toggleStarReport(id);
   }, []);
 
   const openHistoryDrawer = useCallback((id: string | null = null, name: string | null = null) => {
@@ -106,7 +111,7 @@ const InsightsReportsContainer: React.FC = () => {
         report: report
       });
     }
-  }, []);
+  }, [reports]);
 
   const closeConfigDrawer = () => {
     setConfigDrawer(prev => ({ ...prev, isOpen: false }));
@@ -123,9 +128,8 @@ const InsightsReportsContainer: React.FC = () => {
     setViewerDrawer(prev => ({ ...prev, isOpen: false }));
   };
 
-  // Helper for Last Run date retrieval
   const getLastRunDate = (reportId: string) => {
-    return mockReportHistoryData
+    return reportHistory
       .filter(h => h.reportId === reportId)
       .sort((x, y) => new Date(y.runDate).getTime() - new Date(x.runDate).getTime())[0]?.runDate || '';
   };
@@ -148,7 +152,7 @@ const InsightsReportsContainer: React.FC = () => {
     }
 
     return result;
-  }, [reports, searchTerm, selectedModule, selectedSource, selectedDataSource, sortBy]);
+  }, [reports, reportHistory, searchTerm, selectedModule, selectedSource, selectedDataSource, sortBy]);
 
 
   const handleDirSort = (key: string) => {
@@ -179,8 +183,9 @@ const InsightsReportsContainer: React.FC = () => {
         <div className="col-span-12 lg:col-span-8 xl:col-span-9 space-y-8">
           
           {/* STARRED REPORTS SECTION */}
-          <StarredReportsGrid 
+          <StarredReportsGrid
             reports={pagedStarredReports}
+            history={reportHistory}
             totalStarredCount={starredReports.length}
             onToggleStar={toggleStar}
             onRunReport={(report) => openReportViewer(report)}
@@ -203,7 +208,8 @@ const InsightsReportsContainer: React.FC = () => {
 
           {/* FULL REPORT DIRECTORY SECTION */}
           <ReportListTable
-            reports={filteredReports} 
+            reports={filteredReports}
+            history={reportHistory}
             totalReportsCount={filteredReports.length}
 
             // Handlers
@@ -244,6 +250,7 @@ const InsightsReportsContainer: React.FC = () => {
             isOpen={historyDrawer.isOpen}
             onClose={closeHistoryDrawer}
             onViewConfig={handleViewConfig}
+            history={reportHistory}
             reportId={historyDrawer.reportId}
             reportName={historyDrawer.reportName}
           />

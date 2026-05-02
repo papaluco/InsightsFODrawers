@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UnifiedReport } from '../../types/ReportTypes';
 import { DistributeNowButton } from './DistributeNowButton';
-import { 
-  ViewIcon, 
-  ReportIcon, 
+import { EmailModal } from './EmailModal';
+import {
+  ViewIcon,
+  ReportIcon,
   EmailIcon,
-  MoreVerticalIcon 
+  MoreVerticalIcon
 } from '../Common/Icons';
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 
 const ReportActionMenu: React.FC<Props> = ({ report, onViewHistory, onViewConfig, onDistributeReport }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -44,6 +46,7 @@ const ReportActionMenu: React.FC<Props> = ({ report, onViewHistory, onViewConfig
   };
 
   return (
+    <>
     <div className="relative inline-block text-left" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -85,6 +88,7 @@ const ReportActionMenu: React.FC<Props> = ({ report, onViewHistory, onViewConfig
 
             {/* 3. Email Now */}
             <button
+              onClick={() => { setIsEmailOpen(true); setIsOpen(false); }}
               className="group flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               role="menuitem"
             >
@@ -99,6 +103,12 @@ const ReportActionMenu: React.FC<Props> = ({ report, onViewHistory, onViewConfig
         </div>
       )}
     </div>
+    <EmailModal
+      isOpen={isEmailOpen}
+      onClose={() => setIsEmailOpen(false)}
+      reportInfo={report}
+    />
+    </>
   );
 };
 

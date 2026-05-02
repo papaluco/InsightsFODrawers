@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UnifiedReport, ReportSource } from '../../types/ReportTypes';
-import { mockReportHistoryData } from '../../data/mockReportHistoryData';
+import { UnifiedReport, ReportSource, ReportHistoryItem } from '../../types/ReportTypes';
 import { formatLastRun } from '../../utils/dateUtils';
 import { getReportSourceStyle } from '../../utils/reportUtils'; 
 import ReportActionMenu from './ReportActionMenu';
@@ -15,32 +14,34 @@ import {
 
 interface Props {
   reports: UnifiedReport[];
-  totalReportsCount: number; // Added so the paging knows the full count
+  history: ReportHistoryItem[];
+  totalReportsCount: number;
   onRunReport: (report: UnifiedReport) => void;
   onDistributeReport: (report: UnifiedReport) => void;
   onToggleStar: (id: string) => void;
   onViewHistory: (id: string, name: string) => void;
   onViewConfig: (report: UnifiedReport) => void;
-  
+
   // Paging Props
   currentPage: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (val: number) => void;
-  
+
   // Sorting Props
   sortField: string;
   sortDirection: 'asc' | 'desc';
   onSort: (field: string) => void;
 }
 
-const ReportListTable: React.FC<Props> = ({ 
-  reports, 
+const ReportListTable: React.FC<Props> = ({
+  reports,
+  history,
   totalReportsCount,
   onRunReport,
   onDistributeReport,
-  onToggleStar, 
-  onViewHistory, 
+  onToggleStar,
+  onViewHistory,
   onViewConfig,
   currentPage,
   itemsPerPage,
@@ -82,10 +83,10 @@ const sortedReports = useMemo(() => {
     if (key === 'lastRun') {
       // Helper to find the date from the history data
       const getLR = (id: string) => {
-        const history = mockReportHistoryData
+        const runs = history
           .filter(h => h.reportId === id)
           .sort((x, y) => new Date(y.runDate).getTime() - new Date(x.runDate).getTime());
-        return history[0]?.runDate ? new Date(history[0].runDate).getTime() : 0;
+        return runs[0]?.runDate ? new Date(runs[0].runDate).getTime() : 0;
       };
       valA = getLR(a.id);
       valB = getLR(b.id);
@@ -104,7 +105,7 @@ const sortedReports = useMemo(() => {
   const end = start + itemsPerPage;
   
   return data.slice(start, end);
-}, [reports, sortField, sortDirection, currentPage, itemsPerPage]);
+}, [reports, history, sortField, sortDirection, currentPage, itemsPerPage]);
 
   return (
     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -156,7 +157,7 @@ const sortedReports = useMemo(() => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {sortedReports.map((report) => {
-                  const latestRun = mockReportHistoryData
+                  const latestRun = history
                     .filter(h => h.reportId === report.id && h.status === 'Success')
                     .sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime())[0];
 

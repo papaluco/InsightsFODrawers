@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ReportHistoryItem } from '../../data/mockReportHistoryData';
+import { ReportHistoryItem } from '../../types/ReportTypes';
 import { formatLastRun } from '../../utils/dateUtils';
 import { 
   DownloadIcon, 

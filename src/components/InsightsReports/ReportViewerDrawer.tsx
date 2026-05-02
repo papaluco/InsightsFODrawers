@@ -11,7 +11,7 @@ import {
     AlertIcon 
 } from '../Common/Icons';
 
-import reportResponse from '../../data/report_response.json';
+import { getReportData } from '../../services/insightsReportService';
 import { ReportPaging } from './ReportPaging';
 import { ReportSource } from '../../types/ReportTypes';
 import { getReportSourceStyle } from '../../utils/reportUtils';
@@ -47,9 +47,24 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
     
     const pickerRef = useRef<HTMLDivElement>(null);
 
+    const [isLoading, setIsLoading] = useState(false);
+    const [rawResponse, setRawResponse] = useState<unknown>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            setIsLoading(true);
+            getReportData().then(data => {
+                setRawResponse(data);
+                setIsLoading(false);
+            });
+        } else {
+            setRawResponse(null);
+        }
+    }, [isOpen]);
+
     const reportData = useMemo<any[]>(() => {
         try {
-            const rawData = (reportResponse as any).PayLoad?.data;
+            const rawData = (rawResponse as any)?.PayLoad?.data;
             if (!rawData) return [];
             const parsed = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
             if (Array.isArray(parsed)) return parsed;
@@ -58,21 +73,7 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
             console.error("ReportViewer Parsing Error:", e);
             return [];
         }
-    }, []);
-
-const [isLoading, setIsLoading] = useState(false);
-
-// Trigger loader when drawer opens
-useEffect(() => {
-    if (isOpen) {
-        setIsLoading(true);
-        // Simulate data fetching/parsing time
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 800); 
-        return () => clearTimeout(timer);
-    }
-}, [isOpen]);
+    }, [rawResponse]);
 
     const columns = useMemo<string[]>(() => {
         if (reportData.length === 0) return [];
@@ -189,10 +190,10 @@ useEffect(() => {
     const exportMenuRef = useRef<HTMLDivElement>(null); // To handle clicking outside
 
     return (
-        <div className="fixed inset-0 z-[1000] flex justify-end">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+        <>
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[1000] animate-in fade-in duration-300" onClick={onClose} />
 
-            <div className={`fixed top-0 right-0 h-full w-3/4 bg-slate-50 shadow-2xl z-[101] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed inset-y-0 right-0 w-3/4 bg-slate-50 shadow-2xl z-[1001] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full">
 
                     <div className="px-6 py-5 bg-white border-b border-gray-200 flex justify-between items-center text-left">
@@ -375,7 +376,7 @@ useEffect(() => {
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

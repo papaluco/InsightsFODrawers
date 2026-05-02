@@ -6,16 +6,15 @@ import { AIPreviewPanel } from './AIPreviewPanel';
 import { ConfirmModal } from './ConfirmModal';
 import { SavePromptConfirmModal } from './SavePromptConfirmModal';
 import { PromptVersionOption } from './AIPromptVersionHistory';
-
-// IMPORT MOCK DATA
-import { initialSchooliePrompts, mockSchoolieDat } from '../../../data/mockSchoolieData';
-import { mockSchoolieVersions } from '../../../data/mockSchoolieVersions';
+import { SchooliePrompt, SchoolieVersion } from '../../../types/SchoolieTypes';
+import { getPrompts, getAllVersions, savePrompt } from '../../../services/schoolieService';
 
 type PendingAction = (() => void) | null;
 
 export const AIConfigDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [prompts, setPrompts] = useState<mockSchoolieDat[]>(initialSchooliePrompts);
-  const [selectedPromptId, setSelectedPromptId] = useState(initialSchooliePrompts[0].id);
+  const [prompts, setPrompts] = useState<SchooliePrompt[]>([]);
+  const [versions, setVersions] = useState<SchoolieVersion[]>([]);
+  const [selectedPromptId, setSelectedPromptId] = useState('');
 
   const [promptText, setPromptText] = useState('');
   const [originalPrompt, setOriginalPrompt] = useState('');
@@ -28,28 +27,44 @@ export const AIConfigDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: 
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-  const [loadedVersion, setLoadedVersion] = useState(initialSchooliePrompts[0].version);
-  const [loadedUpdatedBy, setLoadedUpdatedBy] = useState(initialSchooliePrompts[0].updatedBy);
-  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState(initialSchooliePrompts[0].updatedAt);
+  const [loadedVersion, setLoadedVersion] = useState(0);
+  const [loadedUpdatedBy, setLoadedUpdatedBy] = useState('');
+  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState('');
 
+  // Load prompts and version history from service on mount
   useEffect(() => {
-    if (isOpen && !promptText) {
-      const first = prompts[0];
+    Promise.all([getPrompts(), getAllVersions()]).then(([loadedPrompts, loadedVersions]) => {
+      setPrompts(loadedPrompts);
+      setVersions(loadedVersions);
+      if (loadedPrompts.length > 0) {
+        const first = loadedPrompts[0];
+        setSelectedPromptId(first.id);
+        setPromptText(first.promptText);
+        setOriginalPrompt(first.promptText);
+        setLoadedVersion(first.version);
+        setLoadedUpdatedBy(first.updatedBy);
+        setLoadedUpdatedAt(first.updatedAt);
+      }
+    });
+  }, []);
 
+  // Re-initialize editor text when drawer re-opens without unsaved changes
+  useEffect(() => {
+    if (isOpen && !promptText && prompts.length > 0) {
+      const first = prompts[0];
       setPromptText(first.promptText);
       setOriginalPrompt(first.promptText);
-
       setLoadedVersion(first.version);
       setLoadedUpdatedBy(first.updatedBy);
       setLoadedUpdatedAt(first.updatedAt);
     }
-  }, [isOpen]);
+  }, [isOpen, prompts]);
 
   const hasChanges = promptText !== originalPrompt;
   const selectedPrompt = prompts.find(p => p.id === selectedPromptId);
 
-  const selectedPromptVersions = mockSchoolieVersions
-    .filter(version => version.name === selectedPrompt?.name)
+  const selectedPromptVersions: PromptVersionOption[] = versions
+    .filter(v => v.name === selectedPrompt?.name)
     .sort((a, b) => b.version - a.version);
 
   const executeSwitch = (id: string) => {
@@ -125,18 +140,19 @@ export const AIConfigDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: 
     setIsSaveConfirmOpen(true);
   };
 
-  const executeSave = () => {
-    const updatedPrompts = prompts.map(p =>
-      p.id === selectedPromptId
-        ? { ...p, promptText: promptText }
-        : p
-    );
-
-    setPrompts(updatedPrompts);
-    setOriginalPrompt(promptText);
-    setIsSaveConfirmOpen(false);
-
-    console.log('Mock Save: Prompt updated in local state.');
+  const executeSave = async () => {
+    try {
+      const { prompt: updated, archivedVersion } = await savePrompt(selectedPromptId, promptText);
+      setPrompts(prev => prev.map(p => p.id === selectedPromptId ? updated : p));
+      setVersions(prev => [...prev, archivedVersion]);
+      setOriginalPrompt(promptText);
+      setLoadedVersion(updated.version);
+      setLoadedUpdatedBy(updated.updatedBy);
+      setLoadedUpdatedAt(updated.updatedAt);
+      setIsSaveConfirmOpen(false);
+    } catch {
+      setIsSaveConfirmOpen(false);
+    }
   };
 
   return (

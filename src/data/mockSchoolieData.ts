@@ -1,14 +1,8 @@
-export interface mockSchoolieDat {
-  id: string;
-  name: string;
-  version: number;
-  promptText: string;
-  previewOutput: string;
-  updatedBy: string;
-  updatedAt: string;
-}
+import { SchooliePrompt } from '../types/SchoolieTypes';
 
-export const initialSchooliePrompts: mockSchoolieDat[] = [
+export type { SchooliePrompt as mockSchoolieDat };
+
+export const initialSchooliePrompts: SchooliePrompt[] = [
   {
     id: 'workspace',
     name: 'Workspace',

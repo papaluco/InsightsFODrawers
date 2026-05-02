@@ -18,3 +18,21 @@ export interface UnifiedReport {
   distributionChannels: string[]; // e.g., ['Email', 'Inbox', 'FTP']
   lastRunDate: string | null;
 }
+
+export interface ReportHistoryItem {
+  id: string;
+  reportId: string;
+  name: string;
+  module: string;
+  dataSource: string;
+  sourceType: ReportSource;
+  runDate: string;
+  status: 'Success' | 'Failure';
+  fileUrl?: string;
+  fileSize?: string;
+  fileType?: 'PDF' | 'CSV' | 'XLSX';
+  distributionDetails: {
+    channels: string[];
+    recipients: string;
+  };
+}

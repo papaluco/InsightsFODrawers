@@ -1,14 +1,8 @@
-export interface mockSchoolieVersionData {
-  id: string;              // unique version id
-  name: string;        // ties back to workspace, insights, etc.
-  version: number;
-  promptText: string;
-  updatedBy: string;
-  updatedAt: string;
-}
+import { SchoolieVersion } from '../types/SchoolieTypes';
 
-// Example versions for WORKSPACE
-export const mockSchoolieVersions: mockSchoolieVersionData[] = [
+export type { SchoolieVersion as mockSchoolieVersionData };
+
+export const mockSchoolieVersions: SchoolieVersion[] = [
   {
     id: 'workspace-v1',
     name: 'Workspace',

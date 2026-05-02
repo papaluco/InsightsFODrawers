@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { mockReportHistoryData, ReportHistoryItem } from '../../data/mockReportHistoryData';
+import { ReportHistoryItem } from '../../types/ReportTypes';
 import {
     ReportIcon,
     XIcon,
@@ -16,9 +16,10 @@ import { ReportPaging } from './ReportPaging';
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    reportId?: string | null; // Parameter to filter by specific report
+    history: ReportHistoryItem[];
+    reportId?: string | null;
     reportName?: string | null;
-    onViewConfig: (reportId: string) => void; // New prop for the config action
+    onViewConfig: (reportId: string) => void;
 }
 
 const renderSourceBadge = (source: ReportSource) => {
@@ -30,7 +31,7 @@ const renderSourceBadge = (source: ReportSource) => {
     );
 };
 
-const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, reportId, reportName, onViewConfig }) => {
+const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, history, reportId, reportName, onViewConfig }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -41,7 +42,7 @@ const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, reportId, repor
 
     // Filter logic based on reportId parameter and search term
     const filteredHistory = useMemo(() => {
-        let data = [...mockReportHistoryData];
+        let data = [...history];
 
         if (reportId) {
             data = data.filter(h => h.reportId === reportId);
@@ -62,7 +63,7 @@ const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, reportId, repor
             if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
             return 0;
         });
-    }, [reportId, searchTerm, sortConfig]);
+    }, [history, reportId, searchTerm, sortConfig]);
 
     // Pagination logic
     const pagedData = filteredHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -82,7 +83,7 @@ const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, reportId, repor
             )}
 
             {/* Drawer Container */}
-            <div className={`fixed top-0 right-0 h-full w-[800px] bg-slate-50 shadow-2xl z-[101] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed inset-y-0 right-0 w-[800px] bg-slate-50 shadow-2xl z-[101] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full">
 
                     {/* Header - Matching Sidebar Style */}

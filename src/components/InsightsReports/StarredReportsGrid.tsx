@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { UnifiedReport } from '../../types/ReportTypes';
-import { mockReportHistoryData } from '../../data/mockReportHistoryData';
+import { UnifiedReport, ReportHistoryItem } from '../../types/ReportTypes';
 import { formatLastRun } from '../../utils/dateUtils';
 import { getReportSourceStyle } from '../../utils/reportUtils';
 import { 
@@ -17,6 +16,7 @@ import { EmailReportAction } from './EmailReportAction';
 
 interface Props {
   reports: UnifiedReport[];
+  history: ReportHistoryItem[];
   totalStarredCount: number;
   onToggleStar: (id: string) => void;
   onRunReport: (report: UnifiedReport) => void;
@@ -31,10 +31,11 @@ interface Props {
   onSortChange: (val: any) => void;
 }
 
-const StarredReportsGrid: React.FC<Props> = ({ 
-  reports, 
+const StarredReportsGrid: React.FC<Props> = ({
+  reports,
+  history,
   totalStarredCount,
-  onToggleStar, 
+  onToggleStar,
   onRunReport,
     onDistributeReport,
   currentPage,
@@ -82,7 +83,7 @@ const StarredReportsGrid: React.FC<Props> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
                 {reports.map((report) => {
                   const sourceStyle = getReportSourceStyle(report.sourceType);
-                  const latestSuccess = mockReportHistoryData
+                  const latestSuccess = history
                     .filter(h => h.reportId === report.id && h.status === 'Success')
                     .sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime())[0];
 

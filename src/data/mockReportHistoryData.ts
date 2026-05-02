@@ -1,22 +1,6 @@
-import { ReportSource } from '../types/ReportTypes';
+import { ReportSource, ReportHistoryItem } from '../types/ReportTypes';
 
-export interface ReportHistoryItem {
-  id: string;
-  reportId: string;
-  name: string;
-  module: string;
-  dataSource: string;
-  sourceType: ReportSource;
-  runDate: string;
-  status: 'Success' | 'Failure';
-  fileUrl?: string;
-  fileSize?: string;
-  fileType?: 'PDF' | 'CSV' | 'XLSX';
-  distributionDetails: {
-    channels: string[];
-    recipients: string;
-  };
-}
+export type { ReportHistoryItem };
 
 export const mockReportHistoryData: ReportHistoryItem[] = [
   // --- FRIDAY 4PM BACKFILL: Custom Report (cr-1) ---

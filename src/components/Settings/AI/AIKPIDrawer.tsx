@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { X, ChevronLeft, CheckCircle2, AlertCircle, Lightbulb, Loader2, AlertTriangle, Inbox, RotateCcw } from 'lucide-react';
 import { SchoolieIcon, SparklesIcon } from '../../Common/Icons';
-import { mockAIResponses, KPIKey, AIResponsePayload } from '../../../data/mockAIResponses';
+import { KPIKey, AIResponsePayload } from '../../../types/SchoolieTypes';
+import { getKPIAnalysis } from '../../../services/schoolieService';
 import { SchoolieFeedback } from './SchoolieFeedback';
 
 export interface AIKPIDrawerProps {
@@ -47,17 +48,20 @@ export const AIKPIDrawer: React.FC<AIKPIDrawerProps> = ({
     setDrawerState('loading');
     setResponse(null);
 
-    const timer = setTimeout(() => {
-      const mockData = mockAIResponses[kpiKey];
-      if (!mockData || !mockData.data) {
+    let cancelled = false;
+    getKPIAnalysis(kpiKey).then(data => {
+      if (cancelled) return;
+      if (!data.data) {
         setDrawerState('empty');
       } else {
-        setResponse(mockData);
+        setResponse(data);
         setDrawerState('success');
       }
-    }, 1500);
+    }).catch(() => {
+      if (!cancelled) setDrawerState('error');
+    });
 
-    return () => clearTimeout(timer);
+    return () => { cancelled = true; };
   }, [isOpen, kpiKey, retryKey]);
 
   useEffect(() => {
