@@ -13,7 +13,7 @@ import {
 
 import reportResponse from '../../data/report_response.json';
 import { ReportPaging } from './ReportPaging';
-import { ReportSource } from '../../data/ReportTypes';
+import { ReportSource } from '../../types/ReportTypes';
 import { getReportSourceStyle } from '../../utils/reportUtils';
 import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
 

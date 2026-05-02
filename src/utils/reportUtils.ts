@@ -1,4 +1,4 @@
-import { ReportSource } from '../data/ReportTypes';
+import { ReportSource } from '../types/ReportTypes';
 
 export const getReportSourceStyle = (source: ReportSource) => {
   switch (source) {

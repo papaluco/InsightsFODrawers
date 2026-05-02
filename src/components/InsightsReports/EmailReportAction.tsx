@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { EmailIcon } from '../Common/Icons';
 import { EmailModal } from './EmailModal';
-import { ReportSource } from '../../data/ReportTypes';
+import { ReportSource } from '../../types/ReportTypes';
 
 interface EmailReportActionProps {
   variant?: 'card' | 'list'; // Aligned with your Distribute logic

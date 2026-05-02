@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; 
 import { XIcon, MaximizeIcon, MinimizeIcon, ChevronDownIcon, CheckIcon } from '../Common/Icons';
-import { ReportSource } from '../../data/ReportTypes';
+import { ReportSource } from '../../types/ReportTypes';
 
 interface EmailModalProps {
   isOpen: boolean;

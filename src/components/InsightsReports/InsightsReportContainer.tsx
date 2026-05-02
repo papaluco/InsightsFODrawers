@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { mockReportData } from '../../data/mockReportData';
 import { mockReportHistoryData } from '../../data/mockReportHistoryData';
-import { UnifiedReport, ReportSource } from '../../data/ReportTypes';
+import { UnifiedReport, ReportSource } from '../../types/ReportTypes';
 import ReportListTable from './ReportListTable';
 import StarredReportsGrid from './StarredReportsGrid';
 import ReportSidebar from './ReportSidebar';

@@ -10,7 +10,7 @@ import {
     ChevronUpIcon
 } from '../Common/Icons';
 import { getReportSourceStyle } from '../../utils/reportUtils';
-import { ReportSource } from '../../data/ReportTypes';
+import { ReportSource } from '../../types/ReportTypes';
 import { ReportPaging } from './ReportPaging';
 
 interface Props {

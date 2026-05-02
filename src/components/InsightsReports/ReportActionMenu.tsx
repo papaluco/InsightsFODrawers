@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UnifiedReport } from '../../data/ReportTypes';
+import { UnifiedReport } from '../../types/ReportTypes';
 import { DistributeNowButton } from './DistributeNowButton';
 import { 
   ViewIcon, 

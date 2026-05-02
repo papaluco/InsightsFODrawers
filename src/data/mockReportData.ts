@@ -1,4 +1,4 @@
-import { UnifiedReport, ReportSource } from './ReportTypes';
+import { UnifiedReport, ReportSource } from '../types/ReportTypes';
 
 export const mockReportData: UnifiedReport[] = [
   // --- TYPE 4: INSIGHTS (Dashboard Cards) ---

@@ -1,7 +1,7 @@
 import React from 'react';
 import { XIcon, ReportIcon } from '../Common/Icons';
 import { getReportSourceStyle } from '../../utils/reportUtils';
-import { ReportSource } from '../../data/ReportTypes';
+import { ReportSource } from '../../types/ReportTypes';
 
 // --- HELPER COMPONENTS ---
 

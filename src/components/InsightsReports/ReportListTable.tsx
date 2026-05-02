@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UnifiedReport, ReportSource } from '../../data/ReportTypes';
+import { UnifiedReport, ReportSource } from '../../types/ReportTypes';
 import { mockReportHistoryData } from '../../data/mockReportHistoryData';
 import { formatLastRun } from '../../utils/dateUtils';
 import { getReportSourceStyle } from '../../utils/reportUtils'; 

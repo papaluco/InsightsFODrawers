@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ReportSource } from '../../data/ReportTypes';
+import { ReportSource } from '../../types/ReportTypes';
 import { FilterIcon, ChevronDownIcon, ChevronUpIcon } from '../Common/Icons'; 
 
 interface Props {

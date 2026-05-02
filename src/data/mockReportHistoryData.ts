@@ -1,4 +1,4 @@
-import { ReportSource } from './ReportTypes';
+import { ReportSource } from '../types/ReportTypes';
 
 export interface ReportHistoryItem {
   id: string;
