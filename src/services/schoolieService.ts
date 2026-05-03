@@ -1,4 +1,5 @@
 import { SchooliePrompt, SchoolieVersion, KPIKey, AIResponsePayload } from '../types/SchoolieTypes';
+import type { FeedbackRecord } from '../types/schoolieFeedbackTypes';
 import { initialSchooliePrompts } from '../data/mockSchoolieData';
 import { mockSchoolieVersions } from '../data/mockSchoolieVersions';
 import { mockAIResponses } from '../data/mockAIResponses';
@@ -57,6 +58,32 @@ export async function getKPIAnalysis(kpiKey: KPIKey): Promise<AIResponsePayload>
     return { status: 'empty', fromCache: false, isStructured: false, generatedAt: new Date().toISOString() };
   }
   return { ...response, generatedAt: new Date().toISOString() };
+}
+
+const FOLLOW_UP_RESPONSE = `**AI Response**
+
+Based on the current feedback dataset, this is a simulated Schoolie analysis response.
+
+In production, Schoolie would analyze your question using:
+- The filtered feedback records and aggregated summary
+- The configured Schoolie Feedback system prompt
+- The last 5 messages for conversational context
+
+Schoolie would identify relevant patterns, surface insights, and provide data-driven recommendations tailored to your specific question.
+
+*This is a prototype simulation.*`;
+
+export async function getFeedbackChatResponse(
+  userMessage: string,
+  isInitial: boolean,
+  _data: FeedbackRecord[]
+): Promise<string> {
+  await delay(isInitial ? 2200 : 1400);
+  if (isInitial) {
+    const fp = promptStore.find(p => p.id === 'schoolie_feedback');
+    return fp?.previewOutput?.trim() ?? 'Analysis complete. Ask a follow-up question to explore the data.';
+  }
+  return FOLLOW_UP_RESPONSE;
 }
 
 function delay(ms: number): Promise<void> {

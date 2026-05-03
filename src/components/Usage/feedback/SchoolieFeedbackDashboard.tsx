@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
-import { DashboardFilters, DEFAULT_FILTERS, applyFilters, getPromptName, getPromptTypeDisplay } from './feedbackHelpers';
+import { DashboardFilters, applyFilters, getPromptName, getPromptTypeDisplay } from './feedbackHelpers';
 import FeedbackFilters from './FeedbackFilters';
 import FeedbackKPICards from './FeedbackKPICards';
 import FeedbackByPromptTypeChart from './FeedbackByPromptTypeChart';
@@ -18,10 +18,11 @@ type View = 'dashboard' | 'list';
 
 interface Props {
   allData: FeedbackRecord[];
+  filters: DashboardFilters;
+  onFiltersChange: (f: DashboardFilters) => void;
 }
 
-const SchoolieFeedbackDashboard: React.FC<Props> = ({ allData }) => {
-  const [filters, setFilters] = useState<DashboardFilters>({ ...DEFAULT_FILTERS });
+const SchoolieFeedbackDashboard: React.FC<Props> = ({ allData, filters, onFiltersChange }) => {
   const [view, setView] = useState<View>('dashboard');
   const [drillPredicate, setDrillPredicate] = useState<((r: FeedbackRecord) => boolean) | null>(null);
   const [drillTitle, setDrillTitle] = useState('All Feedback');
@@ -66,7 +67,7 @@ const SchoolieFeedbackDashboard: React.FC<Props> = ({ allData }) => {
 
   return (
     <div className="space-y-5">
-      <FeedbackFilters filters={filters} onChange={setFilters} allData={allData} />
+      <FeedbackFilters filters={filters} onChange={onFiltersChange} allData={allData} />
 
       <FeedbackKPICards
         data={filteredData}
