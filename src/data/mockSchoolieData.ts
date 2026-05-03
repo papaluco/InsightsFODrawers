@@ -98,6 +98,242 @@ Format the response using valid, well-structured HTML with all tags properly ope
 Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`, 
     previewOutput: `<h2>Eco Dis Analysis</h2><p>Participation among economically disadvantaged students is currently below the 1% benchmark at 0%.</p>` 
 },
+{ 
+    id: 'schoolie_feedback', 
+    name: 'Schoolie Feedback', 
+    version: 1, 
+    updatedBy: 'Leonardo DiCaprio', 
+    updatedAt: '2026-02-01', 
+    promptText: `You are an expert product analyst evaluating the performance of an AI system called Schoolie.
+
+You are analyzing user feedback data about AI-generated responses. Your goal is to identify patterns, issues, and opportunities to improve the AI’s performance.
+
+You will receive:
+1. A summary of feedback metrics (aggregated counts and percentages)
+2. A list of individual feedback records, which may include:
+   - prompt type and prompt name
+   - prompt version
+   - user feedback (helpful or not helpful)
+   - feedback reasons (e.g., incorrect data, too vague, not useful)
+   - optional user comments
+   - the AI response text
+   - contextual data such as KPI, sites, and date ranges
+
+Your responsibilities:
+
+1. Analyze overall performance
+   - What percentage of responses are helpful vs not helpful?
+   - Are there any clear problem areas?
+
+2. Identify underperforming areas
+   - Which prompt types, prompt names, or KPIs are performing poorly?
+   - Which prompt versions appear to perform worse than others?
+
+3. Analyze feedback reasons
+   - What are the most common reasons for negative feedback?
+   - What do these reasons suggest about the quality of the AI output?
+
+4. Detect patterns and trends
+   - Are certain districts or users consistently reporting issues?
+   - Are there recurring themes in comments or responses?
+
+5. Provide actionable recommendations
+   - Suggest specific improvements to prompts or data
+   - Identify areas where the AI may need more context or better formatting
+   - Recommend what should be prioritized for improvement
+
+Guidelines:
+- Be analytical, clear, and concise
+- Be willing to form opinions based on the data
+- Do not simply restate the data — interpret it
+- Use plain language suitable for a product team
+- Highlight the most important findings first
+
+Output structure:
+- Brief summary of overall performance
+- What is working well
+- What needs improvement
+- Key patterns or insights
+- Recommended actions
+
+Focus on helping the product team improve the AI system.`, 
+    previewOutput: `
+
+## **Summary of Overall Performance**
+
+Schoolie is receiving mixed feedback overall, with approximately **68% of responses marked as helpful and 32% as not helpful**. While the majority of responses are positive, there are clear areas where performance is inconsistent and impacting user trust.
+
+The feedback indicates that Schoolie is generally effective for high-level summaries but struggles in more complex or comparative scenarios.
+
+---
+
+## **What is Working Well**
+
+* **Dashboard Analysis and KPI Drawers (e.g., MPLH)** are performing strongly, with helpful rates above 75%.
+
+* Users respond positively to:
+
+  * Clear summaries
+  * Straightforward KPI explanations
+  * Structured outputs with identifiable “what’s working” vs “what needs improvement”
+
+* Feedback suggests that Schoolie is most effective when:
+
+  * The dataset is simple and focused
+  * The prompt is well-scoped (single KPI, single context)
+
+---
+
+## **What Needs Improvement**
+
+### 1. Compare Selected Sites
+
+* This is the **lowest performing area**, with helpful rates near or below 50%.
+* Feedback suggests:
+
+  * Responses are too generalized
+  * Lack of meaningful differentiation between sites
+  * Limited actionable insight
+
+👉 Likely issue: prompts are not guiding the model to make **explicit comparisons or highlight differences clearly**
+
+---
+
+### 2. Trend Analysis
+
+* Trend analysis shows **low confidence and lower helpful scores**
+* Common issues:
+
+  * Weak or obvious observations
+  * Lack of meaningful trend interpretation
+  * Minimal explanation of “why” trends are happening
+
+👉 Likely issue: insufficient time range or lack of deeper contextual data
+
+---
+
+### 3. Specific KPIs (e.g., Waste, Revenue)
+
+* Some KPIs show inconsistent performance
+* Feedback indicates:
+
+  * Responses are sometimes too vague
+  * Recommendations are missing or too generic
+
+---
+
+## **Key Feedback Patterns**
+
+### Most Common Negative Feedback Reasons:
+
+1. **Too vague**
+2. **Not useful**
+3. **Missing recommendations**
+
+This suggests that:
+
+* Schoolie is describing data, but not interpreting it deeply enough
+* Users want **clear guidance, not just summaries**
+
+---
+
+### User Behavior Observations:
+
+* A small number of users are responsible for a higher proportion of negative feedback
+* However, even after accounting for this, certain prompts consistently underperform across multiple users
+
+---
+
+### Comment Insights:
+
+Recurring themes in comments include:
+
+* “This doesn’t tell me anything new”
+* “I already know this from the data”
+* “Needs clearer recommendations”
+
+👉 This reinforces that **value = insight + action**, not just description
+
+---
+
+## **Prompt Version Observations**
+
+* Newer prompt versions show **slight improvement in helpfulness**, particularly in KPI drawer contexts
+* However, **Compare Sites and Trend Analysis have not significantly improved across versions**
+
+👉 Suggests those prompts need **structural redesign**, not incremental tweaks
+
+---
+
+## **Recommendations**
+
+### High Priority
+
+1. **Improve Compare Sites Prompt**
+
+   * Force explicit comparisons:
+
+     * “Site A vs Site B”
+     * highlight top/bottom performers
+   * Require:
+
+     * differences
+     * ranking
+     * actionable takeaways
+
+---
+
+2. **Enhance Trend Analysis Prompt**
+
+   * Require:
+
+     * explanation of trends (not just description)
+     * identification of anomalies
+     * possible causes
+
+   * Consider:
+
+     * enforcing minimum date ranges (e.g., 14–30 days)
+
+---
+
+3. **Increase Actionability Across All Prompts**
+
+   * Add explicit requirement:
+
+     * “Provide 2–3 actionable recommendations”
+   * Avoid generic language
+
+---
+
+### Medium Priority
+
+4. **Refine Underperforming KPIs**
+
+   * Focus on KPIs with high “Too Vague” feedback
+   * Improve prompt specificity per KPI
+
+---
+
+5. **Leverage Feedback Reasons in Prompt Design**
+
+   * Address top issues directly:
+
+     * “Avoid vague statements”
+     * “Provide specific examples”
+
+---
+
+### Low Priority
+
+6. **User-Level Follow-Up**
+
+   * Reach out to users with repeated negative feedback
+   * Validate whether issues are prompt-related or expectation-related
+
+
+` 
+},
   { id: 'breakfast', name: 'Breakfast', version: 1,updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Analyze Breakfast ADP against the 20% benchmark...', previewOutput: '<h2>Breakfast ADP</h2><p>Detailed breakfast participation analysis.</p>' },
   { id: 'lunch', name: 'Lunch', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Evaluate Lunch participation and service efficiency...', previewOutput: '<h2>Lunch Analysis</h2><p>Service efficiency report.</p>' },
   { id: 'snack', name: 'Snack', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Review Snack program performance and growth...', previewOutput: '<h2>Snack Program</h2><p>Performance and growth metrics.</p>' },
@@ -111,6 +347,7 @@ Use <h2>, <p>, <ul>, <li>, and <strong> for formatting.`,
   { id: 'inv_discrepancy', name: 'Inv. Discrepancy', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Identify gaps between physical and system inventory counts...', previewOutput: '<h2>Inventory Discrepancy</h2><p>Gap identification report.</p>' },
   { id: 'compare_sites', name: 'Compare Sites', version: 1, updatedBy: 'Bob Jones', updatedAt: '2026-02-21', promptText: 'Compare performance metrics across different sites...', previewOutput: '<h2>Site Comparison</h2><p>Performance metrics report.</p>' },
   { id: 'trend_analysis', name: 'Trend Analysis', version: 1, updatedBy: 'Jude Law', updatedAt: '2026-01-01', promptText: 'Analyze trends in performance metrics over time...', previewOutput: '<h2>Trend Analysis</h2><p>Performance trends report.</p>' },
+  
   { 
     id: 'mplh', 
     name: 'MPLH', 

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { GripVertical } from 'lucide-react';
 import { CSVExpButton } from '../CSVGen/CSVExpButton';
 import { CSVReportViewerAdapter } from '../CSVGen/adapters/CSVReportViewerAdapter';
 import {
@@ -8,7 +9,7 @@ import {
     SettingsIcon,
     ChevronDownIcon,
     ChevronUpIcon,
-    AlertIcon 
+    AlertIcon
 } from '../Common/Icons';
 
 import { getReportData } from '../../services/insightsReportService';
@@ -24,7 +25,7 @@ interface ReportViewerDrawerProps {
         name: string;
         module: string;
         source: string;
-        reportType?: ReportSource; 
+        reportType?: ReportSource;
     } | null;
 }
 
@@ -42,9 +43,14 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+    const [columnOrder, setColumnOrder] = useState<string[]>([]);
     const [showColumnPicker, setShowColumnPicker] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    
+
+    // Drag-and-drop state
+    const [draggedCol, setDraggedCol] = useState<string | null>(null);
+    const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
     const pickerRef = useRef<HTMLDivElement>(null);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -80,22 +86,22 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
         return Object.keys(reportData[0]);
     }, [reportData]);
 
+    // Initialise both visible columns and order when data first loads
     useEffect(() => {
         if (columns.length > 0) {
             setVisibleColumns(columns.slice(0, 10));
+            setColumnOrder(columns);
         }
     }, [columns]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            // Close column picker if clicking outside
-        if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-            setShowColumnPicker(false);
-        }
-        // Close export menu if clicking outside
-        if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
-            setShowExportMenu(false);
-        }
+            if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+                setShowColumnPicker(false);
+            }
+            if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+                setShowExportMenu(false);
+            }
         };
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -111,7 +117,7 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
         if (showColumnPicker) {
             document.addEventListener('mousedown', handleClickOutside);
         }
-        
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('keydown', handleKeyDown);
@@ -150,6 +156,12 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
         return filteredAndSortedData.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredAndSortedData, currentPage, itemsPerPage]);
 
+    // Columns in current drag order, filtered to visible
+    const orderedVisibleCols = useMemo(
+        () => columnOrder.filter(c => visibleColumns.includes(c)),
+        [columnOrder, visibleColumns]
+    );
+
     const requestSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -175,19 +187,47 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
         setVisibleColumns(visibleColumns.length === columns.length ? [] : columns);
     };
 
+    // Drag handlers
+    const handleDragStart = (e: React.DragEvent, col: string) => {
+        setDraggedCol(col);
+        e.dataTransfer.effectAllowed = 'move';
+    };
+    const handleDragOver = (e: React.DragEvent, col: string) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (col !== draggedCol) setDragOverCol(col);
+    };
+    const handleDrop = (e: React.DragEvent, targetCol: string) => {
+        e.preventDefault();
+        if (!draggedCol || draggedCol === targetCol) return;
+        setColumnOrder(prev => {
+            const next = [...prev];
+            const from = next.indexOf(draggedCol);
+            const to = next.indexOf(targetCol);
+            next.splice(from, 1);
+            next.splice(to, 0, draggedCol);
+            return next;
+        });
+        setDraggedCol(null);
+        setDragOverCol(null);
+    };
+    const handleDragEnd = () => {
+        setDraggedCol(null);
+        setDragOverCol(null);
+    };
+
     if (!isOpen) return null;
 
-        // 1. Map the data using the same pattern as MPLH
     const csvReportData = useMemo(() =>
         CSVReportViewerAdapter(
             filteredAndSortedData,
-            visibleColumns,
+            orderedVisibleCols,
             reportInfo?.name
         ),
-        [filteredAndSortedData, visibleColumns, reportInfo?.name]);
+        [filteredAndSortedData, orderedVisibleCols, reportInfo?.name]);
 
     const [_showExportMenu, setShowExportMenu] = useState(false);
-    const exportMenuRef = useRef<HTMLDivElement>(null); // To handle clicking outside
+    const exportMenuRef = useRef<HTMLDivElement>(null);
 
     return (
         <>
@@ -204,7 +244,7 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                                     <h2 className="text-xl font-bold text-slate-800">{reportInfo?.name || 'Report Results'}</h2>
                                 </div>
                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest pt-0.5">
-                                    {reportInfo?.module} module, {reportInfo?.source} datasource <ReportTypeBadge source={reportInfo?.reportType ?? ReportSource.Custom} /> 
+                                    {reportInfo?.module} module, {reportInfo?.source} datasource <ReportTypeBadge source={reportInfo?.reportType ?? ReportSource.Custom} />
                                 </p>
                             </div>
                         </div>
@@ -227,30 +267,25 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                             <div />
                         )}
 
-                        
                         <div className="flex gap-3 items-center">
-                            {/* Export Menu Trigger */}
+                            {/* Export Menu */}
                             <div className="relative" ref={exportMenuRef}>
-                                
-                                
-                                    <ExportMenu>
-                                        {/* Data Section */}
-                                        <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Data Exports</p>
-                                        </div>
-                                        <CSVExpButton
-                                            title="Dynamic Report (.csv)"
-                                            subtext="Download grid data as seen"
-                                            csvData={csvReportData}
-                                            onClose={() => setShowExportMenu(false)}
-                                        />
-                                    </ExportMenu>
-                                
+                                <ExportMenu>
+                                    <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Data Exports</p>
+                                    </div>
+                                    <CSVExpButton
+                                        title="Dynamic Report (.csv)"
+                                        subtext="Download grid data as seen"
+                                        csvData={csvReportData}
+                                        onClose={() => setShowExportMenu(false)}
+                                    />
+                                </ExportMenu>
                             </div>
 
                             {/* COLUMN VISIBILITY */}
                             <div className="relative" ref={pickerRef}>
-                                <button 
+                                <button
                                     onClick={() => setShowColumnPicker(!showColumnPicker)}
                                     className={`p-2 rounded-lg border transition-all ${showColumnPicker ? 'bg-indigo-50 border-primary text-primary' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
                                 >
@@ -259,28 +294,47 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
 
                                 {showColumnPicker && (
                                     <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 shadow-xl rounded-xl z-[110] p-4 animate-in zoom-in-95 duration-100">
-                                        <div className="flex justify-between items-center mb-3 px-1">
+                                        <div className="flex justify-between items-center mb-1 px-1">
                                             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Columns</h3>
                                             <button onClick={handleSelectAll} className="text-[10px] font-bold text-primary uppercase hover:underline">
                                                 {visibleColumns.length === columns.length ? 'Deselect All' : 'Select All'}
                                             </button>
                                         </div>
-                                        <div className="space-y-1 max-h-60 overflow-y-auto pr-2 no-scrollbar">
-                                            {columns.map(col => (
-                                                <label key={col} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                        checked={visibleColumns.includes(col)}
-                                                        onChange={() => {
-                                                            setVisibleColumns(prev => 
-                                                                prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]
-                                                            );
-                                                        }}
-                                                    />
-                                                    <span className="text-sm text-slate-600 font-medium">{formatHeader(col)}</span>
-                                                </label>
-                                            ))}
+                                        <p className="text-[10px] text-gray-400 px-1 mb-3">Drag to reorder</p>
+                                        <div className="space-y-0.5 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                                            {columnOrder.map(col => {
+                                                const isDragging = draggedCol === col;
+                                                const isOver = dragOverCol === col && draggedCol !== col;
+                                                return (
+                                                    <div
+                                                        key={col}
+                                                        draggable
+                                                        onDragStart={e => handleDragStart(e, col)}
+                                                        onDragOver={e => handleDragOver(e, col)}
+                                                        onDrop={e => handleDrop(e, col)}
+                                                        onDragEnd={handleDragEnd}
+                                                        className={`flex items-center gap-2 px-2 py-2 rounded-lg transition-colors select-none
+                                                            ${isDragging ? 'opacity-40 bg-indigo-50' : 'hover:bg-slate-50'}
+                                                            ${isOver ? 'border-t-2 border-indigo-400' : 'border-t-2 border-transparent'}
+                                                        `}
+                                                    >
+                                                        <GripVertical size={14} className="text-gray-300 cursor-grab flex-shrink-0" />
+                                                        <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                                                            <input
+                                                                type="checkbox"
+                                                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary flex-shrink-0"
+                                                                checked={visibleColumns.includes(col)}
+                                                                onChange={() => {
+                                                                    setVisibleColumns(prev =>
+                                                                        prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]
+                                                                    );
+                                                                }}
+                                                            />
+                                                            <span className="text-sm text-slate-600 font-medium truncate">{formatHeader(col)}</span>
+                                                        </label>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 )}
@@ -302,7 +356,7 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
 
                     <div className="flex-initial overflow-hidden flex flex-col p-6">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col flex-1 relative">
-                            
+
                             {/* OVERLAY LOADER */}
                             {isLoading && (
                                 <div className="absolute inset-0 z-[120] flex flex-col items-center justify-center bg-white/90 backdrop-blur-[2px] animate-in fade-in duration-300">
@@ -321,9 +375,9 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                                 <table className="w-full text-left border-collapse table-auto">
                                     <thead className="bg-white border-b border-gray-200 sticky top-0 z-10">
                                         <tr>
-                                            {columns.filter(c => visibleColumns.includes(c)).map((col) => (
-                                                <th 
-                                                    key={col} 
+                                            {orderedVisibleCols.map((col) => (
+                                                <th
+                                                    key={col}
                                                     onClick={() => requestSort(col)}
                                                     className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-slate-50 transition-colors select-none group/th"
                                                 >
@@ -331,8 +385,8 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                                                         {formatHeader(col)}
                                                         <div className="w-4 flex items-center justify-center">
                                                             {sortConfig?.key === col && (
-                                                                sortConfig.direction === 'asc' 
-                                                                    ? <ChevronUpIcon size={14} className="text-primary" /> 
+                                                                sortConfig.direction === 'asc'
+                                                                    ? <ChevronUpIcon size={14} className="text-primary" />
                                                                     : <ChevronDownIcon size={14} className="text-primary" />
                                                             )}
                                                         </div>
@@ -344,7 +398,7 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                                     <tbody className="divide-y divide-gray-100">
                                         {paginatedData.map((row: any, idx: number) => (
                                             <tr key={idx} className="hover:bg-slate-50 transition-colors group">
-                                                {columns.filter(c => visibleColumns.includes(c)).map((col: string) => (
+                                                {orderedVisibleCols.map((col: string) => (
                                                     <td key={col} className="px-4 py-2 text-sm text-slate-600">
                                                         <div className="truncate max-w-[250px]">
                                                             {formatCellValue(row[col])}

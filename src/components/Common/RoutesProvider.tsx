@@ -3,6 +3,7 @@ import LayoutMenu from './LayoutMen'; // Corrected import name
 import InsightsPage from '../../pages/InsightsPage';
 import SettingsPage from '../../pages/SettingPage';
 import ReportsPage from '../../pages/ReportsPage';
+import UsagePage from '../../pages/UsagePage';
 
 export default function RoutesProvider() {
   return (
@@ -15,6 +16,7 @@ export default function RoutesProvider() {
         <Route path="insights" element={<InsightsPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="usage" element={<UsagePage />} />
         
         {/* Catch-all to keep the user inside the app */}
         <Route path="*" element={<Navigate to="/insights" replace />} />

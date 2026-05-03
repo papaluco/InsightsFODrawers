@@ -211,7 +211,12 @@ export const AIConfigDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: 
           </div>
 
           <div className="w-2/5 h-full bg-gray-50 p-8 overflow-y-auto">
-            <AIPreviewPanel isTesting={isTesting} showResult={showResult} />
+            <AIPreviewPanel
+              isTesting={isTesting}
+              showResult={showResult}
+              previewOutput={selectedPrompt?.previewOutput}
+              promptName={selectedPrompt?.name}
+            />
           </div>
 
         </div>

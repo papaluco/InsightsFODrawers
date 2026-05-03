@@ -1,12 +1,13 @@
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  BarChart3, 
-  Settings, 
-  Bot, 
-  FileText, 
+import {
+  LayoutDashboard,
+  BarChart3,
+  Settings,
+  Bot,
+  FileText,
   BookOpen,
-  ChefHat
+  ChefHat,
+  Activity
 } from 'lucide-react';
 
 const SidebarMenu = () => {
@@ -17,6 +18,7 @@ const SidebarMenu = () => {
     { name: 'Reports', icon: FileText, path: '/reports' },
     { name: 'Learning', icon: BookOpen, path: '/learning' },
     { name: 'AI Assistant', icon: Bot, path: '/chat' },
+    { name: 'Usage', icon: Activity, path: '/usage' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
