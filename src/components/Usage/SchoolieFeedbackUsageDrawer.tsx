@@ -6,11 +6,11 @@ import { FeedbackRecord } from '../../types/schoolieFeedbackTypes';
 import { getAllFeedback } from '../../services/schoolieFeedbackService';
 import { DashboardFilters, DEFAULT_FILTERS, applyFilters } from './feedback/feedbackHelpers';
 import { SchoolieIcon } from '../Common/Icons';
-import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
-import { PDFDashExpButton } from '../PDFGen/PDFDashExpButton';
-import { prepareFeedbackDashPDFData } from '../PDFGen/adapters/PDFFeedbackDashAdapter';
-import { CSVFeedbackDashAdapter } from '../CSVGen/adapters/csvFeedbackDashAdapter';
-import { CSVRenderer } from '../CSVGen/CSVRenderer';
+import { ExportMenu } from '../Downloading/ExportMenu/ExportMenu';
+import { PDFDashExpButton } from '../Downloading/PDFGen/PDFDashExpButton';
+import { prepareFeedbackDashPDFData } from '../Downloading/PDFGen/adapters/PDFFeedbackDashAdapter';
+import { CSVFeedbackDashAdapter } from '../Downloading/CSVGen/adapters/csvFeedbackDashAdapter';
+import { CSVRenderer } from '../Downloading/CSVGen/CSVRenderer';
 
 interface Props {
   isOpen: boolean;

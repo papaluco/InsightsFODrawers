@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { GripVertical } from 'lucide-react';
-import { CSVExpButton } from '../CSVGen/CSVExpButton';
-import { CSVReportViewerAdapter } from '../CSVGen/adapters/CSVReportViewerAdapter';
+import { CSVExpButton } from '../Downloading/CSVGen/CSVExpButton';
+import { CSVReportViewerAdapter } from '../Downloading/CSVGen/adapters/CSVReportViewerAdapter';
 import {
     ReportIcon,
     XIcon,
@@ -16,7 +16,7 @@ import { getReportData } from '../../services/insightsReportService';
 import { ReportPaging } from './ReportPaging';
 import { ReportSource } from '../../types/ReportTypes';
 import { getReportSourceStyle } from '../../utils/reportUtils';
-import { ExportMenu } from '../Common/ExportMenu/ExportMenu';
+import { ExportMenu } from '../Downloading/ExportMenu/ExportMenu';
 
 interface ReportViewerDrawerProps {
     isOpen: boolean;

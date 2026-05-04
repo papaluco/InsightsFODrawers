@@ -4,7 +4,18 @@
       "PowerShell(cd \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\"; Get-ChildItem -Path \"src\" -Recurse -Directory | Select-Object -ExpandProperty FullName | ForEach-Object { $_ -replace [regex]::Escape\\(\"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\\"\\), '' } | Where-Object { $_ -match '^src' } | Sort-Object | Select-Object -First 20)",
       "Bash(xargs grep *)",
       "Bash(Get-ChildItem -Directory)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\" -Directory)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\" -Recurse -Directory | Where-Object { $_.Name -match '^\\(ENP|MPLH|PNA\\)$' } | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-ChildItem -Recurse -Directory \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"ExportMenu|CSVGen|PDFGen\" })",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Downloading\")",
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\CSVGen\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Downloading\\\\CSVGen\")",
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\PDFGen\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Downloading\\\\PDFGen\")",
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Common\\\\ExportMenu\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Downloading\\\\ExportMenu\")",
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Common\\\\KPIAbout.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\KPIAbout.tsx\")",
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Common\\\\KPISummary.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\KPISummary.tsx\")",
+      "PowerShell(\"Done\")",
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Settings\\\\AI\\\\AIKPIDrawer.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\AIKPIDrawer.tsx\")"
     ]
   }
 }

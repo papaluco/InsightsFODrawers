@@ -12,21 +12,21 @@ import { TestLinks } from '../components/InsightsDashboard/TestLinks';
 import { PerformanceTrends } from '../components/InsightsDashboard/PerformanceTrends';
 
 // PDF Logic
-import { PDFDashRenderer } from '../components/PDFGen/PDFDashRenderer';
-import { prepareDashboardPDFData } from '../components/PDFGen/adapters/PDFDashAdapter';
-import { ExportOptions } from '../components/Common/ExportMenu/DashExportMenu';
+import { PDFDashRenderer } from '../components/Downloading/PDFGen/PDFDashRenderer';
+import { prepareDashboardPDFData } from '../components/Downloading/PDFGen/adapters/PDFDashAdapter';
+import { ExportOptions } from '../components/Downloading/ExportMenu/DashExportMenu';
 
 // Data
 import { generateMockMPLHData, calculateDistrictMPLH } from '../data/mockMPLHData';
 import { districtENPActual, districtENPBenchmark } from '../data/mockENPProgramData';
 
 // --- LAZY LOADED COMPONENTS ---
-const MPLHDrawer = lazy(() => import('../components/MPLH/MPLHDrawer').then(m => ({ default: m.MPLHDrawer })));
-const SingleSchoolMPLHDrawer = lazy(() => import('../components/MPLH/SingleSchoolMPLHDrawer').then(m => ({ default: m.SingleSchoolMPLHDrawer })));
-const PNADrawer = lazy(() => import('../components/PNA/PNADrawer').then(m => ({ default: m.PNADrawer })));
-const SingleSchoolPNADrawer = lazy(() => import('../components/PNA/SingleSchoolPNADrawer').then(m => ({ default: m.SingleSchoolPNADrawer })));
-const ENPDrawer = lazy(() => import('../components/ENP/ENPDrawer').then(m => ({ default: m.ENPDrawer })));
-const SingleSchoolENPDrawer = lazy(() => import('../components/ENP/SingleSchoolENPDrawer').then(m => ({ default: m.SingleSchoolENPDrawer })));
+const MPLHDrawer = lazy(() => import('../components/InsightsDashboard/MPLH/MPLHDrawer').then(m => ({ default: m.MPLHDrawer })));
+const SingleSchoolMPLHDrawer = lazy(() => import('../components/InsightsDashboard/MPLH/SingleSchoolMPLHDrawer').then(m => ({ default: m.SingleSchoolMPLHDrawer })));
+const PNADrawer = lazy(() => import('../components/InsightsDashboard/PNA/PNADrawer').then(m => ({ default: m.PNADrawer })));
+const SingleSchoolPNADrawer = lazy(() => import('../components/InsightsDashboard/PNA/SingleSchoolPNADrawer').then(m => ({ default: m.SingleSchoolPNADrawer })));
+const ENPDrawer = lazy(() => import('../components/InsightsDashboard/ENP/ENPDrawer').then(m => ({ default: m.ENPDrawer })));
+const SingleSchoolENPDrawer = lazy(() => import('../components/InsightsDashboard/ENP/SingleSchoolENPDrawer').then(m => ({ default: m.SingleSchoolENPDrawer })));
 
 // Types for navigation tracking
 type NavOrigin = 'DASHBOARD' | 'MPLH_LIST' | 'PNA_LIST' | 'ENP_LIST';

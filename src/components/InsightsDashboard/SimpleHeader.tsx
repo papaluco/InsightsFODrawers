@@ -3,7 +3,7 @@ import { BarChart2, Settings, Target } from 'lucide-react';
 import { DemoSchoolSelector } from '../Common/DemoSchoolSelector'; 
 import { TimeframeSelector } from '../Common/TimeframeSelector';
 import { SchoolieIcon } from '../Common/Icons';
-import { DashExportMenu, ExportOptions } from '../Common/ExportMenu/DashExportMenu';
+import { DashExportMenu, ExportOptions } from '../Downloading/ExportMenu/DashExportMenu';
 
 interface SimpleHeaderProps {
   onExportTriggered: (options: ExportOptions) => void;

@@ -9,9 +9,9 @@ import {
   ChevronLeftIcon,
   AlertIcon,
 } from '../../Common/Icons';
-import { ExportMenu } from '../../Common/ExportMenu/ExportMenu';
-import { CSVExpButton } from '../../CSVGen/CSVExpButton';
-import { CSVFeedbackUsageAdapter, FEEDBACK_COLUMNS } from '../../CSVGen/adapters/csvFeedbackUsageAdapter';
+import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
+import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';
+import { CSVFeedbackUsageAdapter, FEEDBACK_COLUMNS } from '../../Downloading/CSVGen/adapters/csvFeedbackUsageAdapter';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 
 interface Props {
