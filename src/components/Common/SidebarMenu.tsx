@@ -14,9 +14,9 @@ const SidebarMenu = () => {
   const menuItems = [
     { name: 'Workspace', icon: LayoutDashboard, path: '/' },
     { name: 'Insights', icon: BarChart3, path: '/insights' },
-    { name: 'Menu Analysis', icon: ChefHat, path: '/menu-analysis' },
+    // { name: 'Menu Analysis', icon: ChefHat, path: '/menu-analysis' },
     { name: 'Reports', icon: FileText, path: '/reports' },
-    { name: 'Learning', icon: BookOpen, path: '/learning' },
+    // { name: 'Learning', icon: BookOpen, path: '/learning' },
     { name: 'AI Assistant', icon: Bot, path: '/chat' },
     { name: 'Usage', icon: Activity, path: '/usage' },
     { name: 'Settings', icon: Settings, path: '/settings' },

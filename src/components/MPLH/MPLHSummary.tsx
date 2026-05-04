@@ -16,7 +16,7 @@ export const MPLHSummary: React.FC<MPLHSummaryProps> = ({ actualMPLH, targetMPLH
   const absoluteDifference = Math.abs(difference);
 
   return (
-    <div className="mb-4 pb-4 border-b border-gray-100">
+    <div className="mb-4 pb-4 border-b border-gray-100"> 
       {/* Collapsible Header Panel */}
       <div className="flex items-center justify-between w-full mb-4">
         <button 
@@ -36,8 +36,8 @@ export const MPLHSummary: React.FC<MPLHSummaryProps> = ({ actualMPLH, targetMPLH
       {isExpanded && (
         <div className="animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex items-center justify-between gap-3">
-            {/* Actual Box */}
-            <div className="bg-gray-50 rounded-lg p-3 text-center flex-1 border border-gray-100">
+            {/* Actual Box bg-gray-50 border border-gray-200 rounded-lg p-4 flex gap-3 */}
+            <div className="bg-gray-50 rounded-lg p-3 text-center flex-1 border border-gray-200">
               <div className="text-[11px] uppercase font-semibold text-gray-400 mb-0.5">Actual</div>
               <div className={`text-xl font-bold ${isHigher ? 'text-emerald-600' : 'text-red-600'}`}>
                 {actualMPLH.toFixed(2)}
@@ -47,7 +47,7 @@ export const MPLHSummary: React.FC<MPLHSummaryProps> = ({ actualMPLH, targetMPLH
             <div className="text-sm font-bold text-gray-300">VS</div>
 
             {/* Target Box */}
-            <div className="bg-gray-50 rounded-lg p-3 text-center flex-1 border border-gray-100">
+            <div className="bg-gray-50 rounded-lg p-3 text-center flex-1 border border-gray-200">
               <div className="text-[11px] uppercase font-semibold text-gray-400 mb-0.5">Benchmark</div>
               <div className="text-xl font-bold text-gray-900">{targetMPLH.toFixed(2)}</div>
             </div>
@@ -55,7 +55,7 @@ export const MPLHSummary: React.FC<MPLHSummaryProps> = ({ actualMPLH, targetMPLH
             <div className="text-sm font-bold text-gray-300">=</div>
 
             {/* Difference Box */}
-            <div className="bg-gray-50 rounded-lg p-3 text-center flex-1 border border-gray-100">
+            <div className="bg-gray-50 rounded-lg p-3 text-center flex-1 border border-gray-200">
               <div className="text-[11px] uppercase font-semibold text-gray-400 mb-0.5">Difference</div>
               <div className={`text-xl font-bold ${isHigher ? 'text-emerald-600' : 'text-red-600'}`}>
                 {isHigher ? '+' : ''}{difference.toFixed(2)}

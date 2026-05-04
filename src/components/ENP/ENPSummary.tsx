@@ -38,7 +38,7 @@ export const ENPSummary: React.FC<ENPSummaryProps> = ({
         <div className="animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex items-center justify-center gap-3">
             {/* Actual Box */}
-            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 text-center flex-1">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center flex-1">
               <div className="text-[11px] uppercase font-semibold text-gray-400 mb-0.5">Actual ENP</div>
               <div className={`text-xl font-bold ${isHigher ? 'text-red-600' : 'text-emerald-600'}`}>
                 {actualENP.toFixed(2)}%
@@ -48,7 +48,7 @@ export const ENPSummary: React.FC<ENPSummaryProps> = ({
             <div className="text-sm font-bold text-gray-300">vs</div>
 
             {/* Benchmark Box */}
-            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 text-center flex-1">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center flex-1">
               <div className="text-[11px] uppercase font-semibold text-gray-400 mb-0.5">Benchmark</div>
               <div className="text-xl font-bold text-gray-900">{benchmarkENP.toFixed(2)}%</div>
             </div>
@@ -56,7 +56,7 @@ export const ENPSummary: React.FC<ENPSummaryProps> = ({
             <div className="text-sm font-bold text-gray-300">=</div>
 
             {/* Difference Box */}
-            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 text-center flex-1">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center flex-1">
               <div className="text-[11px] uppercase font-semibold text-gray-400 mb-0.5">Difference</div>
               <div className={`text-xl font-bold ${isHigher ? 'text-red-600' : 'text-emerald-600'}`}>
                 {isHigher ? '+' : ''}{difference.toFixed(2)}%
