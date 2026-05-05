@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { BarChart3, ChefHat, Bot, ThumbsUp, ArrowRight } from 'lucide-react';
+import { BarChart3, ChefHat, Bot, ThumbsUp, FileBarChart, ArrowRight } from 'lucide-react';
 import InsightsUsageDrawer from '../components/Usage/InsightsUsageDrawer';
 import MenuAnalysisUsageDrawer from '../components/Usage/MenuAnalysisUsageDrawer';
 import SchoolieUsageDrawer from '../components/Usage/SchoolieUsageDrawer';
 import SchoolieFeedbackUsageDrawer from '../components/Usage/SchoolieFeedbackUsageDrawer';
+import ReportsUsageDrawer from '../components/Usage/ReportsUsageDrawer';
 
 const UsagePage = () => {
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [menuAnalysisOpen, setMenuAnalysisOpen] = useState(false);
   const [schoolieOpen, setSchoolieOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
 
   return (
     <div className="min-h-full">
@@ -80,12 +82,28 @@ const UsagePage = () => {
           </div>
         </div>
 
+        {/* Reports Card */}
+        <div
+          onClick={() => setReportsOpen(true)}
+          className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all cursor-pointer"
+        >
+          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4">
+            <FileBarChart size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">Reports</h3>
+          <p className="text-gray-500 text-sm mb-6">Report views, runs, downloads, and distribution activity.</p>
+          <div className="text-indigo-600 font-semibold flex items-center gap-2">
+            View Usage <ArrowRight size={16} />
+          </div>
+        </div>
+
       </div>
 
       <InsightsUsageDrawer isOpen={insightsOpen} onClose={() => setInsightsOpen(false)} />
       <MenuAnalysisUsageDrawer isOpen={menuAnalysisOpen} onClose={() => setMenuAnalysisOpen(false)} />
       <SchoolieUsageDrawer isOpen={schoolieOpen} onClose={() => setSchoolieOpen(false)} />
       <SchoolieFeedbackUsageDrawer isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      <ReportsUsageDrawer isOpen={reportsOpen} onClose={() => setReportsOpen(false)} />
     </div>
   );
 };

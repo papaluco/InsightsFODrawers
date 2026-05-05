@@ -2,7 +2,9 @@ export enum ReportSource {
   Custom = 1,
   ManagedView = 2,
   PowerBI = 3,
-  Insights = 4
+  Insights = 4,
+  Download = 5,
+  Distributed = 6,
 }
 
 export interface UnifiedReport {
@@ -31,6 +33,7 @@ export interface ReportHistoryItem {
   fileUrl?: string;
   fileSize?: string;
   fileType?: 'PDF' | 'CSV' | 'XLSX';
+  downloadedBy?: string;
   distributionDetails: {
     channels: string[];
     recipients: string;

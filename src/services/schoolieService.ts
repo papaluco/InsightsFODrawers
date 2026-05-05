@@ -60,6 +60,45 @@ export async function getKPIAnalysis(kpiKey: KPIKey): Promise<AIResponsePayload>
   return { ...response, generatedAt: new Date().toISOString() };
 }
 
+const USAGE_INITIAL_RESPONSE = `## Report Usage Analysis
+
+Based on the current dataset, here's a summary of report activity across your platform:
+
+**Key Highlights**
+- Report usage spans multiple modules and data sources, with a mix of consumer and operator behavior
+- Viewing and running activity indicate both exploration and active operational use
+- Download and distribution patterns reveal how data leaves the platform
+
+**Patterns to Explore**
+- Some reports consistently drive higher engagement across districts
+- Module-level activity varies, suggesting uneven feature adoption
+- Consumer vs. operator ratios can reveal training or workflow gaps
+
+Ask a follow-up question to dig into specific reports, modules, users, or adoption opportunities.`;
+
+const USAGE_FOLLOW_UP_RESPONSE = `**AI Response**
+
+Based on the current report usage dataset, this is a simulated Schoolie analysis response.
+
+In production, Schoolie would analyze your question using:
+- The filtered event data and aggregated usage summary
+- The configured system prompt for report analytics
+- The last 5 messages for conversational context
+
+Schoolie would identify patterns, surface adoption gaps, and provide data-driven recommendations tailored to your specific question.
+
+*This is a prototype simulation.*`;
+
+export async function getUsageChatResponse(
+  userMessage: string,
+  isInitial: boolean,
+  _systemPrompt: string,
+  _payload: Record<string, unknown>
+): Promise<string> {
+  await delay(isInitial ? 2200 : 1400);
+  return isInitial ? USAGE_INITIAL_RESPONSE : USAGE_FOLLOW_UP_RESPONSE;
+}
+
 const FOLLOW_UP_RESPONSE = `**AI Response**
 
 Based on the current feedback dataset, this is a simulated Schoolie analysis response.

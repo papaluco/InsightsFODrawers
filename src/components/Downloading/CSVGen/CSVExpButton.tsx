@@ -5,27 +5,26 @@ import { ICSVReportData } from './CSVContract';
 
 interface CSVExpButtonProps {
   // Instead of raw data, we pass the already-adapted CSV object
-  csvData: ICSVReportData; 
+  csvData: ICSVReportData;
   // We can pass the labels as props to keep the UI flexible for PNA/ENP
   title: string;
   subtext?: string;
   onClose?: () => void;
+  onDownload?: () => void;
 }
 
-export const CSVExpButton: React.FC<CSVExpButtonProps> = ({ 
-  csvData, 
+export const CSVExpButton: React.FC<CSVExpButtonProps> = ({
+  csvData,
   title,
   subtext = "Download grid data as seen",
-  onClose 
+  onClose,
+  onDownload,
 }) => {
-  
-  const handleDownload = () => {
-    // The button doesn't need to know HOW the data was mapped
-    CSVRenderer(csvData);
 
-    if (onClose) {
-      onClose();
-    }
+  const handleDownload = () => {
+    CSVRenderer(csvData);
+    onDownload?.();
+    onClose?.();
   };
 
   return (

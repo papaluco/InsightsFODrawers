@@ -13,6 +13,7 @@ import {
 } from '../Common/Icons';
 
 import { getReportData } from '../../services/insightsReportService';
+import { trackReportEvent } from '../../services/reportUsageService';
 import { ReportPaging } from './ReportPaging';
 import { ReportSource } from '../../types/ReportTypes';
 import { getReportSourceStyle } from '../../utils/reportUtils';
@@ -63,6 +64,22 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                 setRawResponse(data);
                 setIsLoading(false);
             });
+            if (reportInfo) {
+                trackReportEvent({
+                    eventType: 'REPORT_VIEWED',
+                    userId: 'current-user',
+                    districtId: 'current-district',
+                    platform: 'SchoolCafe',
+                    context: {
+                        reportId: reportInfo.name.toLowerCase().replace(/\s+/g, '-'),
+                        reportName: reportInfo.name,
+                        reportType: reportInfo.reportType != null ? ReportSource[reportInfo.reportType] : 'Unknown',
+                        module: reportInfo.module,
+                        dataSource: reportInfo.source,
+                        entryPoint: 'FullDirectory',
+                    },
+                });
+            }
         } else {
             setRawResponse(null);
         }
@@ -279,6 +296,25 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                                         subtext="Download grid data as seen"
                                         csvData={csvReportData}
                                         onClose={() => setShowExportMenu(false)}
+                                        onDownload={() => {
+                                            if (reportInfo) {
+                                                trackReportEvent({
+                                                    eventType: 'REPORT_DOWNLOADED',
+                                                    userId: 'current-user',
+                                                    districtId: 'current-district',
+                                                    platform: 'SchoolCafe',
+                                                    context: {
+                                                        reportId: reportInfo.name.toLowerCase().replace(/\s+/g, '-'),
+                                                        reportName: reportInfo.name,
+                                                        reportType: reportInfo.reportType != null ? ReportSource[reportInfo.reportType] : 'Unknown',
+                                                        module: reportInfo.module,
+                                                        dataSource: reportInfo.source,
+                                                        entryPoint: 'FullDirectory',
+                                                        format: 'CSV',
+                                                    },
+                                                });
+                                            }
+                                        }}
                                     />
                                 </ExportMenu>
                             </div>

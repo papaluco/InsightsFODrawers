@@ -1,7 +1,7 @@
 import React from 'react';
-import { XIcon, ReportIcon } from '../Common/Icons';
+import { XIcon, ReportIcon, DownloadIcon } from '../Common/Icons';
 import { getReportSourceStyle } from '../../utils/reportUtils';
-import { ReportSource } from '../../types/ReportTypes';
+import { ReportSource, ReportHistoryItem } from '../../types/ReportTypes';
 
 // --- HELPER COMPONENTS ---
 
@@ -63,15 +63,125 @@ interface ViewConfigDrawerProps {
   onClose: () => void;
   reportName?: string;
   reportType?: ReportSource;
+  historyItem?: ReportHistoryItem | null;
 }
 
-const ViewConfigDrawer: React.FC<ViewConfigDrawerProps> = ({ 
-  isOpen, 
-  onClose, 
-  reportName, 
-  // FIX: Using the Enum value instead of a string literal
-  reportType = ReportSource.Custom 
+const ViewConfigDrawer: React.FC<ViewConfigDrawerProps> = ({
+  isOpen,
+  onClose,
+  reportName,
+  reportType = ReportSource.Custom,
+  historyItem,
 }) => {
+  // For Download/Distributed items, use the history item's source type if available
+  const effectiveType = historyItem?.sourceType ?? reportType;
+
+  if (effectiveType === ReportSource.Download) {
+    return (
+      <>
+        {isOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] transition-opacity" onClick={onClose} />
+        )}
+        <div className={`fixed inset-y-0 right-0 w-[800px] bg-slate-50 shadow-2xl z-[101] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex flex-col h-full">
+            <div className="px-6 py-5 bg-white border-b border-gray-200 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <ReportIcon className="text-primary" size={24} />
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">{historyItem?.name ?? reportName ?? 'Download Details'}</h2>
+                    <ReportTypeBadge source={ReportSource.Download} />
+                  </div>
+                  <p className="text-xs text-gray-500 font-medium pt-0.5">Downloaded file information</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+                <XIcon size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="px-4 py-3 bg-slate-50/50 border-b border-gray-100">
+                  <h3 className="text-[11px] font-bold text-primary uppercase tracking-widest">Download Details</h3>
+                </div>
+                <div className="p-4 space-y-4">
+                  <Field label="Report Name" value={historyItem?.name ?? reportName ?? '—'} />
+                  <Field label="Downloaded By" value={historyItem?.downloadedBy ?? '—'} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Date & Time" value={historyItem?.runDate ? new Date(historyItem.runDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : '—'} />
+                    <Field label="File Size" value={historyItem?.fileSize ?? '—'} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="File Type" value={historyItem?.fileType ?? '—'} />
+                    <Field label="Module" value={historyItem?.module ?? '—'} />
+                  </div>
+                  {historyItem?.fileUrl ? (
+                    <div className="pt-2">
+                      <a
+                        href={historyItem.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+                      >
+                        <DownloadIcon size={15} />
+                        Download File Again
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-sm italic text-gray-400">No file link available.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (effectiveType === ReportSource.Distributed) {
+    return (
+      <>
+        {isOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] transition-opacity" onClick={onClose} />
+        )}
+        <div className={`fixed inset-y-0 right-0 w-[800px] bg-slate-50 shadow-2xl z-[101] transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="flex flex-col h-full">
+            <div className="px-6 py-5 bg-white border-b border-gray-200 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <ReportIcon className="text-primary" size={24} />
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">{historyItem?.name ?? reportName ?? 'Distributed Report'}</h2>
+                    <ReportTypeBadge source={ReportSource.Distributed} />
+                  </div>
+                  <p className="text-xs text-gray-500 font-medium pt-0.5">Distribution details</p>
+                </div>
+              </div>
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+                <XIcon size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center p-6 no-scrollbar">
+              <div className="text-center max-w-sm">
+                <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🚧</span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-700 mb-2">Coming Soon</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  Detailed configuration for distributed reports is on its way. Check back soon for distribution settings, channel details, and recipient management.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Default: existing config view for Custom, MVR, PowerBI, Insights
   const sqlStatement = `SELECT AccessLevelId, AuthenticationMode, CellPhone, CreatedUserId, CreationDate, DefaultRealmId, DefaultRegionId, Email, FailedLoginAttempts, FirstName, Image, LanguagePreference, LastFailedLoginDate, LastLoginDate, LastName, LastPasswordChange, MI, Password FROM DMV_Users WHERE RegionId in (-10, 1502)`;
 
   const settings = {

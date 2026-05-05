@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ReportHistoryItem } from '../../types/ReportTypes';
 import {
     ReportIcon,
@@ -19,7 +19,7 @@ interface Props {
     history: ReportHistoryItem[];
     reportId?: string | null;
     reportName?: string | null;
-    onViewConfig: (reportId: string) => void;
+    onViewConfig: (reportId: string, historyItem: ReportHistoryItem) => void;
 }
 
 const renderSourceBadge = (source: ReportSource) => {
@@ -39,6 +39,15 @@ const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, history, report
         key: 'runDate',
         direction: 'desc'
     });
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', onKeyDown, true);
+        return () => document.removeEventListener('keydown', onKeyDown, true);
+    }, [isOpen, onClose]);
 
     // Filter logic based on reportId parameter and search term
     const filteredHistory = useMemo(() => {
@@ -179,10 +188,10 @@ const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, history, report
                                                         </a>
 
                                                         {/* Updated Button logic */}
-                                                        <button 
-                                                            className="p-1.5 text-gray-400 hover:text-slate-600 hover:bg-gray-100 rounded-md transition-all" 
+                                                        <button
+                                                            className="p-1.5 text-gray-400 hover:text-slate-600 hover:bg-gray-100 rounded-md transition-all"
                                                             title="View Configuration"
-                                                            onClick={() => onViewConfig(run.reportId)}
+                                                            onClick={() => onViewConfig(run.reportId, run)}
                                                         >
                                                             <SettingsIcon size={16} />
                                                         </button>
@@ -207,9 +216,9 @@ const RecentReportsDrawer: React.FC<Props> = ({ isOpen, onClose, history, report
                                 onPageChange={setCurrentPage}
                                 onItemsPerPageChange={(val) => {
                                     setItemsPerPage(val);
-                                    setCurrentPage(1); // Keep that reset logic consistent
+                                    setCurrentPage(1);
                                 }}
-                                showAllOption={false} // Drawers usually stay fixed at a specific count
+                                showAllOption={false}
                             />
                         </div>
                     </div>

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'; 
+import 'react-quill/dist/quill.snow.css';
 import { XIcon, MaximizeIcon, MinimizeIcon, ChevronDownIcon, CheckIcon } from '../Common/Icons';
 import { ReportSource } from '../../types/ReportTypes';
+import { trackReportEvent } from '../../services/reportUsageService';
 
 interface EmailModalProps {
   isOpen: boolean;
@@ -66,7 +67,23 @@ export const EmailModal: React.FC<EmailModalProps> = ({ isOpen, onClose, reportI
 
   const handleSend = () => {
     setIsQueued(true);
-    // Logic for actual distribution would go here
+    if (reportInfo) {
+      trackReportEvent({
+        eventType: 'REPORT_EMAILED',
+        userId: 'current-user',
+        districtId: 'current-district',
+        platform: 'SchoolCafe',
+        context: {
+          reportId: reportInfo.name.toLowerCase().replace(/\s+/g, '-'),
+          reportName: reportInfo.name,
+          reportType: reportInfo.reportType != null ? ReportSource[reportInfo.reportType] : 'Unknown',
+          module: '',
+          dataSource: '',
+          entryPoint: 'FullDirectory',
+          recipientCount: selectedUsers.length,
+        },
+      });
+    }
   };
 
   return (

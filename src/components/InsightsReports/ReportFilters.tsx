@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ReportSource } from '../../types/ReportTypes';
-import { FilterIcon, ChevronDownIcon, ChevronUpIcon } from '../Common/Icons'; 
+import { FilterIcon, ChevronDownIcon, ChevronUpIcon } from '../Common/Icons';
+import { REPORT_MODULES, getDataSourceOptions } from '../../constants/reportDataSources';
 
 interface Props {
   searchTerm: string;
@@ -11,47 +12,48 @@ interface Props {
   setSelectedSource: (val: ReportSource | 'All') => void;
   selectedDataSource: string;
   setSelectedDataSource: (val: string) => void;
-  availableDataSources: Array<{ name: string; module: string }>;
 }
 
-const modules = ["All", "Accountability", "Eligibility", "Account Management", "Item Management", "Inventory", "Menu Planning", "Production", "Financials", "Reports", "Insights", "System"];
+const SOURCE_TYPES: { label: string; value: ReportSource | 'All' }[] = [
+  { label: 'All Types',        value: 'All' },
+  { label: 'Custom Reports',   value: ReportSource.Custom },
+  { label: 'Managed View',     value: ReportSource.ManagedView },
+  { label: 'Power BI',         value: ReportSource.PowerBI },
+  { label: 'Insights',         value: ReportSource.Insights },
+  { label: 'Download',         value: ReportSource.Download },
+  { label: 'Distributed',      value: ReportSource.Distributed },
+];
 
-const ReportFilters: React.FC<Props> = ({ 
-  searchTerm, 
-  setSearchTerm, 
-  selectedModule, 
-  setSelectedModule, 
-  selectedSource, 
+const MODULE_OPTIONS = ['All', ...REPORT_MODULES];
+
+const ReportFilters: React.FC<Props> = ({
+  searchTerm,
+  setSearchTerm,
+  selectedModule,
+  setSelectedModule,
+  selectedSource,
   setSelectedSource,
   selectedDataSource,
   setSelectedDataSource,
-  availableDataSources = [] 
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  // Filter data sources based on selected module
-  const filteredDataSources = useMemo(() => {
-    const sources = availableDataSources || [];
-    if (selectedModule === 'All') {
-      return Array.from(new Set(sources.map(ds => ds.name))).sort();
-    }
-    return sources
-      .filter(ds => ds.module === selectedModule)
-      .map(ds => ds.name)
-      .sort();
-  }, [selectedModule, availableDataSources]);
+  // Data source options driven by the same constants as the Usage Dashboard
+  const dataSourceOptions = useMemo(
+    () => getDataSourceOptions(selectedModule !== 'All' ? selectedModule : undefined),
+    [selectedModule]
+  );
 
-  // Reset data source if module changes and the current selection isn't in the new list
-  React.useEffect(() => {
-    if (selectedDataSource !== 'All' && !filteredDataSources.includes(selectedDataSource)) {
+  // Reset data source if module changes and current selection is no longer available
+  useEffect(() => {
+    if (selectedDataSource !== 'All' && !dataSourceOptions.some(ds => ds.label === selectedDataSource)) {
       setSelectedDataSource('All');
     }
-  }, [selectedModule, filteredDataSources, selectedDataSource, setSelectedDataSource]);
+  }, [selectedModule, dataSourceOptions, selectedDataSource, setSelectedDataSource]);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-      {/* Collapsible Header */}
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors focus:outline-none"
       >
@@ -68,12 +70,11 @@ const ReportFilters: React.FC<Props> = ({
         )}
       </button>
 
-      {/* Filter Body */}
       {isOpen && (
         <div className="p-6 border-t border-gray-100 bg-white">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            
-            {/* Search Field */}
+
+            {/* Search */}
             <div className="md:col-span-1">
               <label htmlFor="search" className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">
                 Search Reports
@@ -88,7 +89,7 @@ const ReportFilters: React.FC<Props> = ({
               />
             </div>
 
-            {/* Module Filter */}
+            {/* Module — from canonical REPORT_MODULES list */}
             <div>
               <label htmlFor="module-filter" className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">
                 Module
@@ -99,11 +100,11 @@ const ReportFilters: React.FC<Props> = ({
                 value={selectedModule}
                 onChange={(e) => setSelectedModule(e.target.value)}
               >
-                {modules.map(m => <option key={m} value={m}>{m}</option>)}
+                {MODULE_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
 
-            {/* Data Source Filter (Filtered by Module) */}
+            {/* Data Source — from same constants as Usage Dashboard, cascaded by module */}
             <div>
               <label htmlFor="data-source-filter" className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">
                 Data Source
@@ -115,16 +116,16 @@ const ReportFilters: React.FC<Props> = ({
                 onChange={(e) => setSelectedDataSource(e.target.value)}
               >
                 <option value="All">All Data Sources</option>
-                {filteredDataSources.map(ds => (
-                  <option key={ds} value={ds}>{ds}</option>
+                {dataSourceOptions.map(ds => (
+                  <option key={ds.key} value={ds.label}>{ds.label}</option>
                 ))}
               </select>
               <p className="mt-1.5 text-[10px] text-gray-400 italic">
-                {selectedModule === 'All' ? 'Showing all available sources' : `Sources for ${selectedModule}`}
+                {selectedModule === 'All' ? 'Select a module to filter sources' : `Sources for ${selectedModule}`}
               </p>
             </div>
 
-            {/* Source Type Filter */}
+            {/* Source Type — same options as Usage Dashboard */}
             <div>
               <label htmlFor="type-filter" className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">
                 Source Type
@@ -132,14 +133,12 @@ const ReportFilters: React.FC<Props> = ({
               <select
                 id="type-filter"
                 className="w-full border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm p-2.5 border bg-white cursor-pointer"
-                value={selectedSource}
-                onChange={(e) => setSelectedSource(e.target.value === 'All' ? 'All' : Number(e.target.value))}
+                value={selectedSource === 'All' ? 'All' : String(selectedSource)}
+                onChange={(e) => setSelectedSource(e.target.value === 'All' ? 'All' : Number(e.target.value) as ReportSource)}
               >
-                <option value="All">All Types</option>
-                <option value={ReportSource.Custom}>Custom Reports</option>
-                <option value={ReportSource.ManagedView}>Managed View</option>
-                <option value={ReportSource.PowerBI}>Power BI</option>
-                <option value={ReportSource.Insights}>Insights</option>
+                {SOURCE_TYPES.map(({ label, value }) => (
+                  <option key={String(value)} value={String(value)}>{label}</option>
+                ))}
               </select>
             </div>
 

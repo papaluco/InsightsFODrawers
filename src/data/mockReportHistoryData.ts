@@ -1,5 +1,7 @@
 import { ReportSource, ReportHistoryItem } from '../types/ReportTypes';
 
+const ONE_HOUR_AGO = new Date(Date.now() - 3_600_000).toISOString();
+
 export type { ReportHistoryItem };
 
 export const mockReportHistoryData: ReportHistoryItem[] = [
@@ -482,5 +484,82 @@ export const mockReportHistoryData: ReportHistoryItem[] = [
     fileSize: '4.5 MB',
     fileType: 'PDF',
     distributionDetails: { channels: ['Inbox'], recipients: 'Registrar_Office' }
+  },
+
+  // --- DOWNLOADS ---
+  {
+    id: 'hist-dl1-01',
+    reportId: 'cr-2',
+    name: 'Active User Permissions',
+    module: 'System',
+    dataSource: 'Users',
+    sourceType: ReportSource.Download,
+    runDate: ONE_HOUR_AGO,
+    status: 'Success',
+    fileUrl: 'https://raw.githubusercontent.com/dataprofessor/data/master/iris.csv',
+    fileSize: '12 KB',
+    fileType: 'CSV',
+    downloadedBy: 'Sarah Jenkins',
+    distributionDetails: { channels: [], recipients: '' }
+  },
+  {
+    id: 'hist-dl1-02',
+    reportId: 'cr-1',
+    name: 'District Income Rollup',
+    module: 'Accountability',
+    dataSource: 'Income Rollup Data',
+    sourceType: ReportSource.Download,
+    runDate: '2026-05-04T10:30:00Z',
+    status: 'Success',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileSize: '1.4 MB',
+    fileType: 'PDF',
+    downloadedBy: 'Michael Chen',
+    distributionDetails: { channels: [], recipients: '' }
+  },
+  {
+    id: 'hist-dl1-03',
+    reportId: 'pbi-3',
+    name: 'Inventory Turnover Heatmap',
+    module: 'Inventory',
+    dataSource: 'Turnover Metrics',
+    sourceType: ReportSource.Download,
+    runDate: '2026-05-02T14:15:00Z',
+    status: 'Success',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileSize: '5.4 MB',
+    fileType: 'PDF',
+    downloadedBy: 'Amanda Torres',
+    distributionDetails: { channels: [], recipients: '' }
+  },
+
+  // --- DISTRIBUTED REPORTS ---
+  {
+    id: 'hist-dist1-01',
+    reportId: 'mvr-1',
+    name: 'Site Attendance Grid',
+    module: 'Accountability',
+    dataSource: 'Sessions',
+    sourceType: ReportSource.Distributed,
+    runDate: '2026-05-04T16:00:00Z',
+    status: 'Success',
+    fileUrl: 'https://raw.githubusercontent.com/dataprofessor/data/master/iris.csv',
+    fileSize: '88 KB',
+    fileType: 'CSV',
+    distributionDetails: { channels: ['Email', 'Inbox'], recipients: 'district_admins@dist.edu' }
+  },
+  {
+    id: 'hist-dist1-02',
+    reportId: 'pbi-1',
+    name: 'Executive Activity Dashboard',
+    module: 'Accountability',
+    dataSource: 'Activity Report',
+    sourceType: ReportSource.Distributed,
+    runDate: '2026-05-03T08:00:00Z',
+    status: 'Success',
+    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+    fileSize: '3.2 MB',
+    fileType: 'PDF',
+    distributionDetails: { channels: ['Email', 'FTP'], recipients: 'Exec_Board' }
   }
 ];

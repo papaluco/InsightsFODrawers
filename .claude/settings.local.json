@@ -16,7 +16,11 @@
       "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Common\\\\KPISummary.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\KPISummary.tsx\")",
       "PowerShell(\"Done\")",
       "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Settings\\\\AI\\\\AIKPIDrawer.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\AIKPIDrawer.tsx\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "Bash(find c:\\\\\\\\Users\\\\\\\\Johnathon\\\\\\\\OneDrive\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\InsightsFODrawers\\\\\\\\src -type d -name \"*InsightsReport*\")"
     ]
   }
 }

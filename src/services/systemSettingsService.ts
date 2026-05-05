@@ -2,6 +2,12 @@ import { SystemSetting, MOCK_SYSTEM_SETTINGS } from '../data/mockSystemSettingsD
 
 const settingsStore: SystemSetting[] = MOCK_SYSTEM_SETTINGS.map(s => ({ ...s }));
 
+/** Synchronous read — safe to call from fire-and-forget tracking functions. */
+export function isSettingEnabled(settingCode: string): boolean {
+  const setting = settingsStore.find(s => s.settingCode === settingCode);
+  return setting?.currentValue === true;
+}
+
 export async function getSystemSettings(): Promise<SystemSetting[]> {
   await delay(150);
   return settingsStore.map(s => ({ ...s }));

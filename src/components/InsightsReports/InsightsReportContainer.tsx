@@ -1,10 +1,14 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { UnifiedReport, ReportSource, ReportHistoryItem } from '../../types/ReportTypes';
 import { getReports, getReportHistory, toggleStarReport } from '../../services/insightsReportService';
+import { trackReportEvent } from '../../services/reportUsageService';
 import ReportListTable from './ReportListTable';
 import StarredReportsGrid from './StarredReportsGrid';
 import ReportSidebar from './ReportSidebar';
 import ReportFilters from './ReportFilters';
+import DownloadReadyBanner from './DownloadReadyBanner';
+
+const EIGHT_HOURS_MS = 8 * 60 * 60 * 1000;
 
 // Lazy Imports
 const RecentReportsDrawer = React.lazy(() => import('./RecentReportsDrawer'));
@@ -34,10 +38,14 @@ const InsightsReportsContainer: React.FC = () => {
   const [configDrawer, setConfigDrawer] = useState<{
     isOpen: boolean;
     report: UnifiedReport | null;
+    historyItem: ReportHistoryItem | null;
   }>({
     isOpen: false,
-    report: null
+    report: null,
+    historyItem: null,
   });
+
+  const [dismissedDownloads, setDismissedDownloads] = useState<Set<string>>(new Set());
 
   const [viewerDrawer, setViewerDrawer] = useState<{
     isOpen: boolean;
@@ -102,13 +110,46 @@ const InsightsReportsContainer: React.FC = () => {
     setHistoryDrawer(prev => ({ ...prev, isOpen: false }));
   };
 
-  const handleViewConfig = useCallback((reportId: string) => {
+  const recentDownloads = useMemo(() => {
+    const now = Date.now();
+    return reportHistory.filter(h =>
+      h.sourceType === ReportSource.Download &&
+      h.status === 'Success' &&
+      h.fileUrl &&
+      (now - new Date(h.runDate).getTime()) <= EIGHT_HOURS_MS &&
+      !dismissedDownloads.has(h.id)
+    );
+  }, [reportHistory, dismissedDownloads]);
+
+  const handleDismissDownload = useCallback((id: string) => {
+    setDismissedDownloads(prev => new Set([...prev, id]));
+  }, []);
+
+  const handleViewConfig = useCallback((reportId: string, historyItem?: ReportHistoryItem) => {
     const report = reports.find(r => r.id === reportId);
     if (report) {
+      // For Download type, auto-resolve most recent history item if none provided
+      let resolvedItem = historyItem ?? null;
+      if (!resolvedItem && report.sourceType === ReportSource.Download) {
+        resolvedItem = [...reportHistory]
+          .filter(h => h.reportId === reportId && h.status === 'Success')
+          .sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime())[0] ?? null;
+      }
       setHistoryDrawer(prev => ({ ...prev, isOpen: false }));
-      setConfigDrawer({
-        isOpen: true,
-        report: report
+      setConfigDrawer({ isOpen: true, report, historyItem: resolvedItem });
+      trackReportEvent({
+        eventType: 'REPORT_CONFIG_VIEWED',
+        userId: 'current-user',
+        districtId: 'current-district',
+        platform: 'SchoolCafe',
+        context: {
+          reportId: report.id,
+          reportName: report.name,
+          reportType: ReportSource[report.sourceType],
+          module: report.module,
+          dataSource: report.dataSource,
+          entryPoint: 'FullDirectory',
+        },
       });
     }
   }, [reports]);
@@ -171,13 +212,14 @@ const InsightsReportsContainer: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto px-4 pb-20">
-      <ReportFilters 
+      <ReportFilters
         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
         selectedModule={selectedModule} setSelectedModule={setSelectedModule}
         selectedSource={selectedSource} setSelectedSource={setSelectedSource}
         selectedDataSource={selectedDataSource} setSelectedDataSource={setSelectedDataSource}
-        availableDataSources={reports.map(r => ({ name: r.dataSource, module: r.module }))}
       />
+
+      <DownloadReadyBanner recentDownloads={recentDownloads} onDismiss={handleDismissDownload} />
 
       <div className="grid grid-cols-12 gap-6 items-start">
         <div className="col-span-12 lg:col-span-8 xl:col-span-9 space-y-8">
@@ -189,7 +231,23 @@ const InsightsReportsContainer: React.FC = () => {
             totalStarredCount={starredReports.length}
             onToggleStar={toggleStar}
             onRunReport={(report) => openReportViewer(report)}
-            onDistributeReport={() => { }}
+            onDistributeReport={(report) => {
+              trackReportEvent({
+                eventType: 'REPORT_DISTRIBUTED',
+                userId: 'current-user',
+                districtId: 'current-district',
+                platform: 'SchoolCafe',
+                context: {
+                  reportId: report.id,
+                  reportName: report.name,
+                  reportType: ReportSource[report.sourceType],
+                  module: report.module,
+                  dataSource: report.dataSource,
+                  entryPoint: 'Starred',
+                  distributionType: 'Manual',
+                },
+              });
+            }}
 
             // Paging Props
             currentPage={currentPage}
@@ -214,7 +272,23 @@ const InsightsReportsContainer: React.FC = () => {
 
             // Handlers
             onRunReport={(report) => openReportViewer(report)}
-            onDistributeReport={() => { }}
+            onDistributeReport={(report) => {
+              trackReportEvent({
+                eventType: 'REPORT_DISTRIBUTED',
+                userId: 'current-user',
+                districtId: 'current-district',
+                platform: 'SchoolCafe',
+                context: {
+                  reportId: report.id,
+                  reportName: report.name,
+                  reportType: ReportSource[report.sourceType],
+                  module: report.module,
+                  dataSource: report.dataSource,
+                  entryPoint: 'FullDirectory',
+                  distributionType: 'Manual',
+                },
+              });
+            }}
             onToggleStar={toggleStar}
             onViewHistory={openHistoryDrawer}
             onViewConfig={(report) => handleViewConfig(report.id)}
@@ -262,6 +336,8 @@ const InsightsReportsContainer: React.FC = () => {
             isOpen={configDrawer.isOpen}
             onClose={closeConfigDrawer}
             reportName={configDrawer.report?.name}
+            reportType={configDrawer.report?.sourceType}
+            historyItem={configDrawer.historyItem}
           />
         )}
 

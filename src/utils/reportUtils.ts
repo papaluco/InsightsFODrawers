@@ -10,6 +10,10 @@ export const getReportSourceStyle = (source: ReportSource) => {
       return { text: 'PBI', bg: 'bg-yellow-50 text-yellow-700', border: 'border-yellow-200' };
     case ReportSource.Insights:
       return { text: 'INS', bg: 'bg-indigo-50 text-indigo-600', border: 'border-indigo-200' };
+    case ReportSource.Download:
+      return { text: 'DLD', bg: 'bg-teal-50 text-teal-700', border: 'border-teal-200' };
+    case ReportSource.Distributed:
+      return { text: 'DR', bg: 'bg-rose-50 text-rose-600', border: 'border-rose-200' };
     default:
       return { text: 'RPT', bg: 'bg-gray-50 text-gray-600', border: 'border-gray-200' };
   }
