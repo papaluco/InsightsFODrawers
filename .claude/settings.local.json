@@ -15,7 +15,8 @@
       "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Common\\\\KPIAbout.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\KPIAbout.tsx\")",
       "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Common\\\\KPISummary.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\KPISummary.tsx\")",
       "PowerShell(\"Done\")",
-      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Settings\\\\AI\\\\AIKPIDrawer.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\AIKPIDrawer.tsx\")"
+      "PowerShell(Move-Item \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\Settings\\\\AI\\\\AIKPIDrawer.tsx\" \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\\\\components\\\\InsightsDashboard\\\\AIKPIDrawer.tsx\")",
+      "Bash(npx tsc *)"
     ]
   }
 }

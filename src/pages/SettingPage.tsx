@@ -1,9 +1,16 @@
 import { useState } from 'react';
-import { Bot, ArrowRight } from 'lucide-react';
+import { Bot, ArrowRight, Settings2 } from 'lucide-react';
 import { AIConfigDrawer } from '../components/Settings/AI/AIConfigDrawer';
+import { SystemSettingsDrawer } from '../components/Settings/System/SystemSettingsDrawer';
+
+const MOCK_USER_ROLE = 'customer_support';
+const SYSTEM_SETTINGS_ROLES = ['customer_support', 'technical_support'];
 
 const SettingPage = () => {
   const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
+  const [isSystemDrawerOpen, setIsSystemDrawerOpen] = useState(false);
+
+  const canAccessSystemSettings = SYSTEM_SETTINGS_ROLES.includes(MOCK_USER_ROLE);
 
   return (
     <div className="min-h-full">
@@ -14,7 +21,7 @@ const SettingPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* AI Card */}
-        <div 
+        <div
           onClick={() => setIsAIDrawerOpen(true)}
           className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all cursor-pointer"
         >
@@ -27,13 +34,40 @@ const SettingPage = () => {
             Configure <ArrowRight size={16} />
           </div>
         </div>
+
+        {/* System Settings Card — role-gated */}
+        {canAccessSystemSettings && (
+          <div
+            onClick={() => setIsSystemDrawerOpen(true)}
+            className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all cursor-pointer"
+          >
+            <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center mb-4">
+              <Settings2 size={24} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">System Settings</h3>
+            <p className="text-gray-500 text-sm mb-6">Manage global and district-level configuration.</p>
+            <div className="text-teal-600 font-semibold flex items-center gap-2">
+              Configure <ArrowRight size={16} />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Independent Drawer Component */}
-      <AIConfigDrawer 
-        isOpen={isAIDrawerOpen} 
-        onClose={() => setIsAIDrawerOpen(false)} 
-      />
+      {/* Render AI Drawer if open */}
+      {isAIDrawerOpen && (
+        <AIConfigDrawer
+          isOpen={isAIDrawerOpen}
+          onClose={() => setIsAIDrawerOpen(false)}
+        />
+      )}
+
+      {/* Render System Drawer if open - Only ONE instance */}
+      {isSystemDrawerOpen && (
+        <SystemSettingsDrawer
+          isOpen={isSystemDrawerOpen}
+          onClose={() => setIsSystemDrawerOpen(false)}
+        />
+      )}
     </div>
   );
 };

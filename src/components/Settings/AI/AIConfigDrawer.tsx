@@ -156,7 +156,7 @@ export const AIConfigDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: 
   };
 
   return (
-    <div className={`absolute inset-0 bg-white z-50 transition-transform duration-500 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+    <div className={`fixed inset-0 bg-white z-50 transition-transform duration-500 transform ${ isOpen ? 'translate-x-0' : 'translate-x-full invisible' }`}>
       <div className="flex flex-col h-full bg-gray-50">
 
         <div className="h-20 bg-white border-b px-8 flex items-center justify-between shrink-0 shadow-sm">
