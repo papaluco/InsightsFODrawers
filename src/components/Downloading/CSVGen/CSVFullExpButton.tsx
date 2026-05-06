@@ -14,12 +14,14 @@ import { Database, Loader2, CheckCircle, Info, X, FileText } from 'lucide-react'
 interface CSVFullExpButtonProps {
   title: string;
   subtext?: string;
-  onClose?: () => void; 
+  onClose?: () => void;
+  onDownload?: () => void;
 }
 
-export const CSVFullExpButton: React.FC<CSVFullExpButtonProps> = ({ 
-  title, 
-  subtext = "Full system export"
+export const CSVFullExpButton: React.FC<CSVFullExpButtonProps> = ({
+  title,
+  subtext = "Full system export",
+  onDownload,
 }) => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
   const [isDismissed, setIsDismissed] = useState(false);
@@ -56,7 +58,8 @@ export const CSVFullExpButton: React.FC<CSVFullExpButtonProps> = ({
 
     setIsDismissed(false);
     setStatus('loading');
-    
+    onDownload?.();
+
     // Simulate API Request Latency
     setTimeout(() => {
       setStatus('success');

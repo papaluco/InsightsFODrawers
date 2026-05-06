@@ -1,4 +1,5 @@
-import { useState, lazy, Suspense, useCallback, useRef  } from 'react';
+import { useState, lazy, Suspense, useCallback, useRef, useEffect  } from 'react';
+import { trackInsightsEvent } from '../services/insightsUsageService';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import { DASHBOARD_METRICS, DASHBOARD_GRID_DATA } from '../data/mockDashData';
@@ -33,6 +34,17 @@ type NavOrigin = 'DASHBOARD' | 'MPLH_LIST' | 'PNA_LIST' | 'ENP_LIST';
 
 function InsightsPage() {
   const chartRef = useRef<HTMLDivElement>(null); // 1. Initialize the Ref
+
+  useEffect(() => {
+    trackInsightsEvent({
+      eventType: 'INSIGHTS_PAGE_VIEWED',
+      userId: 'current-user',
+      districtId: 'current-district',
+      platform: 'SchoolCafe',
+      context: {},
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Drawer States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -88,7 +100,8 @@ function InsightsPage() {
   const blob = await pdf(doc).toBlob();
  
   // 3. Trigger Download
- saveAs(blob, `Schoolie_Insights_${new Date().toISOString().split('T')[0]}.pdf`);
+  saveAs(blob, `Schoolie_Insights_${new Date().toISOString().split('T')[0]}.pdf`);
+  trackInsightsEvent({ eventType: 'DASHBOARD_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { format: 'PDF' } });
   } catch (error) {
     console.error("Export failed:", error);
   } finally {
@@ -111,16 +124,19 @@ function InsightsPage() {
   const handleOpenMPLHWithAI = () => {
     setShowAIAssistant(true);
     setIsDrawerOpen(true);
+    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH' } });
   };
 
   const handleOpenENPWithAI = () => {
     setShowENPAIAssistant(true);
     setIsENPDrawerOpen(true);
+    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'ENP' } });
   };
 
   const handleOpenPNAWithAI = () => {
     setShowPNAAIAssistant(true);
     setIsPNADrawerOpen(true);
+    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'PNA' } });
   };
 
   // CLOSE HANDLERS
@@ -185,9 +201,18 @@ function InsightsPage() {
           targetPNA={targetPNA}
           districtENPActual={districtENPActual}
           districtENPBenchmark={districtENPBenchmark}
-          onOpenMPLH={() => setIsDrawerOpen(true)}
-          onOpenPNA={() => setIsPNADrawerOpen(true)}
-          onOpenENP={() => setIsENPDrawerOpen(true)}
+          onOpenMPLH={() => {
+            setIsDrawerOpen(true);
+            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', isDistrictDrawer: true } });
+          }}
+          onOpenPNA={() => {
+            setIsPNADrawerOpen(true);
+            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'PNA', isDistrictDrawer: true } });
+          }}
+          onOpenENP={() => {
+            setIsENPDrawerOpen(true);
+            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'ENP', isDistrictDrawer: true } });
+          }}
         />
 
         {/* --- SCHOOL PERFORMANCE GRID --- */}

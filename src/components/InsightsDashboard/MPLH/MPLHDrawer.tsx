@@ -12,6 +12,7 @@ import { PDFExpButton } from '../../Downloading/PDFGen/PDFExpButton';
 import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';
 import { CSVMPLHAdapter } from '../../Downloading/CSVGen/adapters/CSVMPLHAdapter';
 import { CSVFullExpButton } from '../../Downloading/CSVGen/CSVFullExpButton';
+import { trackInsightsEvent } from '../../../services/insightsUsageService';
 
 interface MPLHDrawerProps {
   isOpen: boolean;
@@ -113,7 +114,10 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
                   <div className="px-4 py-1.5 bg-slate-50 border-b border-slate-100">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Visual Report</p>
                   </div>
-                  <PDFExpButton data={pdfData} />
+                  <PDFExpButton
+                    data={pdfData}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'PDF' } })}
+                  />
 
                   {/* Data Section */}
                   <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
@@ -124,23 +128,29 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
                     subtext="Download grid data as seen"
                     csvData={csvTypeData}
                     onClose={onClose}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                   <CSVExpButton
                     title="Summary by School (.csv)"
                     subtext="Download grid data as seen"
                     csvData={csvSchoolData}
                     onClose={onClose}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                   <CSVFullExpButton
                     title="Full Raw Data (.csv)"
                     subtext="Download all underlying data"
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                 </ExportMenu>
               )}
 
               {showAIAssistant && (
                 <button
-                  onClick={() => setIsAIOpen(true)}
+                  onClick={() => {
+                    setIsAIOpen(true);
+                    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH' } });
+                  }}
                   className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
                 >
                   <SchoolieIcon size={60} />

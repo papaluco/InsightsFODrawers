@@ -38,14 +38,14 @@ function applyFilters(events: ReportUsageEvent[], filters: Partial<ReportUsageFi
     if (filters.startDate && e.timestamp.slice(0, 10) < filters.startDate) return false;
     if (filters.endDate && e.timestamp.slice(0, 10) > filters.endDate) return false;
     if (filters.platform && e.platform !== filters.platform) return false;
-    if (filters.district && e.districtId !== filters.district) return false;
+    if (filters.districts?.length && !filters.districts.includes(e.districtId)) return false;
     if (filters.userId && e.userId !== filters.userId) return false;
     if (filters.reportName && e.context.reportName !== filters.reportName) return false;
     if (filters.reportType && e.context.reportType !== filters.reportType) return false;
     if (filters.module && e.context.module !== filters.module) return false;
     if (filters.dataSource && e.context.dataSource !== filters.dataSource) return false;
     if (filters.entryPoint && e.context.entryPoint !== filters.entryPoint) return false;
-    if (filters.eventType && e.eventType !== filters.eventType) return false;
+    if (filters.eventTypes?.length && !filters.eventTypes.includes(e.eventType)) return false;
     return true;
   });
 }

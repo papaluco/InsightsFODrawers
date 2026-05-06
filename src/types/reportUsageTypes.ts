@@ -38,28 +38,28 @@ export interface ReportUsageFilters {
   startDate: string;
   endDate: string;
   platform: string;
-  district: string;
+  districts: string[];
   userId: string;
   reportName: string;
   reportType: string;
   module: string;
   dataSource: string;
   entryPoint: string;
-  eventType: string;
+  eventTypes: string[];
 }
 
 export const DEFAULT_REPORT_FILTERS: ReportUsageFilters = {
   startDate: '',
   endDate: '',
   platform: '',
-  district: '',
+  districts: [],
   userId: '',
   reportName: '',
   reportType: '',
   module: '',
   dataSource: '',
   entryPoint: '',
-  eventType: '',
+  eventTypes: [],
 };
 
 export interface ReportUsageSummary {

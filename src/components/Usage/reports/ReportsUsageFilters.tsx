@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { SlidersHorizontal, ChevronDown, ChevronUp, X } from 'lucide-react';
-import { ReportUsageEvent } from '../../../types/reportUsageTypes';
-import { DEFAULT_REPORT_FILTERS } from '../../../types/reportUsageTypes';
+import { ReportUsageEvent, DEFAULT_REPORT_FILTERS } from '../../../types/reportUsageTypes';
 import type { ReportUsageFilters } from '../../../types/reportUsageTypes';
 import { getUsageEventFriendlyName } from '../../../constants/usageEventTypes';
 import { REPORT_MODULES, getDataSourceOptions } from '../../../constants/reportDataSources';
+import { MultiSelectDropdown, SelectOption } from '../../Common/MultiSelectDropdown';
 
 interface Props {
   filters: ReportUsageFilters;
@@ -20,7 +20,12 @@ const ENTRY_POINT_DISPLAY: Record<string, string> = {
   Recent: 'Recent',
 };
 
-const Select: React.FC<{ label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }> = ({ label, value, onChange, options }) => (
+const Select: React.FC<{
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}> = ({ label, value, onChange, options }) => (
   <div className="flex flex-col gap-1">
     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</label>
     <select
@@ -36,21 +41,37 @@ const Select: React.FC<{ label: string; value: string; onChange: (v: string) => 
 
 const SC_REPORT_TYPES = ['Insights', 'MVR', 'Custom', 'PowerBI', 'Download'];
 const PE_REPORT_TYPES = ['Distributed'];
-
 const MODULE_OPTIONS = REPORT_MODULES.map(m => ({ value: m, label: m }));
 
 const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) => {
   const [expanded, setExpanded] = useState(true);
 
-  const activeCount = Object.values(filters).filter(v => v !== '').length;
-  const set = (key: keyof ReportUsageFilters, val: string) => onChange({ ...filters, [key]: val });
+  const activeCount = [
+    filters.startDate !== '',
+    filters.endDate !== '',
+    filters.platform !== '',
+    filters.districts.length > 0,
+    filters.userId !== '',
+    filters.reportName !== '',
+    filters.reportType !== '',
+    filters.module !== '',
+    filters.dataSource !== '',
+    filters.entryPoint !== '',
+    filters.eventTypes.length > 0,
+  ].filter(Boolean).length;
+
   const clearAll = () => onChange({ ...DEFAULT_REPORT_FILTERS });
 
   // Platform-aware district options
-  const districtOptions = uniq(
-    (filters.platform ? allEvents.filter(e => e.platform === filters.platform) : allEvents)
-      .map(e => e.districtId)
-  );
+  const districtOptions = useMemo((): SelectOption[] => {
+    const src = filters.platform
+      ? allEvents.filter(e => e.platform === filters.platform)
+      : allEvents;
+    return uniq(src.map(e => e.districtId)).map(id => ({
+      value: id,
+      label: src.find(e => e.districtId === id)?.districtId ?? id,
+    }));
+  }, [allEvents, filters.platform]);
 
   // Platform-aware report type options
   const reportTypeOptions: string[] =
@@ -58,13 +79,11 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
       : filters.platform === 'SchoolCafe' ? SC_REPORT_TYPES
         : [...SC_REPORT_TYPES, ...PE_REPORT_TYPES];
 
-  // Data source options — driven by module + report type from constants
   const dataSourceOptions = useMemo(
     () => getDataSourceOptions(filters.module || undefined, filters.reportType || undefined),
     [filters.module, filters.reportType]
   );
 
-  // Report name options — filtered by module and data source
   const reportNameOptions = useMemo(() => {
     let events = allEvents;
     if (filters.module) events = events.filter(e => e.context.module === filters.module);
@@ -72,11 +91,15 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
     return uniq(events.map(e => e.context.reportName));
   }, [allEvents, filters.module, filters.dataSource]);
 
-  // Entry point options with friendly display
   const entryPointOptions = uniq(allEvents.map(e => e.context.entryPoint));
 
-  // Event type options with friendly names
-  const eventTypeRaw = uniq(allEvents.map(e => e.eventType));
+  const eventTypeOptions = useMemo((): SelectOption[] =>
+    uniq(allEvents.map(e => e.eventType)).map(et => ({
+      value: et,
+      label: getUsageEventFriendlyName(et),
+    })),
+    [allEvents]
+  );
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -109,15 +132,16 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
 
       {expanded && (
         <div className="border-t border-gray-100 px-5 py-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {/* Date range */}
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Start Date</label>
-            <input type="date" value={filters.startDate} onChange={e => set('startDate', e.target.value)}
+            <input type="date" value={filters.startDate}
+              onChange={e => onChange({ ...filters, startDate: e.target.value })}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">End Date</label>
-            <input type="date" value={filters.endDate} onChange={e => set('endDate', e.target.value)}
+            <input type="date" value={filters.endDate}
+              onChange={e => onChange({ ...filters, endDate: e.target.value })}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none" />
           </div>
 
@@ -125,22 +149,20 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
           <Select
             label="Platform"
             value={filters.platform}
-            onChange={v => onChange({ ...filters, platform: v, district: '', reportType: '', dataSource: '', reportName: '' })}
+            onChange={v => onChange({ ...filters, platform: v, districts: [], reportType: '', dataSource: '', reportName: '' })}
             options={[{ value: 'SchoolCafe', label: 'SchoolCafe' }, { value: 'PrimeroEdge', label: 'PrimeroEdge' }]}
           />
 
-          {/* District — filtered by platform */}
-          <Select
+          {/* District — multi-select searchable */}
+          <MultiSelectDropdown
             label="District"
-            value={filters.district}
-            onChange={v => set('district', v)}
-            options={districtOptions.map(id => ({
-              value: id,
-              label: allEvents.find(e => e.districtId === id)?.districtId ?? id,
-            }))}
+            options={districtOptions}
+            selected={filters.districts}
+            onChange={values => onChange({ ...filters, districts: values })}
+            placeholder="Search districts..."
           />
 
-          {/* Report type — filtered by platform; clears data source + report name */}
+          {/* Report type */}
           <Select
             label="Report Type"
             value={filters.reportType}
@@ -148,7 +170,6 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
             options={reportTypeOptions.map(t => ({ value: t, label: t }))}
           />
 
-          {/* Module — from canonical list; clears data source + report name */}
           <Select
             label="Module"
             value={filters.module}
@@ -156,7 +177,6 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
             options={MODULE_OPTIONS}
           />
 
-          {/* Data Source — driven by module + report type from constants */}
           <Select
             label="Data Source"
             value={filters.dataSource}
@@ -164,28 +184,27 @@ const ReportsUsageFilters: React.FC<Props> = ({ filters, onChange, allEvents }) 
             options={dataSourceOptions.map(ds => ({ value: ds.key, label: ds.label }))}
           />
 
-          {/* Report Name — filtered by module + data source */}
           <Select
             label="Report Name"
             value={filters.reportName}
-            onChange={v => set('reportName', v)}
+            onChange={v => onChange({ ...filters, reportName: v })}
             options={reportNameOptions.map(n => ({ value: n, label: n }))}
           />
 
-          {/* Entry Point — with friendly display */}
           <Select
             label="Entry Point"
             value={filters.entryPoint}
-            onChange={v => set('entryPoint', v)}
+            onChange={v => onChange({ ...filters, entryPoint: v })}
             options={entryPointOptions.map(ep => ({ value: ep, label: ENTRY_POINT_DISPLAY[ep] ?? ep }))}
           />
 
-          {/* Event Type — with friendly names */}
-          <Select
+          {/* Event Type — multi-select searchable */}
+          <MultiSelectDropdown
             label="Event Type"
-            value={filters.eventType}
-            onChange={v => set('eventType', v)}
-            options={eventTypeRaw.map(et => ({ value: et, label: getUsageEventFriendlyName(et) }))}
+            options={eventTypeOptions}
+            selected={filters.eventTypes}
+            onChange={values => onChange({ ...filters, eventTypes: values })}
+            placeholder="Search event types..."
           />
         </div>
       )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ReportHistoryItem } from '../../types/ReportTypes';
+import { ReportHistoryItem, ReportSource } from '../../types/ReportTypes';
 import { formatLastRun } from '../../utils/dateUtils';
 import { getReportSourceStyle } from '../../utils/reportUtils';
 import {
@@ -9,6 +9,8 @@ import {
   RefreshIcon,
   XIcon
 } from '../Common/Icons';
+
+type SidebarFilter = 'all' | 'reports' | 'downloads';
 
 interface Props {
   history: ReportHistoryItem[];
@@ -24,11 +26,18 @@ const renderTypeBadge = (item: ReportHistoryItem) => {
   );
 };
 
+const FILTER_CHIPS: { id: SidebarFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'reports', label: 'Reports' },
+  { id: 'downloads', label: 'Downloads' },
+];
+
 const LatestReportsSidebar: React.FC<Props> = ({ history, onViewAllHistory }) => {
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [confirmedReportId, setConfirmedReportId] = useState<string | null>(null);
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
   const [, setTick] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<SidebarFilter>('all');
 
   useEffect(() => {
     const timer = setInterval(() => setTick(t => t + 1), 60000);
@@ -38,10 +47,19 @@ const LatestReportsSidebar: React.FC<Props> = ({ history, onViewAllHistory }) =>
   const twoWeeksAgo = new Date();
   twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-  const displayHistory = [...history]
+  // Each chip gets its own independent top-10 slice — filtering "Reports" shows 10 reports,
+  // not just the non-download subset of the "All" top-10.
+  const recent = [...history]
     .filter(item => new Date(item.runDate) >= twoWeeksAgo)
-    .sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime())
-    .slice(0, 10);
+    .sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime());
+
+  const displayHistory = (
+    activeFilter === 'downloads'
+      ? recent.filter(item => item.sourceType === ReportSource.Download)
+      : activeFilter === 'reports'
+        ? recent.filter(item => item.sourceType !== ReportSource.Download)
+        : recent
+  ).slice(0, 10);
 
   const handleRetryConfirm = (id: string) => {
     if (cooldowns[id] && Date.now() < cooldowns[id]) return;
@@ -52,17 +70,44 @@ const LatestReportsSidebar: React.FC<Props> = ({ history, onViewAllHistory }) =>
 
   return (
     <div className="flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative">
-      {/* Header — View All removed from here, moved to bottom */}
-      <div className="px-5 py-4 flex justify-between items-center border-b border-gray-100 bg-white">
-        <div className="flex items-center gap-3">
-          <ReportIcon className="text-slate-600" />
-          <h2 className="text-lg font-semibold text-slate-800 tracking-tight">
-            Latest Reports &amp; Downloads
-          </h2>
+      {/* Header */}
+      <div className="px-5 pt-4 pb-3 border-b border-gray-100 bg-white">
+        {/* Row 1: icon + title + chevron */}
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center gap-3">
+            <ReportIcon className="text-slate-600" />
+            <h2 className="text-lg font-semibold text-slate-800 tracking-tight">
+              Latest Reports &amp; Downloads
+            </h2>
+          </div>
+          <button className="text-gray-400 hover:text-slate-600 transition-colors">
+            <ChevronUpIcon size={20} />
+          </button>
         </div>
-        <button className="text-gray-400 hover:text-slate-600 transition-colors">
-          <ChevronUpIcon size={20} />
-        </button>
+        {/* Row 2: View All + filter chips */}
+        <div className="flex items-center justify-between gap-3">
+          <button
+            onClick={onViewAllHistory}
+            className="text-[11px] font-bold text-primary hover:text-primary/80 uppercase tracking-tight transition-colors whitespace-nowrap"
+          >
+            View All
+          </button>
+          <div className="flex gap-1">
+            {FILTER_CHIPS.map(chip => (
+              <button
+                key={chip.id}
+                onClick={() => setActiveFilter(chip.id)}
+                className={`px-2.5 py-0.5 text-[11px] font-semibold rounded-full border transition-colors ${
+                  activeFilter === chip.id
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-white text-gray-500 border-gray-200 hover:border-primary hover:text-primary'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
@@ -168,15 +213,6 @@ const LatestReportsSidebar: React.FC<Props> = ({ history, onViewAllHistory }) =>
         })}
       </div>
 
-      {/* View All — moved to bottom */}
-      <div className="px-5 py-3 border-t border-gray-100 bg-white">
-        <button
-          onClick={onViewAllHistory}
-          className="w-full text-center text-[12px] font-bold text-primary hover:text-primary/80 py-1 rounded-md transition-all uppercase tracking-tight"
-        >
-          View All Reports &amp; Downloads
-        </button>
-      </div>
     </div>
   );
 };

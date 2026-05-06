@@ -11,7 +11,7 @@ const DownloadReadyBanner: React.FC<Props> = ({ recentDownloads, onDismiss }) =>
   if (recentDownloads.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mb-6">
       {recentDownloads.map(item => (
         <div
           key={item.id}

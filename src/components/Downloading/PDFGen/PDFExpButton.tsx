@@ -7,11 +7,13 @@ import { FileText } from 'lucide-react';
 interface PDFExpButtonProps {
   data: IPDFReportData;
   onClose?: () => void;
+  onDownload?: () => void;
 }
 
-export const PDFExpButton: React.FC<PDFExpButtonProps> = ({ 
-  data, 
-  onClose 
+export const PDFExpButton: React.FC<PDFExpButtonProps> = ({
+  data,
+  onClose,
+  onDownload,
 }) => {
   // UNIQUE FILE NAME LOGIC
   const getFileName = () => {
@@ -32,7 +34,7 @@ export const PDFExpButton: React.FC<PDFExpButtonProps> = ({
     >
       {({ loading }) => (
         <div 
-          onClick={() => onClose?.()}
+          onClick={() => { onClose?.(); onDownload?.(); }}
           className={`
             flex items-center px-4 py-3 text-sm transition-colors cursor-pointer
             ${loading ? 'text-slate-400 bg-slate-50 cursor-not-allowed' : 'text-slate-700 hover:bg-indigo-50'}

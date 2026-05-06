@@ -3,6 +3,7 @@ import { X, Target, Loader2 } from 'lucide-react';
 import { PNADetails } from './PNADetails';
 import { SchoolieIcon } from '../../Common/Icons';
 import { AIKPIDrawer } from '../AIKPIDrawer';
+import { trackInsightsEvent } from '../../../services/insightsUsageService';
 
 interface PNADrawerProps {
   isOpen: boolean;
@@ -90,7 +91,10 @@ export function PNADrawer({
             <div className="flex items-center space-x-2">
               {showAIAssistant && (
                 <button
-                  onClick={() => setIsAIOpen(true)}
+                  onClick={() => {
+                    setIsAIOpen(true);
+                    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'PNA' } });
+                  }}
                   className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
                 >
                   <SchoolieIcon size={60} />

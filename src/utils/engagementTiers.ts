@@ -98,5 +98,29 @@ export function calcReportUserScore(user: {
   return user.runs + user.downloads + user.emails + user.distributions;
 }
 
-// Insights score: TBD — will be added when Insights user grid is built.
+/** Insights: depth-weighted score — drawer opens and Schoolie carry more weight than raw interactions. */
+export function calcInsightsUserScore(user: {
+  interactions: number;
+  drawerOpens: number;
+  schoolieUsage: number;
+  downloads: number;
+}): number {
+  return user.interactions + user.drawerOpens * 2 + user.schoolieUsage * 3 + user.downloads;
+}
+
+/**
+ * Insights district score — normalized per active user so large districts don't
+ * automatically outrank small ones. Compares engagement depth, not raw volume.
+ */
+export function calcInsightsDistrictScore(district: {
+  interactions: number;
+  drawerOpens: number;
+  schoolieUsage: number;
+  downloads: number;
+  activeUsers: number;
+}): number {
+  const raw = district.interactions + district.drawerOpens * 2 + district.schoolieUsage * 3 + district.downloads;
+  return raw / Math.max(1, district.activeUsers);
+}
+
 // App score: TBD — will be added when App Usage user grid is built.

@@ -211,7 +211,7 @@ const InsightsReportsContainer: React.FC = () => {
  
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto px-4 pb-20">
+    <div className=" max-w-[1600px] mx-auto px-4 pb-20">
       <ReportFilters
         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
         selectedModule={selectedModule} setSelectedModule={setSelectedModule}

@@ -20,7 +20,8 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\src\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Sort-Object)",
-      "Bash(find c:\\\\\\\\Users\\\\\\\\Johnathon\\\\\\\\OneDrive\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\InsightsFODrawers\\\\\\\\src -type d -name \"*InsightsReport*\")"
+      "Bash(find c:\\\\\\\\Users\\\\\\\\Johnathon\\\\\\\\OneDrive\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\InsightsFODrawers\\\\\\\\src -type d -name \"*InsightsReport*\")",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\Johnathon\\\\\\\\OneDrive\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\InsightsFODrawers\\\\\\\\src\\\\\\\\components\" -maxdepth 2 -type f -name \"*Insights*\")"
     ]
   }
 }
