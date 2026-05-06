@@ -27,6 +27,7 @@ import ReportsGrid from './ReportsGrid';
 import ReportsUserGrid from './ReportsUserGrid';
 import ReportsDistrictGrid from './ReportsDistrictGrid';
 import ReportEventListDrawer from './ReportEventListDrawer';
+import ReportsUserDetailPage from './ReportsUserDetailPage';
 
 type Tab = 'overview' | 'reports' | 'users' | 'districts';
 
@@ -58,6 +59,7 @@ const ReportsUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
   const [loading, setLoading] = useState(true);
 
   const [drill, setDrill] = useState<EventDrill | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserStatRow | null>(null);
 
   useEffect(() => {
     getAllReportEvents().then(setAllEvents);
@@ -179,7 +181,7 @@ const ReportsUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
           {TABS.map(t => (
             <button
               key={t.id}
-              onClick={() => setTab(t.id)}
+              onClick={() => { setTab(t.id); setSelectedUser(null); }}
               className={`px-5 py-2.5 text-sm font-semibold transition-colors -mb-px ${
                 tab === t.id
                   ? 'text-primary border-b-2 border-primary'
@@ -241,9 +243,17 @@ const ReportsUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
 
       {/* Users tab */}
       {tab === 'users' && (
-        <div className="space-y-5">
-          <ReportsUserGrid data={userStats} />
-        </div>
+        selectedUser ? (
+          <ReportsUserDetailPage
+            user={selectedUser}
+            allEvents={allEvents}
+            onClose={() => setSelectedUser(null)}
+          />
+        ) : (
+          <div className="space-y-5">
+            <ReportsUserGrid data={userStats} onRowClick={row => setSelectedUser(row)} />
+          </div>
+        )
       )}
 
       {/* Districts tab */}

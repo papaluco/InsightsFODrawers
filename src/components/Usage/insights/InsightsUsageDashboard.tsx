@@ -37,7 +37,7 @@ import InsightsKPITabCards from './InsightsKPITabCards';
 import InsightsKPICoOccurrenceMatrix from './InsightsKPICoOccurrenceMatrix';
 import InsightsKPIAbout from './InsightsKPIAbout';
 import InsightsOverviewActivityTrend from './InsightsOverviewActivityTrend';
-import InsightsUserDetailDrawer from '../common/InsightsUserDetailDrawer';
+import InsightsUserDetailDrawer from './InsightsUserDetailDrawer';
 const InsightsEventListDrawer = lazy(() => import('./InsightsEventListDrawer'));
 
 type Tab = 'overview' | 'kpis' | 'users' | 'districts';
