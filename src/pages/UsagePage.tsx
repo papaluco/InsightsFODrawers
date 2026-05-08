@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { BarChart3, ChefHat, Bot, ThumbsUp, FileBarChart, ArrowRight } from 'lucide-react';
+import { BarChart3, ChefHat, Bot, ThumbsUp, FileBarChart, Globe, ArrowRight } from 'lucide-react';
 import InsightsUsageDrawer from '../components/Usage/InsightsUsageDrawer';
 import MenuAnalysisUsageDrawer from '../components/Usage/MenuAnalysisUsageDrawer';
 import SchoolieUsageDrawer from '../components/Usage/SchoolieUsageDrawer';
 import SchoolieFeedbackUsageDrawer from '../components/Usage/SchoolieFeedbackUsageDrawer';
 import ReportsUsageDrawer from '../components/Usage/ReportsUsageDrawer';
+import AppUsageDrawer from '../components/Usage/AppUsageDrawer';
 
 const UsagePage = () => {
   const [insightsOpen, setInsightsOpen] = useState(false);
@@ -12,6 +13,7 @@ const UsagePage = () => {
   const [schoolieOpen, setSchoolieOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [appOpen, setAppOpen] = useState(false);
 
   return (
     <div className="min-h-full">
@@ -97,6 +99,21 @@ const UsagePage = () => {
           </div>
         </div>
 
+        {/* App Card */}
+        <div
+          onClick={() => setAppOpen(true)}
+          className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all cursor-pointer"
+        >
+          <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center mb-4">
+            <Globe size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">App</h3>
+          <p className="text-gray-500 text-sm mb-6">Session tracking, page views, and engagement across all features.</p>
+          <div className="text-teal-600 font-semibold flex items-center gap-2">
+            View Usage <ArrowRight size={16} />
+          </div>
+        </div>
+
       </div>
 
       <InsightsUsageDrawer isOpen={insightsOpen} onClose={() => setInsightsOpen(false)} />
@@ -104,6 +121,7 @@ const UsagePage = () => {
       <SchoolieUsageDrawer isOpen={schoolieOpen} onClose={() => setSchoolieOpen(false)} />
       <SchoolieFeedbackUsageDrawer isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       <ReportsUsageDrawer isOpen={reportsOpen} onClose={() => setReportsOpen(false)} />
+      <AppUsageDrawer isOpen={appOpen} onClose={() => setAppOpen(false)} />
     </div>
   );
 };

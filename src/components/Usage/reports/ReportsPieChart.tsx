@@ -76,7 +76,15 @@ const ReportsPieChart: React.FC<Props> = ({ data, title, colors = CHART_COLORS, 
                       dataKey="value"
                       startAngle={90}
                       endAngle={-270}
-                      onClick={onSegmentClick ? (entry) => onSegmentClick(entry.name) : undefined}
+                      onClick={
+                        onSegmentClick
+                          ? (entry) => {
+                              if (typeof entry.name === 'string') {
+                                onSegmentClick(entry.name);
+                              }
+                            }
+                          : undefined
+                      }
                       className={onSegmentClick ? 'cursor-pointer' : ''}
                       strokeWidth={2}
                       stroke="#fff"
