@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { AppUsageEvent } from '../../../types/appUsageTypes';
+import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
 
 type Grouping = 'daily' | 'weekly' | 'monthly';
 type Metric = 'sessions' | 'users' | 'districts';
@@ -10,6 +11,9 @@ type Metric = 'sessions' | 'users' | 'districts';
 interface Props {
   events: AppUsageEvent[];
 }
+
+const TAB_COLOR = TAB_COLORS.Overview;      // #6366f1
+const SectionIcon = APP_ICONS.TRENDS; // Assuming you have an icon defined for this in your helpers
 
 function formatKey(ts: string, grouping: Grouping): string {
   const d = new Date(ts);
@@ -76,7 +80,13 @@ const AppUsageOverviewChart: React.FC<Props> = ({ events }) => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex w-full items-center justify-between px-5 py-4">
-        <button onClick={() => setExpanded(e => !e)} className="text-left focus:outline-none flex-1">
+
+        {/* Move the icon inside the button and add flex + gap */}
+        <button
+          onClick={() => setExpanded(e => !e)}
+          className="text-left focus:outline-none flex-1 flex items-center gap-3"
+        >
+          <SectionIcon size={18} style={{ color: TAB_COLOR }} />
           <h4 className="text-sm font-semibold text-gray-900">Usage Over Time</h4>
         </button>
         <div className="flex items-center gap-2">

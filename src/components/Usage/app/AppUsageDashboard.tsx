@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import {
   AppUsageEvent,
   AppUsageFilters,
@@ -77,6 +78,7 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
   const [selectedDistrict, setSelectedDistrict] = useState<AppDistrictStatRow | null>(null);
   const [isDistrictDetailOpen, setIsDistrictDetailOpen] = useState(false);
 
+
   useEffect(() => {
     getAllAppEvents().then(setAllEvents);
   }, []);
@@ -135,6 +137,22 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
     return key ? (ENTRY_POINT_COLORS[key] ?? APP_CHART_COLORS[0]) : APP_CHART_COLORS[0];
   });
 
+  // Platform donut data
+const platformData = useMemo(() => {
+  const counts = new Map<string, number>();
+  for (const e of filteredEvents) {
+    // Adjust 'platform' to match your actual event property name (e.g., context.platform)
+    const platform = e.platform || 'Unknown'; 
+    counts.set(platform, (counts.get(platform) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+}, [filteredEvents]);
+
+// Use a standard palette or define PLATFORM_COLORS in your helpers
+const platformColors = platformData.map((_, i) => APP_CHART_COLORS[i % APP_CHART_COLORS.length]);
+
   // Drill by page
   const drillByPage = (pageName: string) => {
     setDrill({
@@ -150,6 +168,14 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
     setDrill({
       events: filteredEvents.filter(e => e.context.entryPoint === key),
       title: `Entry Point — ${label}`,
+    });
+  };
+
+  // Drill by platform
+  const drillByPlatform = (platformName: string) => {
+    setDrill({
+      events: filteredEvents.filter(e => e.platform === platformName),
+      title: `Events — Platform: ${platformName}`,
     });
   };
 
@@ -271,7 +297,7 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
           <AppUsageOverviewChart events={filteredEvents} />
 
           {/* Page Usage + Entry Point donuts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <ReportsPieChart
               data={pageUsageData}
               title="Page Usage Breakdown"
@@ -285,6 +311,13 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
               colors={entryPointColors}
               onSegmentClick={drillByEntryPoint}
               emptyMessage="No entry point data available"
+            />
+            <ReportsPieChart
+              data={platformData}
+              title="Platform Breakdown"
+              colors={platformColors}
+              onSegmentClick={drillByPlatform}
+              emptyMessage="No platform data available"
             />
           </div>
 

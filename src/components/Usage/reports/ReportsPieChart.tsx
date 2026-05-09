@@ -56,83 +56,106 @@ const ReportsPieChart: React.FC<Props> = ({ data, title, colors = CHART_COLORS, 
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 px-5 pb-5 pt-4">
-          {isEmpty ? (
-            <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">
-              {emptyMessage ?? 'No data available'}
-            </div>
-          ) : (
-            <div className="flex items-center gap-5">
-              {/* Donut */}
-              <div style={{ width: 148, height: 148, flexShrink: 0 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={data}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={64}
-                      dataKey="value"
-                      startAngle={90}
-                      endAngle={-270}
-                      onClick={
-                        onSegmentClick
-                          ? (entry) => {
-                              if (typeof entry.name === 'string') {
-                                onSegmentClick(entry.name);
-                              }
-                            }
-                          : undefined
-                      }
-                      className={onSegmentClick ? 'cursor-pointer' : ''}
-                      strokeWidth={2}
-                      stroke="#fff"
-                    >
-                      <Label
-                        content={(props) => {
-                          const vb = props.viewBox as { cx: number; cy: number };
-                          return (
-                            <g>
-                              <text x={vb.cx} y={vb.cy - 7} textAnchor="middle" fill="#111827" fontSize="20" fontWeight="700">
-                                {total.toLocaleString()}
-                              </text>
-                              <text x={vb.cx} y={vb.cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">
-                                Total
-                              </text>
-                            </g>
-                          );
-                        }}
-                        position="center"
-                      />
-                      {data.map((_, i) => (
-                        <Cell key={i} fill={colors[i % colors.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+  <div className="border-t border-gray-100 px-5 pb-5 pt-4">
+    {isEmpty ? (
+      <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">
+        {emptyMessage ?? 'No data available'}
+      </div>
+    ) : (
+      /* Center the whole group to keep chart and legend close together */
+      <div className="flex justify-center items-center py-2">
+        <div className="flex items-center gap-10"> 
+          
+          {/* 1. Donut Chart */}
+          <div style={{ width: 148, height: 148, flexShrink: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
+                  outerRadius={64}
+                  dataKey="value"
+                  startAngle={90}
+                  endAngle={-270}
+                  onClick={
+                    onSegmentClick
+                      ? (entry) => {
+                          if (typeof entry.name === 'string') {
+                            onSegmentClick(entry.name);
+                          }
+                        }
+                      : undefined
+                  }
+                  className={onSegmentClick ? 'cursor-pointer' : ''}
+                  strokeWidth={2}
+                  stroke="#fff"
+                >
+                  <Label
+                    content={(props) => {
+                      const vb = props.viewBox as { cx: number; cy: number };
+                      return (
+                        <g>
+                          <text x={vb.cx} y={vb.cy - 7} textAnchor="middle" fill="#111827" fontSize="20" fontWeight="700">
+                            {total.toLocaleString()}
+                          </text>
+                          <text x={vb.cx} y={vb.cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">
+                            Total
+                          </text>
+                        </g>
+                      );
+                    }}
+                    position="center"
+                  />
+                  {data.map((_, i) => (
+                    <Cell key={i} fill={colors[i % colors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
-              {/* Side legend */}
-              <div className="flex-1 min-w-0 space-y-1">
-                {data.map((item, i) => (
-                  <button
-                    key={item.name}
-                    onClick={() => onSegmentClick?.(item.name)}
-                    className={`w-full flex items-center gap-2 py-1.5 px-2 rounded-lg transition-colors text-left ${onSegmentClick ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'}`}
-                  >
-                    <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: colors[i % colors.length] }} />
-                    <span className="text-xs text-gray-600 truncate flex-1 min-w-0">{item.name}</span>
-                    <span className="text-sm font-semibold text-gray-800 tabular-nums text-right w-10 flex-shrink-0">{item.value.toLocaleString()}</span>
-                    <span className="text-xs text-gray-400 text-right w-10 flex-shrink-0">{pct(item.value, total)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* 2. Side Legend - Fixed width keeps it from flying to the right edge */}
+          <div className="w-64 space-y-1">
+            {data.map((item, i) => (
+              <button
+                key={item.name}
+                onClick={() => onSegmentClick?.(item.name)}
+                className={`w-full flex items-center py-1.5 px-2 rounded-lg transition-colors text-left ${
+                  onSegmentClick ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'
+                }`}
+              >
+                {/* Color Indicator */}
+                <div 
+                  className="w-2.5 h-2.5 rounded-sm flex-shrink-0 mr-3" 
+                  style={{ backgroundColor: colors[i % colors.length] }} 
+                />
+                
+                {/* Name - flex-1 pushes the numbers to the end of the 64px width */}
+                <span className="text-xs text-gray-600 truncate flex-1 font-medium">
+                  {item.name}
+                </span>
+                
+                {/* Value Container - Fixed widths here keep columns straight */}
+                <div className="flex items-center gap-4 ml-4">
+                  <span className="text-sm font-bold text-gray-800 tabular-nums text-right w-12">
+                    {item.value.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-gray-400 text-right w-10">
+                    {pct(item.value, total)}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+
         </div>
-      )}
+      </div>
+    )}
+  </div>
+)}
     </div>
   );
 };

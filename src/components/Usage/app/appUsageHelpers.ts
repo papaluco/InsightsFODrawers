@@ -6,6 +6,11 @@ import {
   APP_INSIGHTS_INTERACTION_TYPES,
   APP_REPORTS_INTERACTION_TYPES,
 } from '../../../types/appUsageTypes';
+import { 
+  Users, Building2, Activity, Clock, TrendingUp, 
+  RefreshCw, MousePointerClick, 
+  Layers, Gauge 
+} from 'lucide-react';
 
 export const APP_CHART_COLORS = [
   '#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6',
@@ -34,10 +39,21 @@ export const APP_EVENT_COLORS: Record<string, string> = {
 };
 
 export const PAGE_COLORS: Record<string, string> = {
-  Workspace:   '#6366f1',
-  Insights:    '#3b82f6',
-  MenuAnalysis:'#10b981',
-  Reports:     '#f59e0b',
+  Workspace:    '#6366f1', // Indigo (Tech/General)
+  Insights:     '#3b82f6', // Blue (Data/Depth)
+  MenuAnalysis: '#f97316', // Orange (Spice/Food/Plating) - Very distinct from Teal
+  Reports:      '#f59e0b', // Amber (Warmth)
+  TimeAnalysis: '#14b8a6', // Teal (Time/Calendar)
+  Funnel:       '#ec4899', // Pink (Flow/Conversion)
+};
+
+export const TAB_COLORS: Record<string, string> = {
+  Overview:    '#6366f1', // Indigo (Tech/General)
+  Users:       '#3b82f6', // Blue (Data/Depth)
+  Districts:   '#f97316', // Orange (Spice/Food/Plating) - Very distinct from Teal
+  Sessions:    '#f59e0b', // Amber (Warmth)
+  Timming:     '#14b8a6', // Teal (Time/Calendar)
+  Funnel:      '#ec4899', // Pink (Flow/Conversion)
 };
 
 export const ENTRY_POINT_COLORS: Record<string, string> = {
@@ -45,6 +61,25 @@ export const ENTRY_POINT_COLORS: Record<string, string> = {
   InsightsDirect:     '#3b82f6',
   MenuAnalysisDirect: '#10b981',
   ReportsDirect:      '#f59e0b',
+};
+
+// Centralized Icon Registry
+export const APP_ICONS = {
+  // Section/Tab Icons
+  OVERVIEW: Activity,
+  DISTRICT: Building2,
+  USER: Users,
+  
+  // Metric/Functional Icons
+  SESSIONS: Activity,
+  PAGE_VIEWS: MousePointerClick,
+  TIME: Clock,
+  FREQUENCY: RefreshCw,
+  TRENDS: TrendingUp,
+  PAGES: Layers,
+  
+  // Generic KPI Header Icon
+  KPI_SECTION: Gauge, // Or Target/LayoutDashboard
 };
 
 export const ENTRY_POINT_LABELS: Record<string, string> = {

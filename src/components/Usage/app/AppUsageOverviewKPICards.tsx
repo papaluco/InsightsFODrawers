@@ -51,7 +51,12 @@ const AppOverviewKPICards: React.FC<Props> = ({
         onClick={() => setExpanded(e => !e)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors"
       >
-        <span className="text-sm font-semibold text-slate-700">Overview KPIs</span>
+        {/* Group Icon and Text together */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-slate-700">Overview KPIs</span>
+        </div>
+
+        {/* Chevron stays pushed to the far right because of justify-between */}
         <CollapseChevron expanded={expanded} />
       </button>
 
