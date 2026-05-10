@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { X, Globe, MessageSquare, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, MessageSquare, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { AppUsageEvent, AppUserStatRow, AppSessionStatRow, APP_EVENT_FRIENDLY } from '../../../types/appUsageTypes';
-import { fmtDateTime } from './appUsageHelpers';
+import { fmtDateTime, APP_ICONS, TAB_COLORS  } from './appUsageHelpers';
 import { APP_USER_NAMES, APP_DISTRICT_NAMES } from '../../../data/mockAppUsageData';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon, ChevronLeftIcon } from '../../Common/Icons';
@@ -190,13 +190,17 @@ const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, u
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors" title="Back">
               <ChevronLeftIcon size={20} />
             </button>
-            <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
-              <Globe size={20} className="text-teal-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-              <p className="text-xs text-gray-500">App usage events</p>
-            </div>
+            <div
+  className="w-10 h-10 rounded-xl flex items-center justify-center"
+  style={{ backgroundColor: `${TAB_COLORS.Event}1A` }}
+>
+  <APP_ICONS.EVENT size={20} style={{ color: TAB_COLORS.Event }} />
+</div>
+
+<div>
+  <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+  <p className="text-xs text-gray-500">App usage events</p>
+</div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
             <X size={20} />

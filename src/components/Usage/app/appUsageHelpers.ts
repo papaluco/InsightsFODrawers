@@ -9,8 +9,9 @@ import {
 import { 
   Users, Building2, Activity, Clock, TrendingUp, 
   RefreshCw, MousePointerClick, 
-  Layers, Gauge 
+  Layers, Gauge, Globe
 } from 'lucide-react';
+
 
 export const APP_CHART_COLORS = [
   '#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6',
@@ -45,6 +46,7 @@ export const PAGE_COLORS: Record<string, string> = {
   Reports:      '#f59e0b', // Amber (Warmth)
   TimeAnalysis: '#14b8a6', // Teal (Time/Calendar)
   Funnel:       '#ec4899', // Pink (Flow/Conversion)
+  Event:        '#8b5cf6',
 };
 
 export const TAB_COLORS: Record<string, string> = {
@@ -54,13 +56,7 @@ export const TAB_COLORS: Record<string, string> = {
   Sessions:    '#f59e0b', // Amber (Warmth)
   Timming:     '#14b8a6', // Teal (Time/Calendar)
   Funnel:      '#ec4899', // Pink (Flow/Conversion)
-};
-
-export const ENTRY_POINT_COLORS: Record<string, string> = {
-  Workspace:          '#6366f1',
-  InsightsDirect:     '#3b82f6',
-  MenuAnalysisDirect: '#10b981',
-  ReportsDirect:      '#f59e0b',
+  Event:       '#8b5cf6',
 };
 
 // Centralized Icon Registry
@@ -77,9 +73,18 @@ export const APP_ICONS = {
   FREQUENCY: RefreshCw,
   TRENDS: TrendingUp,
   PAGES: Layers,
+  EVENT: Globe,
   
   // Generic KPI Header Icon
   KPI_SECTION: Gauge, // Or Target/LayoutDashboard
+};
+
+
+export const ENTRY_POINT_COLORS: Record<string, string> = {
+  Workspace:          '#6366f1',
+  InsightsDirect:     '#3b82f6',
+  MenuAnalysisDirect: '#10b981',
+  ReportsDirect:      '#f59e0b',
 };
 
 export const ENTRY_POINT_LABELS: Record<string, string> = {

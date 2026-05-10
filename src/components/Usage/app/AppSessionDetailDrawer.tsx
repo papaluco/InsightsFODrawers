@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { X, FileText, Filter, PanelRight, Zap, Download, Bot, BarChart3, ChevronRight } from 'lucide-react';
-import { AppUsageEvent, AppSessionStatRow, APP_EVENT_FRIENDLY } from '../../../types/appUsageTypes';
+import { AppUsageEvent, AppSessionStatRow } from '../../../types/appUsageTypes';
 import { getAppSessionEvents } from '../../../services/appUsageService';
-import { fmtDateTime, fmtDuration, ENTRY_POINT_LABELS, getEventFriendlyLabel } from './appUsageHelpers';
+import { fmtDateTime, fmtDuration, ENTRY_POINT_LABELS, getEventFriendlyLabel, APP_ICONS, TAB_COLORS } from './appUsageHelpers';
 import { APP_USER_NAMES, APP_DISTRICT_NAMES } from '../../../data/mockAppUsageData';
 
 interface Props {
@@ -28,6 +28,19 @@ function isAppClose(e: AppUsageEvent) { return e.eventType === 'APP_CLOSED'; }
 const AppSessionDetailDrawer: React.FC<Props> = ({ session, isOpen, onClose }) => {
   const [events, setEvents] = useState<AppUsageEvent[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !isOpen) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+    };
+
+    window.addEventListener('keydown', h, true);
+    return () => window.removeEventListener('keydown', h, true);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen && session) {
@@ -58,23 +71,46 @@ const AppSessionDetailDrawer: React.FC<Props> = ({ session, isOpen, onClose }) =
   }, [events]);
 
   return (
+  <>
+    {isOpen && (
+      <div
+        className="fixed inset-0 z-[51] bg-black/20"
+        onClick={onClose}
+      />
+    )}
     <div className={`fixed top-0 right-0 h-full w-[560px] bg-white border-l border-gray-200 shadow-2xl z-[52] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between shrink-0">
-        <div>
-          <h3 className="text-base font-bold text-gray-900">Session Detail</h3>
-          {session && (
-            <p className="text-xs text-gray-400 mt-0.5 font-mono">{session.sessionId}</p>
-          )}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: `${TAB_COLORS.Sessions}1A` }}
+          >
+            <APP_ICONS.SESSIONS size={20} style={{ color: TAB_COLORS.Sessions }} />
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold text-gray-900">Session Detail</h3>
+
+            {session && (
+              <p className="text-xs text-gray-400 mt-0.5 font-mono">
+                {session.sessionId}
+              </p>
+            )}
+          </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
+
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+        >
           <X size={18} />
         </button>
       </div>
 
       {/* Session meta */}
       {session && (
-        <div className="px-6 py-4 border-b border-gray-100 grid grid-cols-2 gap-3 text-sm shrink-0 bg-slate-50">
+        <div className="px-6 py-4 border-b border-gray-100 grid grid-cols-2 gap-3 text-sm shrink-0 ">
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">User</p>
             <p className="font-medium text-slate-700">{APP_USER_NAMES[session.userId] ?? session.userId}</p>
@@ -160,17 +196,20 @@ const AppSessionDetailDrawer: React.FC<Props> = ({ session, isOpen, onClose }) =
                 <span className="text-sm text-gray-400 italic">App closed</span>
               </div>
             )}
-            {!session?.hasAppClosed && (
+                        {!session?.hasAppClosed && (
               <div className="flex items-center gap-3 py-2 px-3 mt-2 border border-dashed border-gray-200 rounded-xl">
                 <ChevronRight size={14} className="text-gray-400 flex-shrink-0" />
-                <span className="text-sm text-gray-400 italic">Session end not recorded — duration estimated</span>
+                <span className="text-sm text-gray-400 italic">
+                  Session end not recorded — duration estimated
+                </span>
               </div>
             )}
           </div>
         )}
       </div>
     </div>
-  );
+  </>
+);
 };
 
 export default AppSessionDetailDrawer;

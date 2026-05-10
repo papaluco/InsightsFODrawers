@@ -13,6 +13,8 @@ interface Props {
   onClose: () => void;
   onSessionClick?: (session: AppSessionStatRow) => void;
   onSessionEventsClick?: (session: AppSessionStatRow) => void;
+  onSessionUserClick?: (session: AppSessionStatRow) => void;
+  onSessionDistrictClick?: (session: AppSessionStatRow) => void;
 }
 
 const AppUserDetailDrawer: React.FC<Props> = ({
@@ -22,6 +24,8 @@ const AppUserDetailDrawer: React.FC<Props> = ({
   onClose,
   onSessionClick,
   onSessionEventsClick,
+  onSessionUserClick,
+  onSessionDistrictClick,
 }) => {
   const userSessions = user ? sessions.filter(s => s.userId === user.userId) : [];
 
@@ -39,6 +43,14 @@ useEffect(() => {
 }, [isOpen, onClose]);
 
   return (
+  <>
+    {isOpen && (
+      <div
+        className="fixed inset-0 z-[59] bg-black/20"
+        onClick={onClose}
+      />
+    )}
+
     <div className={`fixed top-0 right-0 h-full w-[960px] bg-white border-l border-gray-200 shadow-2xl z-[60] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
       <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -52,16 +64,16 @@ useEffect(() => {
         </div>
 
         <div className="flex items-center gap-3">
-  {user?.isPowerUser && (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
-      <Zap size={12} /> Power User
-    </div>
-  )}
+          {user?.isPowerUser && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
+              <Zap size={12} /> Power User
+            </div>
+          )}
 
-  <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
-    <X size={18} />
-  </button>
-</div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
+            <X size={18} />
+          </button>
+        </div>
       </div>
 
       {user && (
@@ -73,15 +85,18 @@ useEffect(() => {
             <FeedbackKPICard label="Last Active" value={fmtDate(user.lastActive)} icon={<User size={16} />} colorClass="bg-sky-50 text-sky-600" />
           </div>
 
-          <AppSessionGrid
-            data={userSessions}
-            onRowClick={onSessionClick}
-            onEventsClick={onSessionEventsClick}
-          />
+            <AppSessionGrid
+              data={userSessions}
+              onRowClick={onSessionClick}
+              onEventsClick={onSessionEventsClick}
+              onUserClick={onSessionUserClick}
+              onDistrictClick={onSessionDistrictClick}
+            />
         </div>
       )}
     </div>
-  );
+  </>
+);
 };
 
 export default AppUserDetailDrawer;

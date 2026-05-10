@@ -187,15 +187,6 @@ const platformColors = platformData.map((_, i) => APP_CHART_COLORS[i % APP_CHART
     });
   };
 
-  // Drill by district
-  const drillByDistrict = (district: AppDistrictStatRow) => {
-    if (district.hasNoActivity) return;
-    setDrill({
-      events: filteredEvents.filter(e => e.districtId === district.districtId),
-      title: `Events — ${district.districtName}`,
-    });
-  };
-
   // Drill into users list drawer
   const drillToUsers = (title: string, users: AppUserStatRow[]) => {
   setUserDrill({ title, users });
@@ -346,6 +337,10 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
                 sessionStats.filter(s => s.userId === user.userId)
               )
             }
+            onDistrictClick={user => {
+              const district = districtStats.find(d => d.districtId === user.districtId);
+              if (district) openDistrictDetail(district);
+            }}
             onRowClick={drillByUser}
           />
         </div>
@@ -363,7 +358,7 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
           />
           <AppDistrictGrid
             data={districtStats}
-            onRowClick={drillByDistrict}
+            onRowClick={openDistrictDetail}
             onUsersClick={district =>
               drillToUsers(
                 `Users — ${district.districtName}`,
@@ -392,9 +387,23 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
           />
           <AppSessionGrid
             data={sessionStats}
-            onRowClick={row => {
-              setSelectedSession(row);
+            onRowClick={session => {
+              setSelectedSession(session);
               setIsSessionDetailOpen(true);
+            }}
+            onEventsClick={session => {
+              setDrill({
+                events: filteredEvents.filter(e => e.sessionId === session.sessionId),
+                title: `Events — ${session.sessionId}`,
+              });
+            }}
+            onUserClick={session => {
+              const user = userStats.find(u => u.userId === session.userId);
+              if (user) openUserDetail(user);
+            }}
+            onDistrictClick={session => {
+              const district = districtStats.find(d => d.districtId === session.districtId);
+              if (district) openDistrictDetail(district);
             }}
           />
         </div>
@@ -517,6 +526,7 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
         }}
       />
 
+      {/* User detail drawer */}
       <AppUserDetailDrawer
         user={selectedUser}
         sessions={sessionStats}
@@ -531,6 +541,14 @@ const openDistrictDetail = (district: AppDistrictStatRow) => {
             events: filteredEvents.filter(e => e.sessionId === session.sessionId),
             title: `Events — ${session.sessionId}`,
           });
+        }}
+        onSessionUserClick={session => {
+          const user = userStats.find(u => u.userId === session.userId);
+          if (user) openUserDetail(user);
+        }}
+        onSessionDistrictClick={session => {
+          const district = districtStats.find(d => d.districtId === session.districtId);
+          if (district) openDistrictDetail(district);
         }}
       />
 

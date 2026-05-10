@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, UserCheck, RefreshCw, Zap, Activity, Clock } from 'lucide-react';
+import { Users, UserPlus, RotateCcw, Zap, BarChart3, Clock } from 'lucide-react';
 import { AppUserStatRow } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 
@@ -72,26 +72,56 @@ const AppUserKPICards: React.FC<Props> = ({
         <div className="border-t border-gray-100 px-5 py-4">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <ClickableCard onClick={onActiveUsersClick}>
-              <FeedbackKPICard label="Active Users" value={activeUsers.toLocaleString()} icon={<Users size={20} />} colorClass="bg-teal-50 text-teal-600" />
+              <FeedbackKPICard
+                label="Active Users"
+                value={activeUsers.toLocaleString()}
+                icon={<Users size={20} />}
+                colorClass="bg-teal-50 text-teal-600"
+              />
             </ClickableCard>
 
             <ClickableCard onClick={onNewUsersClick}>
-              <FeedbackKPICard label="New Users" value={newUsers.toLocaleString()} icon={<UserCheck size={20} />} colorClass="bg-emerald-50 text-emerald-600" />
+              <FeedbackKPICard
+                label="New Users"
+                value={newUsers.toLocaleString()}
+                icon={<UserPlus size={20} />}
+                colorClass="bg-emerald-50 text-emerald-600"
+              />
             </ClickableCard>
 
             <ClickableCard onClick={onReturningUsersClick}>
-              <FeedbackKPICard label="Returning Users" value={returningUsers.toLocaleString()} icon={<RefreshCw size={20} />} colorClass="bg-blue-50 text-blue-600" />
+              <FeedbackKPICard
+                label="Returning Users"
+                value={returningUsers.toLocaleString()}
+                icon={<RotateCcw size={20} />}
+                colorClass="bg-blue-50 text-blue-600"
+              />
             </ClickableCard>
 
             <ClickableCard onClick={onPowerUsersClick}>
-              <FeedbackKPICard label="Power Users" value={powerUsers.toLocaleString()} icon={<Zap size={20} />} colorClass="bg-amber-50 text-amber-600" />
+              <FeedbackKPICard
+                label="Power Users"
+                value={powerUsers.toLocaleString()}
+                icon={<Zap size={20} />}
+                colorClass="bg-amber-50 text-amber-600"
+              />
             </ClickableCard>
 
             <ClickableCard onClick={onAvgSessionsClick}>
-              <FeedbackKPICard label="Avg Sessions" value={avgSessions.toString()} icon={<Activity size={20} />} colorClass="bg-indigo-50 text-indigo-600" />
+              <FeedbackKPICard
+                label="Avg Sessions"
+                value={avgSessions.toString()}
+                icon={<BarChart3 size={20} />}
+                colorClass="bg-indigo-50 text-indigo-600"
+              />
             </ClickableCard>
 
-            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<Clock size={20} />} colorClass="bg-violet-50 text-violet-600" />
+            <FeedbackKPICard
+              label="Avg Duration"
+              value={`${avgDuration} min`}
+              icon={<Clock size={20} />}
+              colorClass="bg-violet-50 text-violet-600"
+            />
           </div>
         </div>
       )}

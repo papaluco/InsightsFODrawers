@@ -12,6 +12,8 @@ interface Props {
   data: AppSessionStatRow[];
   onRowClick?: (row: AppSessionStatRow) => void;
   onEventsClick?: (row: AppSessionStatRow) => void;
+  onUserClick?: (row: AppSessionStatRow) => void;
+  onDistrictClick?: (row: AppSessionStatRow) => void;
 }
 
 type SortKey = keyof AppSessionStatRow;
@@ -60,7 +62,7 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
-const AppSessionGrid: React.FC<Props> = ({ data, onRowClick, onEventsClick }) => {
+const AppSessionGrid: React.FC<Props> = ({ data, onRowClick, onEventsClick, onUserClick, onDistrictClick }) => {
   const [expanded, setExpanded] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'startTime', dir: 'desc' });
@@ -268,7 +270,9 @@ const AppSessionGrid: React.FC<Props> = ({ data, onRowClick, onEventsClick }) =>
                     {orderedVisibleCols.map(col => {
                       const isSessionClickable = col.key === 'sessionId' && !!onRowClick;
                       const isEventsClickable = col.key === 'eventCount' && !!onEventsClick;
-                      const isClickable = isSessionClickable || isEventsClickable;
+                      const isUserClickable = col.key === 'userName' && !!onUserClick;
+                      const isDistrictClickable = col.key === 'districtName' && !!onDistrictClick;
+                      const isClickable = isSessionClickable || isEventsClickable || isUserClickable || isDistrictClickable;
 
                       return (
                         <td
@@ -276,6 +280,8 @@ const AppSessionGrid: React.FC<Props> = ({ data, onRowClick, onEventsClick }) =>
                           onClick={() => {
                             if (isSessionClickable) onRowClick?.(row);
                             if (isEventsClickable) onEventsClick?.(row);
+                            if (isUserClickable) onUserClick?.(row);
+                            if (isDistrictClickable) onDistrictClick?.(row);
                           }}
                           className={`px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap ${isClickable
                             ? 'cursor-pointer hover:text-teal-600 font-medium hover:bg-slate-100'

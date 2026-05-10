@@ -10,6 +10,7 @@ interface Props {
   onRowClick?: (row: AppUserStatRow) => void;
   onUserClick?: (row: AppUserStatRow) => void;
   onSessionsClick?: (row: AppUserStatRow) => void;
+  onDistrictClick?: (row: AppUserStatRow) => void;
 }
 
 type SortKey = keyof AppUserStatRow;
@@ -32,7 +33,7 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
-const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSessionsClick }) => {
+const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSessionsClick, onDistrictClick }) => {
   const [expanded, setExpanded] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'sessions', dir: 'desc' });
@@ -62,7 +63,8 @@ const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSession
     setSort(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
   };
 
-  const isCellClickable = !!onRowClick;
+  const isEventClickable = !!onRowClick;
+const isDistrictClickable = !!onDistrictClick;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -129,18 +131,18 @@ const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSession
                     </td>
 
                     <td
-                      onClick={() => onRowClick?.(row)}
-                      className={`px-4 py-2.5 text-sm text-slate-500 ${
-                        isCellClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
-                      }`}
-                    >
-                      {row.districtName}
-                    </td>
+  onClick={() => onDistrictClick?.(row)}
+  className={`px-4 py-2.5 text-sm text-slate-500 ${
+    isDistrictClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
+  }`}
+>
+  {row.districtName}
+</td>
 
                     <td
                       onClick={() => onRowClick?.(row)}
                       className={`px-4 py-2.5 text-sm text-slate-500 ${
-                        isCellClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
+                        isEventClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
                       }`}
                     >
                       {row.platform}
@@ -159,7 +161,7 @@ const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSession
                     <td
                       onClick={() => onRowClick?.(row)}
                       className={`px-4 py-2.5 text-sm text-slate-500 tabular-nums ${
-                        isCellClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
+                        isEventClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
                       }`}
                     >
                       {row.eventCount}
@@ -168,7 +170,7 @@ const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSession
                     <td
                       onClick={() => onRowClick?.(row)}
                       className={`px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap ${
-                        isCellClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
+                        isEventClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
                       }`}
                     >
                       {fmtDate(row.lastActive)}
@@ -177,7 +179,7 @@ const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSession
                     <td
                       onClick={() => onRowClick?.(row)}
                       className={`px-4 py-2.5 text-sm text-slate-500 ${
-                        isCellClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
+                        isEventClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
                       }`}
                     >
                       {fmtDuration(row.avgSessionDuration)}
@@ -186,7 +188,7 @@ const AppUserGrid: React.FC<Props> = ({ data, onRowClick, onUserClick, onSession
                     <td
                       onClick={() => onRowClick?.(row)}
                       className={`px-4 py-2.5 ${
-                        isCellClickable ? 'cursor-pointer hover:bg-slate-100' : ''
+                        isEventClickable ? 'cursor-pointer hover:bg-slate-100' : ''
                       }`}
                     >
                       {row.isPowerUser && (

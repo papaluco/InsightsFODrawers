@@ -161,26 +161,24 @@ const AppDistrictGrid: React.FC<Props> = ({ data, onRowClick, onUsersClick, onSe
                       </button>
                     </td>
 
-                    <td
-                      onClick={() => {
-                        if (isRowClickable(row)) onRowClick?.(row);
-                      }}
-                      className={`px-4 py-2.5 text-sm text-slate-500 tabular-nums ${
-                        isRowClickable(row) ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
-                      }`}
-                    >
-                      {row.avgSessionsPerUser}
+                    <td className="px-4 py-2.5 text-sm">
+                      <button
+                        onClick={() => onSessionsClick?.(row)}
+                        disabled={row.sessions === 0 || row.hasNoActivity}
+                        className="text-slate-500 tabular-nums hover:text-indigo-600 hover:underline disabled:text-slate-300 disabled:hover:no-underline disabled:cursor-not-allowed"
+                      >
+                        {row.avgSessionsPerUser}
+                      </button>
                     </td>
 
-                    <td
-                      onClick={() => {
-                        if (isRowClickable(row)) onRowClick?.(row);
-                      }}
-                      className={`px-4 py-2.5 text-sm text-slate-500 ${
-                        isRowClickable(row) ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''
-                      }`}
-                    >
-                      {row.avgDuration > 0 ? fmtDuration(row.avgDuration) : '—'}
+                    <td className="px-4 py-2.5 text-sm">
+                      <button
+                        onClick={() => onSessionsClick?.(row)}
+                        disabled={row.sessions === 0 || row.hasNoActivity}
+                        className="text-slate-500 hover:text-indigo-600 hover:underline disabled:text-slate-300 disabled:hover:no-underline disabled:cursor-not-allowed"
+                      >
+                        {row.avgDuration > 0 ? fmtDuration(row.avgDuration) : '—'}
+                      </button>
                     </td>
 
                     <td
