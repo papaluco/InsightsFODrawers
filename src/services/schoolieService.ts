@@ -51,6 +51,13 @@ export async function savePrompt(
   return { prompt: { ...updated }, archivedVersion: { ...archivedVersion } };
 }
 
+export async function getPromptAnalysis(promptId: string): Promise<{ html: string; generatedAt: string } | null> {
+  await delay(1500);
+  const prompt = promptStore.find(p => p.id === promptId);
+  if (!prompt?.previewOutput) return null;
+  return { html: prompt.previewOutput.trim(), generatedAt: new Date().toISOString() };
+}
+
 export async function getKPIAnalysis(kpiKey: KPIKey): Promise<AIResponsePayload> {
   await delay(1500);
   const response = mockAIResponses[kpiKey];

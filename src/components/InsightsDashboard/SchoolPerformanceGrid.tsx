@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { SchoolieIcon } from '../Common/Icons';
 
 interface SchoolPerformanceData {
   school: string;
@@ -52,7 +53,11 @@ const SortIcon = ({ column, config }: { column: string, config: any }) => {
     : <ChevronDown className="w-4 h-4 text-blue-600" />;
 };
 
-export const SchoolPerformanceGrid: React.FC = () => {
+interface SchoolPerformanceGridProps {
+  onSchoolieClick?: () => void;
+}
+
+export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ onSchoolieClick }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number | 'All'>(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,15 +116,26 @@ export const SchoolPerformanceGrid: React.FC = () => {
             <h3 className="text-lg font-bold text-gray-800">School Performance</h3>
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider"> - Showing results for: Current Month </span>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search school..."
-            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-64"
-            value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-          />
+        <div className="flex items-center gap-3">
+          {onSchoolieClick && (
+            <button
+              onClick={onSchoolieClick}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+            >
+              <SchoolieIcon className="h-4 w-4" size={16} />
+              Ask Schoolie
+            </button>
+          )}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search school..."
+              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-64"
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            />
+          </div>
         </div>
       </div>
 

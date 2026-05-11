@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SchoolieIcon } from '../Common/Icons';
 import {
   ComposedChart,
   Bar,
@@ -28,7 +29,11 @@ const MOCK_CHART_DATA = [
   { name: "Jun 2025", value: 2553, benchmark: 2200 },
 ];
 
-export const PerformanceTrends: React.FC = () => {
+interface PerformanceTrendsProps {
+  onSchoolieClick?: () => void;
+}
+
+export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolieClick }) => {
   const [selectedKPI, setSelectedKPI] = useState('MEQs');
 
   // Logic to determine bar color based on value vs benchmark (from your screenshot)
@@ -42,15 +47,26 @@ export const PerformanceTrends: React.FC = () => {
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-lg font-bold text-gray-800">Performance Trends</h3>
-        <select
-          value={selectedKPI}
-          onChange={(e) => setSelectedKPI(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="MEQs">MEQs</option>
-          <option value="Meals">Meals</option>
-          <option value="Revenue">Revenue</option>
-        </select>
+        <div className="flex items-center gap-3">
+          {onSchoolieClick && (
+            <button
+              onClick={onSchoolieClick}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+            >
+              <SchoolieIcon className="h-4 w-4" size={16} />
+              Ask Schoolie
+            </button>
+          )}
+          <select
+            value={selectedKPI}
+            onChange={(e) => setSelectedKPI(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="MEQs">MEQs</option>
+            <option value="Meals">Meals</option>
+            <option value="Revenue">Revenue</option>
+          </select>
+        </div>
       </div>
 
       {/* Chart Container */}

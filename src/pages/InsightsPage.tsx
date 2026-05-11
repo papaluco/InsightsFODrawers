@@ -1,4 +1,6 @@
-import { useState, lazy, Suspense, useCallback, useRef, useEffect  } from 'react';
+import { useState, lazy, Suspense, useCallback, useRef, useEffect } from 'react';
+import { SchoolieDrawer } from '../components/InsightsDashboard/SchoolieDrawer';
+import type { SchoolieSourceEntryPoint } from '../types/schoolieFeedbackTypes';
 import { trackInsightsEvent } from '../services/insightsUsageService';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
@@ -58,6 +60,14 @@ function InsightsPage() {
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [showENPAIAssistant, setShowENPAIAssistant] = useState(false);
   const [showPNAAIAssistant, setShowPNAAIAssistant] = useState(false);
+
+  // Schoolie Drawer State (shared for Trends + Grid)
+  const [schoolieDrawer, setSchoolieDrawer] = useState<{
+    promptId: string;
+    title: string;
+    subtitle: string;
+    sourceEntryPoint: SchoolieSourceEntryPoint;
+  } | null>(null);
 
   // PDF Export State
   const [isExporting, setIsExporting] = useState(false);
@@ -139,6 +149,26 @@ function InsightsPage() {
     trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'PNA' } });
   };
 
+  const handleOpenTrendsSchoolie = () => {
+    setSchoolieDrawer({
+      promptId: 'trend_analysis',
+      title: 'Schoolie AI — Performance Trends',
+      subtitle: 'AI analysis of your performance trend data',
+      sourceEntryPoint: 'TrendAnalysis',
+    });
+    trackInsightsEvent({ eventType: 'DASHBOARD_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'TREND' } });
+  };
+
+  const handleOpenGridSchoolie = () => {
+    setSchoolieDrawer({
+      promptId: 'insights',
+      title: 'Schoolie AI — School Performance',
+      subtitle: 'AI analysis of school performance metrics',
+      sourceEntryPoint: 'Dashboard',
+    });
+    trackInsightsEvent({ eventType: 'DASHBOARD_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'INSIGHTS_GRID' } });
+  };
+
   // CLOSE HANDLERS
   const handleCloseMPLHDrawer = () => {
     setIsDrawerOpen(false);
@@ -216,11 +246,11 @@ function InsightsPage() {
         />
 
         {/* --- SCHOOL PERFORMANCE GRID --- */}
-        <SchoolPerformanceGrid />
+        <SchoolPerformanceGrid onSchoolieClick={handleOpenGridSchoolie} />
 
         {/* --- PERFORMANCE Trends --- */}
         <div ref={chartRef}>
-          <PerformanceTrends />
+          <PerformanceTrends onSchoolieClick={handleOpenTrendsSchoolie} />
         </div>
 
         {/* --- NAVIGATION LINKS --- */}
@@ -231,6 +261,17 @@ function InsightsPage() {
           onOpenAIPNA={handleOpenPNAWithAI}
         />
       </div>
+
+      {schoolieDrawer && (
+        <SchoolieDrawer
+          isOpen={schoolieDrawer !== null}
+          onClose={() => setSchoolieDrawer(null)}
+          title={schoolieDrawer.title}
+          subtitle={schoolieDrawer.subtitle}
+          promptId={schoolieDrawer.promptId}
+          sourceEntryPoint={schoolieDrawer.sourceEntryPoint}
+        />
+      )}
 
       <Suspense fallback={<div className="fixed inset-0 bg-black/20 z-50" />}>
         {/* MPLH Drawers */}
