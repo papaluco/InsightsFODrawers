@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Activity, Clock, Users, XCircle, CheckCircle, BarChart2 } from 'lucide-react';
+import { XCircle, CheckCircle, BarChart2 } from 'lucide-react';
 import { AppSessionStatRow } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
+import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -29,7 +30,7 @@ const ClickableCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-200"
+      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-200"
     >
       {children}
     </button>
@@ -67,23 +68,23 @@ const AppSessionKPICards: React.FC<Props> = ({
         <div className="border-t border-gray-100 px-5 py-4">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <ClickableCard onClick={onTotalSessionsClick}>
-              <FeedbackKPICard label="Total Sessions" value={total.toLocaleString()} icon={<Activity size={20} />} colorClass="bg-teal-50 text-teal-600" />
+              <FeedbackKPICard label="Total Sessions" value={total.toLocaleString()} icon={<APP_ICONS.SESSIONS size={20} />} colorClass={TAB_TAILWIND.Sessions} />
             </ClickableCard>
 
-            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<Clock size={20} />} colorClass="bg-indigo-50 text-indigo-600" />
+            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<APP_ICONS.TIME size={20} />} colorClass={TAB_TAILWIND.Sessions} />
 
-            <FeedbackKPICard label="Median Duration" value={`${Math.round(median * 10) / 10} min`} icon={<BarChart2 size={20} />} colorClass="bg-violet-50 text-violet-600" />
+            <FeedbackKPICard label="Median Duration" value={`${Math.round(median * 10) / 10} min`} icon={<BarChart2 size={20} />} colorClass={TAB_TAILWIND.Sessions} />
 
             <ClickableCard onClick={onSessionsPerUserClick}>
-              <FeedbackKPICard label="Sessions/User" value={sessionsPerUser.toString()} icon={<Users size={20} />} colorClass="bg-blue-50 text-blue-600" />
+              <FeedbackKPICard label="Sessions/User" value={sessionsPerUser.toString()} icon={<APP_ICONS.USER size={20} />} colorClass={TAB_TAILWIND.Sessions} />
             </ClickableCard>
 
             <ClickableCard onClick={onAppClosedClick}>
-              <FeedbackKPICard label="App Closed" value={withClosed.toLocaleString()} icon={<CheckCircle size={20} />} colorClass="bg-emerald-50 text-emerald-600" />
+              <FeedbackKPICard label="App Closed" value={withClosed.toLocaleString()} icon={<CheckCircle size={20} />} colorClass={TAB_TAILWIND.Sessions} />
             </ClickableCard>
 
             <ClickableCard onClick={onNoAppCloseClick}>
-              <FeedbackKPICard label="No App Close" value={withoutClosed.toLocaleString()} icon={<XCircle size={20} />} colorClass="bg-amber-50 text-amber-600" />
+              <FeedbackKPICard label="No App Close" value={withoutClosed.toLocaleString()} icon={<XCircle size={20} />} colorClass={TAB_TAILWIND.Sessions} />
             </ClickableCard>
           </div>
         </div>

@@ -41,32 +41,21 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
-function interpolateColor(a: string, b: string, t: number): string {
-  const hr = (h: string, o: number) => parseInt(h.replace('#', '').substring(o, o + 2), 16);
-  const r = Math.round(hr(a, 0) + (hr(b, 0) - hr(a, 0)) * t);
-  const g = Math.round(hr(a, 2) + (hr(b, 2) - hr(a, 2)) * t);
-  const bl = Math.round(hr(a, 4) + (hr(b, 4) - hr(a, 4)) * t);
-  return `rgb(${r},${g},${bl})`;
-}
-
-function getConversionColor(percentOfStart: number): string {
-  const intensity = Math.min(Math.max(percentOfStart / 100, 0), 1);
-  return interpolateColor('#d1fae5', '#059669', intensity);
-}
 
 function getCategoryIntroText(
   category: string,
   funnels: AppFunnelDef[],
   allFunnelData: Record<string, AppFunnelStepResult[]>
 ): string {
+  // Step 1 = Workspace, Step 2 = category page — use step 2 for "reached" count
   const allSteps = funnels.flatMap(f => allFunnelData[f.funnelId] ?? []);
-  const firstStep = allSteps.find(s => s.stepOrder === 1);
-  const reachedCount = firstStep?.count ?? 0;
+  const categoryStep = allSteps.find(s => s.stepOrder === 2);
+  const reachedCount = categoryStep?.count ?? 0;
 
   const finalSteps = funnels
     .map(f => {
       const steps = allFunnelData[f.funnelId] ?? [];
-      return steps.length > 1 ? steps[steps.length - 1] : null;
+      return steps.length > 2 ? steps[steps.length - 1] : null;
     })
     .filter(Boolean) as AppFunnelStepResult[];
 
@@ -89,83 +78,72 @@ function getCategoryIntroText(
 
 const FunnelCard = ({ funnel, steps, onStepClick }: any) => {
   const maxCount = steps.length > 0 ? steps[0].count : 1;
-  const visibleSteps = steps.length > 1 ? steps.slice(1) : steps;
+  const getStepColor = (stepKey: string): string =>
+    funnel.steps.find((s: any) => s.stepKey === stepKey)?.color ?? '#6366f1';
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
       <h4 className="text-sm font-bold text-slate-800 mb-3">{funnel.funnelName}</h4>
 
       <div className="space-y-2">
-        {visibleSteps.map((step: any) => {
-          const originalIndex = steps.findIndex((s: any) => s.stepKey === step.stepKey);
-          const isFinalStep = originalIndex === steps.length - 1;
+        {steps.map((step: any, idx: number) => {
+          const isFinalStep = idx === steps.length - 1;
+          const stepColor = getStepColor(step.stepKey);
+          const barWidthPct = Math.min(Math.max((step.count / maxCount) * 100, 2), 100);
 
           return (
             <React.Fragment key={step.stepKey}>
-            <button
-              
-              onClick={() => onStepClick(funnel, step)}
-              className={`w-full text-left group ${isFinalStep ? 'bg-slate-50 p-2 -mx-2 rounded-lg' : ''}`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold flex-1 truncate text-slate-700">
-                  {step.label}
-                </span>
-
-                <span className="text-xs font-bold tabular-nums text-slate-800">
-                  {step.count.toLocaleString()}
-                </span>
-
-                <span className="text-[10px] text-gray-400 w-20 text-right">
-                  {formatPercent(step.percentOfStart)}
-                </span>
-
-                
-              </div>
-
-              <div className="relative h-5 bg-slate-100 rounded-md overflow-hidden group-hover:ring-1 group-hover:ring-indigo-300 transition-all">
-                <div
-                  className="absolute inset-y-0 left-0 rounded-md transition-all duration-500"
-                  style={{
-                    width: `${Math.max((step.count / maxCount) * 100, 2)}%`,
-                    backgroundColor: getConversionColor(step.percentOfStart),
-                  }}
-                />
-
-                <div className="absolute inset-0 flex items-center px-2">
-                  <span
-                    className={`text-[10px] font-medium truncate ${isLightColor(step.percentOfStart)
-                        ? 'text-slate-700'
-                        : 'text-white drop-shadow-sm'
-                      }`}
-                  >
-                    {step.description}
+              <button
+                onClick={() => onStepClick(funnel, step)}
+                className={`w-full text-left group ${isFinalStep ? 'bg-slate-50 p-2 -mx-2 rounded-lg' : ''}`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold flex-1 truncate text-slate-700">
+                    {step.label}
+                  </span>
+                  <span className="text-xs font-bold tabular-nums text-slate-800">
+                    {step.count.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] text-gray-400 w-20 text-right">
+                    {formatPercent(step.percentOfStart)}
                   </span>
                 </div>
-              </div>
 
-              {step.dropOffFromPrevious > 0 && (
-                <div className="mt-1">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[10px] text-rose-500 font-medium">
-                      Drop-off
+                <div className="relative h-5 bg-slate-100 rounded-md overflow-hidden group-hover:ring-1 group-hover:ring-indigo-300 transition-all">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-md transition-all duration-500"
+                    style={{ width: `${barWidthPct}%`, backgroundColor: stepColor }}
+                  />
+                  <div className="absolute inset-0 flex items-center px-2">
+                    <span
+                      className={`text-[10px] font-medium truncate ${
+                        isLightColor(step.percentOfStart) ? 'text-slate-700' : 'text-white drop-shadow-sm'
+                      }`}
+                    >
+                      {step.description}
                     </span>
-                    <span className="text-[10px] text-rose-500 font-semibold tabular-nums">
-                      {formatPercent(step.dropOffFromPrevious)}
-                    </span>
-                  </div>
-
-                  <div className="h-1 bg-rose-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-rose-400 rounded-full"
-                      style={{ width: `${Math.min(step.dropOffFromPrevious, 100)}%` }}
-                    />
                   </div>
                 </div>
-              )}
-            </button>
 
-              {visibleSteps.indexOf(step) < visibleSteps.length - 1 && (
+                {step.dropOffFromPrevious > 0 && (
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-rose-500 font-medium">Drop-off</span>
+                      <span className="text-[10px] text-rose-500 font-semibold tabular-nums">
+                        {formatPercent(step.dropOffFromPrevious)}
+                      </span>
+                    </div>
+                    <div className="h-1 bg-rose-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-rose-400 rounded-full"
+                        style={{ width: `${Math.min(step.dropOffFromPrevious, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </button>
+
+              {idx < steps.length - 1 && (
                 <div className="flex justify-center -my-1">
                   <span className="text-[11px] text-gray-300">↓</span>
                 </div>

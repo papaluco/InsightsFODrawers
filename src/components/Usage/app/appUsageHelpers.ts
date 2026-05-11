@@ -59,6 +59,17 @@ export const TAB_COLORS: Record<string, string> = {
   Event:       '#8b5cf6',
 };
 
+// Tailwind class equivalents of TAB_COLORS for use with FeedbackKPICard colorClass prop
+export const TAB_TAILWIND: Record<string, string> = {
+  Overview:  'bg-indigo-50 text-indigo-600',
+  Users:     'bg-blue-50 text-blue-600',
+  Districts: 'bg-orange-50 text-orange-600',
+  Sessions:  'bg-amber-50 text-amber-600',
+  Timming:   'bg-teal-50 text-teal-600',
+  Funnel:    'bg-pink-50 text-pink-600',
+  Event:     'bg-violet-50 text-violet-600',
+};
+
 // Centralized Icon Registry
 export const APP_ICONS = {
   // Section/Tab Icons
@@ -141,6 +152,14 @@ export function isAppInteraction(e: AppUsageEvent): boolean {
   return [...APP_INSIGHTS_INTERACTION_TYPES, ...APP_REPORTS_INTERACTION_TYPES].includes(e.eventType);
 }
 
+const WORKSPACE_STEP = {
+  stepKey: 'viewed_workspace',
+  label: 'Viewed Workspace',
+  description: 'User started at the Workspace.',
+  color: PAGE_COLORS.Workspace,
+  match: (evs: AppUsageEvent[]) => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Workspace'),
+};
+
 // Predefined funnels
 export const APP_FUNNELS: AppFunnelDef[] = [
   // ─── Insights funnels ───
@@ -150,10 +169,12 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures how many sessions/users reached the Insights page.',
     category: 'Insights',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
+        color: PAGE_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
     ],
@@ -164,16 +185,19 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users performed a meaningful action after reaching Insights.',
     category: 'Insights',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
+        color: PAGE_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'interacted_insights',
         label: 'Interacted with Insights',
         description: 'User performed a meaningful action on the Insights Dashboard.',
+        color: APP_EVENT_COLORS.SITE_FILTER_CHANGED,
         match: evs => evs.some(e => APP_INSIGHTS_INTERACTION_TYPES.includes(e.eventType)),
       },
     ],
@@ -184,16 +208,19 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users drilled into KPI details.',
     category: 'Insights',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
+        color: PAGE_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_kpi_drawer',
         label: 'Opened KPI Drawer',
         description: 'User opened a KPI detail drawer.',
+        color: APP_EVENT_COLORS.KPI_DRAWER_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_OPENED'),
       },
     ],
@@ -204,22 +231,26 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users exported data after opening a KPI drawer.',
     category: 'Insights',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
+        color: PAGE_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_kpi_drawer',
         label: 'Opened KPI Drawer',
         description: 'User opened a KPI detail drawer.',
+        color: APP_EVENT_COLORS.KPI_DRAWER_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_OPENED'),
       },
       {
         stepKey: 'downloaded_from_drawer',
         label: 'Downloaded from Drawer',
         description: 'User exported data from a KPI drawer.',
+        color: APP_EVENT_COLORS.KPI_DRAWER_DOWNLOAD,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_DOWNLOAD'),
       },
     ],
@@ -230,22 +261,26 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users used AI analysis from a KPI drawer.',
     category: 'Insights',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
+        color: PAGE_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_kpi_drawer',
         label: 'Opened KPI Drawer',
         description: 'User opened a KPI detail drawer.',
+        color: APP_EVENT_COLORS.KPI_DRAWER_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_OPENED'),
       },
       {
         stepKey: 'opened_schoolie_from_drawer',
         label: 'Opened Schoolie from Drawer',
         description: 'User opened Schoolie AI analysis from a KPI drawer.',
+        color: APP_EVENT_COLORS.KPI_SCHOOLIE_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_SCHOOLIE_OPENED'),
       },
     ],
@@ -256,16 +291,19 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users used Schoolie from the Insights Dashboard.',
     category: 'Insights',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
+        color: PAGE_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_schoolie_dashboard',
         label: 'Opened Schoolie from Dashboard',
         description: 'User opened Schoolie AI analysis from the Insights Dashboard.',
+        color: APP_EVENT_COLORS.DASHBOARD_SCHOOLIE_OPENED,
         match: evs => evs.some(e => e.eventType === 'DASHBOARD_SCHOOLIE_OPENED'),
       },
     ],
@@ -277,10 +315,12 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures how many sessions/users reached Menu Analysis.',
     category: 'Menu Analysis',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_menu',
         label: 'Viewed Menu Analysis',
         description: 'User reached the Menu Analysis page.',
+        color: PAGE_COLORS.MenuAnalysis,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'MenuAnalysis'),
       },
     ],
@@ -291,17 +331,20 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users performed a meaningful action after reaching Menu Analysis.',
     category: 'Menu Analysis',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_menu',
         label: 'Viewed Menu Analysis',
         description: 'User reached the Menu Analysis page.',
+        color: PAGE_COLORS.MenuAnalysis,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'MenuAnalysis'),
       },
       {
         stepKey: 'interacted_menu',
         label: 'Interacted with Menu Analysis',
         description: 'User performed a meaningful action on Menu Analysis.',
-        // Empty interaction array — will be populated when Menu Analysis tracking is finalized
+        color: APP_EVENT_COLORS.SITE_FILTER_CHANGED,
+        // Will be populated when Menu Analysis tracking is finalized
         match: () => false,
       },
     ],
@@ -313,10 +356,12 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures how many sessions/users reached Reports.',
     category: 'Reports',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_reports',
         label: 'Viewed Reports',
         description: 'User reached the Reports page.',
+        color: PAGE_COLORS.Reports,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Reports'),
       },
     ],
@@ -327,16 +372,19 @@ export const APP_FUNNELS: AppFunnelDef[] = [
     description: 'Measures whether users performed a meaningful report action after reaching Reports.',
     category: 'Reports',
     steps: [
+      WORKSPACE_STEP,
       {
         stepKey: 'viewed_reports',
         label: 'Viewed Reports',
         description: 'User reached the Reports page.',
+        color: PAGE_COLORS.Reports,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Reports'),
       },
       {
         stepKey: 'interacted_reports',
         label: 'Interacted with Reports',
         description: 'User ran, downloaded, configured, distributed, or emailed a report.',
+        color: APP_EVENT_COLORS.REPORT_RUN,
         match: evs => evs.some(e => APP_REPORTS_INTERACTION_TYPES.includes(e.eventType)),
       },
     ],

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Users, UserPlus, RotateCcw, Zap, BarChart3, Clock } from 'lucide-react';
+import { UserPlus, Zap } from 'lucide-react';
 import { AppUserStatRow } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
+import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -30,7 +31,7 @@ const ClickableCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-200"
+      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-200"
     >
       {children}
     </button>
@@ -75,8 +76,8 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Active Users"
                 value={activeUsers.toLocaleString()}
-                icon={<Users size={20} />}
-                colorClass="bg-teal-50 text-teal-600"
+                icon={<APP_ICONS.USER size={20} />}
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
@@ -85,7 +86,7 @@ const AppUserKPICards: React.FC<Props> = ({
                 label="New Users"
                 value={newUsers.toLocaleString()}
                 icon={<UserPlus size={20} />}
-                colorClass="bg-emerald-50 text-emerald-600"
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
@@ -93,8 +94,8 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Returning Users"
                 value={returningUsers.toLocaleString()}
-                icon={<RotateCcw size={20} />}
-                colorClass="bg-blue-50 text-blue-600"
+                icon={<APP_ICONS.FREQUENCY size={20} />}
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
@@ -103,7 +104,7 @@ const AppUserKPICards: React.FC<Props> = ({
                 label="Power Users"
                 value={powerUsers.toLocaleString()}
                 icon={<Zap size={20} />}
-                colorClass="bg-amber-50 text-amber-600"
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
@@ -111,16 +112,16 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Avg Sessions"
                 value={avgSessions.toString()}
-                icon={<BarChart3 size={20} />}
-                colorClass="bg-indigo-50 text-indigo-600"
+                icon={<APP_ICONS.SESSIONS size={20} />}
+                colorClass={TAB_TAILWIND.Sessions}
               />
             </ClickableCard>
 
             <FeedbackKPICard
               label="Avg Duration"
               value={`${avgDuration} min`}
-              icon={<Clock size={20} />}
-              colorClass="bg-violet-50 text-violet-600"
+              icon={<APP_ICONS.TIME size={20} />}
+              colorClass={TAB_TAILWIND.Sessions}
             />
           </div>
         </div>

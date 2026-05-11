@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { X, Globe } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AppSessionStatRow } from '../../../types/appUsageTypes';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import AppSessionGrid from './AppSessionGrid';
+import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
 
 interface Props {
   sessions: AppSessionStatRow[];
@@ -10,6 +11,9 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSessionClick?: (session: AppSessionStatRow) => void;
+  onEventsClick?: (session: AppSessionStatRow) => void;
+  onUserClick?: (session: AppSessionStatRow) => void;
+  onDistrictClick?: (session: AppSessionStatRow) => void;
   isChildDrawerOpen?: boolean;
 }
 
@@ -19,6 +23,9 @@ const AppSessionListDrawer: React.FC<Props> = ({
   isOpen,
   onClose,
   onSessionClick,
+  onEventsClick,
+  onUserClick,
+  onDistrictClick,
   isChildDrawerOpen = false,
 }) => {
   useEffect(() => {
@@ -43,8 +50,8 @@ const AppSessionListDrawer: React.FC<Props> = ({
             <ChevronLeftIcon size={20} />
           </button>
 
-          <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
-            <Globe size={20} className="text-teal-600" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TAB_COLORS.Sessions}1A` }}>
+            <APP_ICONS.SESSIONS size={20} style={{ color: TAB_COLORS.Sessions }} />
           </div>
 
           <div>
@@ -67,9 +74,10 @@ const AppSessionListDrawer: React.FC<Props> = ({
 
         <AppSessionGrid
           data={sessions}
-          onRowClick={row => {
-            onSessionClick?.(row);
-          }}
+          onRowClick={onSessionClick}
+          onEventsClick={onEventsClick}
+          onUserClick={onUserClick}
+          onDistrictClick={onDistrictClick}
         />
       </div>
     </div>

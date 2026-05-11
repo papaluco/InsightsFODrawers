@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Users, Building2, Activity, Clock, TrendingUp, RefreshCw, UserCheck } from 'lucide-react';
+import { UserCheck } from 'lucide-react';
 import { AppUsageSummary } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
+import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -29,7 +30,7 @@ const ClickableCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-200"
+      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-200"
     >
       {children}
     </button>
@@ -51,12 +52,9 @@ const AppOverviewKPICards: React.FC<Props> = ({
         onClick={() => setExpanded(e => !e)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors"
       >
-        {/* Group Icon and Text together */}
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-slate-700">Overview KPIs</span>
         </div>
-
-        {/* Chevron stays pushed to the far right because of justify-between */}
         <CollapseChevron expanded={expanded} />
       </button>
 
@@ -67,8 +65,8 @@ const AppOverviewKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Active Users"
                 value={summary.activeUsers.toLocaleString()}
-                icon={<Users size={20} />}
-                colorClass="bg-teal-50 text-teal-600"
+                icon={<APP_ICONS.USER size={20} />}
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
@@ -76,8 +74,8 @@ const AppOverviewKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Active Districts"
                 value={summary.activeDistricts.toLocaleString()}
-                icon={<Building2 size={20} />}
-                colorClass="bg-sky-50 text-sky-600"
+                icon={<APP_ICONS.DISTRICT size={20} />}
+                colorClass={TAB_TAILWIND.Districts}
               />
             </ClickableCard>
 
@@ -85,24 +83,24 @@ const AppOverviewKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Total Sessions"
                 value={summary.totalSessions.toLocaleString()}
-                icon={<Activity size={20} />}
-                colorClass="bg-indigo-50 text-indigo-600"
+                icon={<APP_ICONS.SESSIONS size={20} />}
+                colorClass={TAB_TAILWIND.Sessions}
               />
             </ClickableCard>
 
             <FeedbackKPICard
               label="Avg Session"
               value={`${summary.avgSessionDuration} min`}
-              icon={<Clock size={20} />}
-              colorClass="bg-violet-50 text-violet-600"
+              icon={<APP_ICONS.TIME size={20} />}
+              colorClass={TAB_TAILWIND.Timming}
             />
 
             <FeedbackKPICard
               label="DAU / WAU / MAU"
               value={`${summary.dau}`}
               subtitle={`/ ${summary.wau} / ${summary.mau}`}
-              icon={<TrendingUp size={20} />}
-              colorClass="bg-amber-50 text-amber-600"
+              icon={<APP_ICONS.TRENDS size={20} />}
+              colorClass={TAB_TAILWIND.Overview}
             />
 
             <ClickableCard onClick={onNewUsersClick}>
@@ -110,15 +108,15 @@ const AppOverviewKPICards: React.FC<Props> = ({
                 label="New Users"
                 value={summary.newUsers.toLocaleString()}
                 icon={<UserCheck size={20} />}
-                colorClass="bg-emerald-50 text-emerald-600"
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
             <FeedbackKPICard
               label="Retention"
               value={`${summary.retentionPercent}%`}
-              icon={<RefreshCw size={20} />}
-              colorClass="bg-rose-50 text-rose-600"
+              icon={<APP_ICONS.FREQUENCY size={20} />}
+              colorClass={TAB_TAILWIND.Users}
             />
           </div>
         </div>

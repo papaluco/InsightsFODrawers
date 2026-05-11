@@ -46,13 +46,15 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
+  zIndex?: number;
+  isTopmost?: boolean;
   users?: AppUserStatRow[];
   sessions?: AppSessionStatRow[];
   onUserClick?: (user: AppUserStatRow) => void;
   onSessionClick?: (session: AppSessionStatRow) => void;
 }
 
-const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, users = [], sessions = [], onUserClick, onSessionClick }) => {
+const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, zIndex = 52, isTopmost = true, users = [], sessions = [], onUserClick, onSessionClick }) => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -74,26 +76,18 @@ const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, u
     return () => document.removeEventListener('mousedown', h);
   }, [showColPicker]);
 
-  // Escape: only close if detail is NOT open
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || !isOpen) return;
-
-      if (isDetailOpen) {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDetailOpen(false);
-        return;
-      }
-
+      if (isDetailOpen) return; // AppEventDetailDrawer handles its own Escape
+      if (!isTopmost) return;  // a higher drawer handles it
       e.preventDefault();
       e.stopPropagation();
       onClose();
     };
-
     window.addEventListener('keydown', h, true);
     return () => window.removeEventListener('keydown', h, true);
-  }, [isOpen, isDetailOpen, onClose]);
+  }, [isOpen, isDetailOpen, isTopmost, onClose]);
 
   const orderedVisibleCols = useMemo(
     () => colOrder.filter(k => visibleCols.includes(k)).map(k => COL_BY_KEY.get(k)!),
@@ -184,7 +178,7 @@ const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, u
 
   return (
     <>
-      <div className={`fixed inset-0 bg-white z-[52] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-0 bg-white flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ zIndex }}>
         <div className="px-8 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
           <div className="flex items-center gap-3">
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors" title="Back">
@@ -368,6 +362,7 @@ const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, u
         event={selectedEvent}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
+        zIndex={zIndex + 10}
       />
     </>
   );

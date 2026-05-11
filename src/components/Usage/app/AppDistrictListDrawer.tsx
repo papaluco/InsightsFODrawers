@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
-import { X, Building2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AppDistrictStatRow } from '../../../types/appUsageTypes';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import AppDistrictGrid from './AppDistrictGrid';
+import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
 
 interface Props {
   districts: AppDistrictStatRow[];
   title: string;
   isOpen: boolean;
   onClose: () => void;
+  isChildDrawerOpen?: boolean;
   onDistrictClick?: (district: AppDistrictStatRow) => void;
   onUsersClick?: (district: AppDistrictStatRow) => void;
   onSessionsClick?: (district: AppDistrictStatRow) => void;
@@ -19,6 +21,7 @@ const AppDistrictListDrawer: React.FC<Props> = ({
   title,
   isOpen,
   onClose,
+  isChildDrawerOpen = false,
   onDistrictClick,
   onUsersClick,
   onSessionsClick,
@@ -26,15 +29,14 @@ const AppDistrictListDrawer: React.FC<Props> = ({
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || !isOpen) return;
-
+      if (isChildDrawerOpen) return;
       e.preventDefault();
       e.stopPropagation();
       onClose();
     };
-
     window.addEventListener('keydown', h, true);
     return () => window.removeEventListener('keydown', h, true);
-  }, [isOpen, onClose]);
+  }, [isOpen, isChildDrawerOpen, onClose]);
 
   return (
     <div className={`fixed inset-0 bg-white z-[52] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -44,8 +46,8 @@ const AppDistrictListDrawer: React.FC<Props> = ({
             <ChevronLeftIcon size={20} />
           </button>
 
-          <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
-            <Building2 size={20} className="text-teal-600" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TAB_COLORS.Districts}1A` }}>
+            <APP_ICONS.DISTRICT size={20} style={{ color: TAB_COLORS.Districts }} />
           </div>
 
           <div>

@@ -220,6 +220,7 @@ export interface AppFunnelStepDef {
   stepKey: string;
   label: string;
   description: string;
+  color?: string;
   match: (sessionEvents: AppUsageEvent[]) => boolean;
 }
 

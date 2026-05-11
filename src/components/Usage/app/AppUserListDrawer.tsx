@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { X, Users } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AppUserStatRow } from '../../../types/appUsageTypes';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import AppUserGrid from './AppUserGrid';
+import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
 
 interface Props {
   users: AppUserStatRow[];
@@ -47,8 +48,8 @@ const AppUserListDrawer: React.FC<Props> = ({
             <ChevronLeftIcon size={20} />
           </button>
 
-          <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
-            <Users size={20} className="text-teal-600" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TAB_COLORS.Users}1A` }}>
+            <APP_ICONS.USER size={20} style={{ color: TAB_COLORS.Users }} />
           </div>
 
           <div>

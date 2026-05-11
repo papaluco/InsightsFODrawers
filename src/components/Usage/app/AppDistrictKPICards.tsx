@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Building2, AlertTriangle, Users, Activity, Clock } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { AppDistrictStatRow } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
+import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -29,7 +30,7 @@ const ClickableCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-200"
+      className="text-left rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-200"
     >
       {children}
     </button>
@@ -62,22 +63,22 @@ const AppDistrictKPICards: React.FC<Props> = ({
         <div className="border-t border-gray-100 px-5 py-4">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
             <ClickableCard onClick={onActiveDistrictsClick}>
-              <FeedbackKPICard label="Active Districts" value={active.length.toLocaleString()} icon={<Building2 size={20} />} colorClass="bg-teal-50 text-teal-600" />
+              <FeedbackKPICard label="Active Districts" value={active.length.toLocaleString()} icon={<APP_ICONS.DISTRICT size={20} />} colorClass={TAB_TAILWIND.Districts} />
             </ClickableCard>
 
             <ClickableCard onClick={onNoActivityClick}>
-              <FeedbackKPICard label="No Activity" value={noActivity.toLocaleString()} icon={<AlertTriangle size={20} />} colorClass="bg-rose-50 text-rose-600" />
+              <FeedbackKPICard label="No Activity" value={noActivity.toLocaleString()} icon={<AlertTriangle size={20} />} colorClass={TAB_TAILWIND.Districts} />
             </ClickableCard>
 
             <ClickableCard onClick={onAvgUsersClick}>
-              <FeedbackKPICard label="Avg Users/District" value={avgUsers.toString()} icon={<Users size={20} />} colorClass="bg-blue-50 text-blue-600" />
+              <FeedbackKPICard label="Avg Users/District" value={avgUsers.toString()} icon={<APP_ICONS.USER size={20} />} colorClass={TAB_TAILWIND.Districts} />
             </ClickableCard>
 
             <ClickableCard onClick={onAvgSessionsClick}>
-              <FeedbackKPICard label="Avg Sessions/District" value={avgSessions.toString()} icon={<Activity size={20} />} colorClass="bg-indigo-50 text-indigo-600" />
+              <FeedbackKPICard label="Avg Sessions/District" value={avgSessions.toString()} icon={<APP_ICONS.SESSIONS size={20} />} colorClass={TAB_TAILWIND.Districts} />
             </ClickableCard>
 
-            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<Clock size={20} />} colorClass="bg-violet-50 text-violet-600" />
+            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<APP_ICONS.TIME size={20} />} colorClass={TAB_TAILWIND.Districts} />
           </div>
         </div>
       )}

@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { AppUsageEvent, APP_EVENT_FRIENDLY } from '../../../types/appUsageTypes';
-import { fmtDateTime, APP_ICONS, TAB_COLORS  } from './appUsageHelpers';
+import { fmtDateTime, APP_ICONS, TAB_COLORS } from './appUsageHelpers';
 import { APP_USER_NAMES, APP_DISTRICT_NAMES } from '../../../data/mockAppUsageData';
-
 
 interface Props {
   event: AppUsageEvent | null;
   isOpen: boolean;
   onClose: () => void;
+  zIndex?: number;
+  isTopmost?: boolean;
 }
 
 const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
@@ -18,32 +19,37 @@ const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   </div>
 );
 
-const AppEventDetailDrawer: React.FC<Props> = ({ event, isOpen, onClose }) => {
+const AppEventDetailDrawer: React.FC<Props> = ({
+  event,
+  isOpen,
+  onClose,
+  zIndex = 60,
+  isTopmost = true,
+}) => {
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || !isOpen) return;
-
+      if (e.key !== 'Escape' || !isOpen || !isTopmost) return;
       e.preventDefault();
       e.stopPropagation();
       onClose();
     };
-
     window.addEventListener('keydown', h, true);
     return () => window.removeEventListener('keydown', h, true);
-  }, [isOpen, onClose]);
+  }, [isOpen, isTopmost, onClose]);
 
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[52] bg-black/20"
+          className="fixed inset-0 bg-black/20"
+          style={{ zIndex }}
           onClick={onClose}
         />
       )}
 
       <div
-        className={`fixed top-0 right-0 h-full w-[460px] bg-white border-l border-gray-200 shadow-2xl z-[53] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`fixed top-0 right-0 h-full w-[460px] bg-white border-l border-gray-200 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ zIndex: zIndex + 1 }}
       >
         <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -53,14 +59,12 @@ const AppEventDetailDrawer: React.FC<Props> = ({ event, isOpen, onClose }) => {
             >
               <APP_ICONS.EVENT size={20} style={{ color: TAB_COLORS.Event }} />
             </div>
-
             <div>
               <h3 className="text-base font-bold text-gray-900">
                 {event
                   ? APP_EVENT_FRIENDLY[event.eventType as keyof typeof APP_EVENT_FRIENDLY] ?? event.eventType
                   : 'Event Detail'}
               </h3>
-
               {event && (
                 <p className="text-xs text-gray-400">
                   {APP_USER_NAMES[event.userId] ?? event.userId} · {event.platform}
