@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { X, Target, Loader2 } from 'lucide-react';
 import { MPLHDetails } from './MPLHDetails';
 import { SchoolMPLHData } from '../../../data/mockMPLHData';
@@ -13,6 +13,7 @@ import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';
 import { CSVMPLHAdapter } from '../../Downloading/CSVGen/adapters/CSVMPLHAdapter';
 import { CSVFullExpButton } from '../../Downloading/CSVGen/CSVFullExpButton';
 import { trackInsightsEvent } from '../../../services/insightsUsageService';
+import { telemetry } from '../../../telemetry';
 
 interface MPLHDrawerProps {
   isOpen: boolean;
@@ -38,6 +39,35 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
   showAIAssistant = false,
 }) => {
   const [isAIOpen, setIsAIOpen] = useState(false);
+  const openedAtRef = useRef<number | null>(null);
+  const firedRef    = useRef(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      openedAtRef.current = performance.now();
+      firedRef.current    = false;
+    } else {
+      openedAtRef.current = null;
+      firedRef.current    = false;
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || isLoading || openedAtRef.current === null || firedRef.current) return;
+    firedRef.current = true;
+    const durationMs = Math.round(performance.now() - openedAtRef.current);
+    telemetry.trackPerformance('mplh_drawer_load', {
+      performanceCategory: 'drawer_load',
+      durationMs,
+      thresholdMs: 2000,
+      success: true,
+      module: 'insights',
+      source: 'frontend',
+      component: 'MPLHDrawer',
+      page: 'InsightsDashboard',
+    });
+    openedAtRef.current = null;
+  }, [isOpen, isLoading]);
 
   // --- PDF DATA MAPPING ---
   const pdfData = useMemo(() => {

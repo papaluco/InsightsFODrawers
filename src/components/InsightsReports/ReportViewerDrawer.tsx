@@ -14,6 +14,7 @@ import {
 
 import { getReportData } from '../../services/insightsReportService';
 import { trackReportEvent } from '../../services/reportUsageService';
+import { telemetry } from '../../telemetry';
 import { ReportPaging } from './ReportPaging';
 import { ReportSource } from '../../types/ReportTypes';
 import { getReportSourceStyle } from '../../utils/reportUtils';
@@ -60,9 +61,21 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
     useEffect(() => {
         if (isOpen) {
             setIsLoading(true);
+            const timer = telemetry.startPerformanceTimer('report_data_load', {
+              performanceCategory: 'api_request',
+              thresholdMs: 3000,
+              module: 'reports',
+              source: 'frontend',
+              component: 'ReportViewerDrawer',
+              page: 'ReportsPage',
+            });
             getReportData().then(data => {
                 setRawResponse(data);
                 setIsLoading(false);
+                timer.success();
+            }).catch(err => {
+                setIsLoading(false);
+                timer.failure(err);
             });
             if (reportInfo) {
                 trackReportEvent({

@@ -7,7 +7,8 @@ import {
   FileText,
   BookOpen,
   ChefHat,
-  Activity
+  Activity,
+  HeartPulse,
 } from 'lucide-react';
 
 const SidebarMenu = () => {
@@ -19,6 +20,7 @@ const SidebarMenu = () => {
     // { name: 'Learning', icon: BookOpen, path: '/learning' },
     { name: 'AI Assistant', icon: Bot, path: '/chat' },
     { name: 'Usage', icon: Activity, path: '/usage' },
+    { name: 'App Health', icon: HeartPulse, path: '/app-health' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 

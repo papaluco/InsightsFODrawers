@@ -12,20 +12,25 @@ import {
   REPORT_DISTRICT_NAMES,
 } from '../data/mockReportUsageData';
 import { isSettingEnabled } from './systemSettingsService';
+import { telemetry } from '../telemetry';
 
 // In-memory event store seeded from mock data
 const eventStore: ReportUsageEvent[] = [...mockReportUsageEvents];
 
-// Session ID generated once per page load
-const SESSION_ID = `session-${Date.now()}`;
-
 /** Fire-and-forget event tracking. No-ops when reports usage tracking is disabled. */
 export const trackReportEvent = (event: Omit<ReportUsageEvent, 'sessionId' | 'application' | 'page' | 'timestamp'>): void => {
   if (!isSettingEnabled('enable_reports_usage_tracking')) return;
+  const sessionId = telemetry.getSessionId();
+  telemetry.trackUsage(event.eventType.toLowerCase(), {
+    module: 'reports',
+    districtId: event.districtId,
+    userId: event.userId,
+    sessionId,
+  });
   void Promise.resolve().then(() => {
     eventStore.unshift({
       ...event,
-      sessionId: SESSION_ID,
+      sessionId,
       application: 'InsightsWorkspace',
       page: 'Reports',
       timestamp: new Date().toISOString(),

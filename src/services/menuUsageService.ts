@@ -16,6 +16,7 @@ import {
   MENU_USER_NAMES,
   MENU_DISTRICT_NAMES,
 } from '../data/mockMenuUsageData';
+import { telemetry } from '../telemetry';
 
 // In-memory event store seeded from mock data
 const eventStore: MenuUsageEvent[] = [...mockMenuUsageEvents];
@@ -45,6 +46,12 @@ function applyFilters(events: MenuUsageEvent[], filters: Partial<MenuUsageFilter
 }
 
 export async function trackMenuUsageEvent(event: Omit<MenuUsageEvent, 'timestamp'>): Promise<void> {
+  telemetry.trackUsage(event.eventType.toLowerCase(), {
+    module: 'menu_analysis',
+    districtId: event.districtId,
+    userId: event.userId,
+    sessionId: event.sessionId,
+  });
   eventStore.push({ ...event, timestamp: new Date().toISOString() } as MenuUsageEvent);
 }
 

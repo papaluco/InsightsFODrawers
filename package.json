@@ -15,6 +15,7 @@
     "@supabase/supabase-js": "^2.57.4",
     "@types/react-datepicker": "^6.2.0",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.4.2",
     "file-saver": "^2.0.5",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.344.0",

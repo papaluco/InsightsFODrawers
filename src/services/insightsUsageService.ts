@@ -15,16 +15,23 @@ import {
   INSIGHTS_DISTRICT_TIMEZONES,
 } from '../data/mockInsightsUsageData';
 import { isSettingEnabled } from './systemSettingsService';
+import { telemetry } from '../telemetry';
 
 const eventStore: InsightsUsageEvent[] = [...mockInsightsUsageEvents];
-const SESSION_ID = `insights-session-${Date.now()}`;
 
 export const trackInsightsEvent = (
   event: Omit<InsightsUsageEvent, 'sessionId' | 'timestamp'>
 ): void => {
   if (!isSettingEnabled('enable_insights_usage_tracking')) return;
+  const sessionId = telemetry.getSessionId();
+  telemetry.trackUsage(event.eventType.toLowerCase(), {
+    module: 'insights',
+    districtId: event.districtId,
+    userId: event.userId,
+    sessionId,
+  });
   void Promise.resolve().then(() => {
-    eventStore.unshift({ ...event, sessionId: SESSION_ID, timestamp: new Date().toISOString() });
+    eventStore.unshift({ ...event, sessionId, timestamp: new Date().toISOString() });
   }).catch(console.error);
 };
 
