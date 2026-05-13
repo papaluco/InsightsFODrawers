@@ -47,7 +47,19 @@ type TrackUsageInput =
 export const UsageTrackingService = {
   track(eventName: string, input: TrackUsageInput): void {
     try {
-      if (!TelemetryConfigResolver.isUsageEnabled(input.districtId)) return;
+      // Gate 1: excluded district
+      if (TelemetryConfigResolver.isDistrictExcluded(input.districtId)) return;
+
+      const cfg = TelemetryConfigResolver.getGlobalConfig();
+
+      // Gate 2: usage tracking enabled
+      if (!cfg.usageTrackingEnabled) return;
+
+      // Resolve category before gate 3 so we can check it
+      const usageCategory = input.usageCategory ?? inferCategory(eventName);
+
+      // Gate 3: event category
+      if (!TelemetryConfigResolver.isUsageCategoryEnabled(usageCategory)) return;
 
       const event: UsageTelemetryEvent = {
         // Enriched fields
@@ -58,7 +70,7 @@ export const UsageTrackingService = {
         sessionId:     input.sessionId ?? SessionManager.getSessionId(),
         source:        input.source    ?? 'frontend',
         module:        input.module    ?? DEFAULT_TELEMETRY_CONFIG.module,
-        usageCategory: input.usageCategory ?? inferCategory(eventName),
+        usageCategory,
         // Spread remaining input fields
         ...input,
       };

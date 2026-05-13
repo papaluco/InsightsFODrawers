@@ -13,7 +13,7 @@ interface Props {
   onRowClick?: (e: ErrorTelemetryEvent) => void;
 }
 
-type ColKey = 'timestamp' | 'eventName' | 'severity' | 'errorCategory' | 'module' | 'component' | 'isUserBlocking' | 'sessionId' | 'statusCode' | 'message' | 'page';
+type ColKey = 'timestamp' | 'eventName' | 'severity' | 'errorCategory' | 'module' | 'component' | 'userId' | 'districtId' | 'isUserBlocking' | 'sessionId' | 'statusCode' | 'message' | 'page';
 
 interface ColDef { key: ColKey; label: string; defaultVisible: boolean; sortable: boolean; }
 
@@ -24,6 +24,8 @@ const COLUMNS: ColDef[] = [
   { key: 'errorCategory', label: 'Category',  defaultVisible: true,  sortable: true  },
   { key: 'module',        label: 'Module',    defaultVisible: true,  sortable: true  },
   { key: 'component',     label: 'Component', defaultVisible: true,  sortable: true  },
+  { key: 'userId',        label: 'User',      defaultVisible: true,  sortable: true  },
+  { key: 'districtId',    label: 'District',  defaultVisible: true,  sortable: true  },
   { key: 'isUserBlocking',label: 'Blocking',  defaultVisible: true,  sortable: true  },
   { key: 'message',       label: 'Message',   defaultVisible: true,  sortable: false },
   { key: 'sessionId',     label: 'Session',   defaultVisible: false, sortable: false },
@@ -43,6 +45,8 @@ function getCsvValue(e: ErrorTelemetryEvent, key: ColKey): string {
     case 'errorCategory': return CAT_LABEL[e.errorCategory] ?? e.errorCategory;
     case 'module':        return e.module;
     case 'component':     return e.component ?? '';
+    case 'userId':        return e.userId ?? '';
+    case 'districtId':    return e.districtId ?? '';
     case 'isUserBlocking':return e.isUserBlocking ? 'Yes' : 'No';
     case 'message':       return e.message;
     case 'sessionId':     return e.sessionId;
@@ -107,6 +111,8 @@ const ErrorsGrid: React.FC<Props> = ({ events, onRowClick }) => {
         case 'errorCategory': cmp = a.errorCategory.localeCompare(b.errorCategory); break;
         case 'module':        cmp = a.module.localeCompare(b.module); break;
         case 'component':     cmp = (a.component ?? '').localeCompare(b.component ?? ''); break;
+        case 'userId':        cmp = (a.userId ?? '').localeCompare(b.userId ?? ''); break;
+        case 'districtId':    cmp = (a.districtId ?? '').localeCompare(b.districtId ?? ''); break;
         case 'isUserBlocking': cmp = Number(a.isUserBlocking) - Number(b.isUserBlocking); break;
         case 'statusCode':    cmp = (a.statusCode ?? 0) - (b.statusCode ?? 0); break;
         case 'page':          cmp = (a.page ?? '').localeCompare(b.page ?? ''); break;
@@ -288,6 +294,8 @@ const ErrorsGrid: React.FC<Props> = ({ events, onRowClick }) => {
                         {col.key === 'errorCategory' && <span className="text-xs">{CAT_LABEL[e.errorCategory] ?? e.errorCategory}</span>}
                         {col.key === 'module'        && <span className="text-xs">{e.module}</span>}
                         {col.key === 'component'     && <span className="text-xs text-gray-600">{e.component ?? <span className="text-gray-300">—</span>}</span>}
+                        {col.key === 'userId'        && <span className="text-xs text-gray-600">{e.userId ?? <span className="text-gray-300">—</span>}</span>}
+                        {col.key === 'districtId'    && <span className="text-xs text-gray-600">{e.districtId ?? <span className="text-gray-300">—</span>}</span>}
                         {col.key === 'isUserBlocking' && (
                           e.isUserBlocking
                             ? <span className="text-xs font-semibold text-rose-600">Yes</span>

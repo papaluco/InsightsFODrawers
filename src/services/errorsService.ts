@@ -8,6 +8,8 @@ export interface ErrorFilters {
   categories: ErrorCategory[];
   modules: string[];
   components: string[];
+  users: string[];
+  districts: string[];
   isUserBlocking: '' | 'true' | 'false';
   sessionSearch: string;
 }
@@ -16,6 +18,7 @@ export const DEFAULT_ERROR_FILTERS: ErrorFilters = {
   startDate: '', endDate: '',
   severities: [], categories: [],
   modules: [], components: [],
+  users: [], districts: [],
   isUserBlocking: '', sessionSearch: '',
 };
 
@@ -81,8 +84,12 @@ export async function getErrorData(filters: Partial<ErrorFilters> = {}): Promise
 
   const toOpt = (v: string) => ({ value: v, label: v.replace(/_/g, ' ') });
 
+  let events = res.events.map(toErrorEvent);
+  if (filters.users?.length)     events = events.filter(e => e.userId     && filters.users!.includes(e.userId));
+  if (filters.districts?.length) events = events.filter(e => e.districtId && filters.districts!.includes(e.districtId));
+
   return {
-    events: res.events.map(toErrorEvent),
+    events,
     kpis: {
       total:            res.kpis.total,
       critical:         res.kpis.critical,

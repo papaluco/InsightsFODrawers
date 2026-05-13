@@ -3,7 +3,7 @@ import type {
   PerformanceCategory,
   PerformanceTimer,
   PerformanceTrackingMode,
-  ResolvedTelemetryConfig,
+  TelemetryConfig,
 } from '../types';
 import { telemetryQueue } from '../core/TelemetryQueue';
 import { TelemetryConfigResolver } from '../core/TelemetryConfigResolver';
@@ -16,7 +16,7 @@ import { DEFAULT_TELEMETRY_CONFIG } from '../config/telemetryDefaults';
 function shouldCapture(
   isSlow: boolean,
   success: boolean,
-  cfg: ResolvedTelemetryConfig,
+  cfg: TelemetryConfig,
 ): boolean {
   const mode: PerformanceTrackingMode = cfg.performance.performanceTrackingMode;
 
@@ -41,11 +41,10 @@ function shouldCapture(
   return Math.random() < cfg.performance.performanceSampleRate;
 }
 
-function resolveThreshold(eventName: string, category: PerformanceCategory, districtId?: string): number | undefined {
-  // eventName-level threshold takes precedence over category-level
+function resolveThreshold(eventName: string, category: PerformanceCategory): number | undefined {
   return (
-    TelemetryConfigResolver.getThresholdMs(eventName, districtId) ??
-    TelemetryConfigResolver.getThresholdMs(category, districtId)
+    TelemetryConfigResolver.getThresholdMs(eventName) ??
+    TelemetryConfigResolver.getThresholdMs(category)
   );
 }
 
@@ -131,15 +130,22 @@ class PerformanceTimerImpl implements PerformanceTimer {
 export const PerformanceTrackingService = {
   track(eventName: string, input: TrackPerformanceInput): void {
     try {
-      const cfg = TelemetryConfigResolver.resolve(input.districtId);
+      // Gate 1: excluded district
+      if (TelemetryConfigResolver.isDistrictExcluded(input.districtId)) return;
+
+      const cfg = TelemetryConfigResolver.getGlobalConfig();
 
       const thresholdMs = input.thresholdMs
-        ?? resolveThreshold(eventName, input.performanceCategory, input.districtId);
+        ?? resolveThreshold(eventName, input.performanceCategory);
 
       const isSlow = input.isSlow
         ?? (thresholdMs !== undefined ? input.durationMs > thresholdMs : false);
 
+      // Gate 2: tracking mode / slow / failed overrides
       if (!shouldCapture(isSlow, input.success, cfg)) return;
+
+      // Gate 3: event category
+      if (!TelemetryConfigResolver.isPerfCategoryEnabled(input.performanceCategory)) return;
 
       const event: PerformanceTelemetryEvent = {
         // Enriched fields

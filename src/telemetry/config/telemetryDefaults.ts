@@ -1,9 +1,18 @@
-import type { TelemetryConfig } from '../types';
+import type { TelemetryConfig, EventCategoryId } from '../types';
+
+export const DEFAULT_EVENT_CATEGORY_IDS: EventCategoryId[] = [
+  'navigation',
+  'core_workflows',
+  'feature_engagement',
+  'filters_search',
+  'reports_exports',
+  'ai_interactions',
+];
 
 /**
  * Slow-event thresholds in milliseconds.
  * Keyed by performanceCategory (fallback) or specific eventName (takes precedence).
- * Override via TelemetryConfigResolver.updateGlobalConfig() or district overrides.
+ * Override via TelemetryConfigResolver.updateGlobalConfig().
  */
 export const DEFAULT_THRESHOLDS: Record<string, number> = {
   // ── By performanceCategory ────────────────────────────────────────────────
@@ -37,6 +46,7 @@ export const DEFAULT_TELEMETRY_CONFIG: TelemetryConfig = {
   criticalErrorsAlwaysCaptured: true,
   errorSanitizationEnabled:     true,
   excludedDistrictIds:          [],
+  enabledEventCategoryIds:      [...DEFAULT_EVENT_CATEGORY_IDS],
   batchSize:                    25,
   flushIntervalMs:              8000,
   maxRetries:                   3,

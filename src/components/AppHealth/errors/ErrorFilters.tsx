@@ -29,6 +29,8 @@ const ErrorFiltersBar: React.FC<Props> = ({ filters, onChange, allEvents }) => {
     filters.categories.length > 0,
     filters.modules.length > 0,
     filters.components.length > 0,
+    filters.users.length > 0,
+    filters.districts.length > 0,
     filters.isUserBlocking !== '',
     filters.sessionSearch !== '',
   ].filter(Boolean).length;
@@ -49,6 +51,18 @@ const ErrorFiltersBar: React.FC<Props> = ({ filters, onChange, allEvents }) => {
 
   const componentOptions = useMemo(() =>
     [...new Set(allEvents.map(e => e.component).filter((c): c is string => c != null))].sort()
+      .map(v => ({ value: v, label: v })),
+    [allEvents],
+  );
+
+  const userOptions = useMemo(() =>
+    [...new Set(allEvents.map(e => e.userId).filter((u): u is string => u != null))].sort()
+      .map(v => ({ value: v, label: v })),
+    [allEvents],
+  );
+
+  const districtOptions = useMemo(() =>
+    [...new Set(allEvents.map(e => e.districtId).filter((d): d is string => d != null))].sort()
       .map(v => ({ value: v, label: v })),
     [allEvents],
   );
@@ -82,7 +96,7 @@ const ErrorFiltersBar: React.FC<Props> = ({ filters, onChange, allEvents }) => {
       </button>
 
       {expanded && (
-        <div className="border-t border-gray-100 px-5 py-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="border-t border-gray-100 px-5 py-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Start Date</label>
             <input
@@ -132,6 +146,22 @@ const ErrorFiltersBar: React.FC<Props> = ({ filters, onChange, allEvents }) => {
             selected={filters.components}
             onChange={values => onChange({ ...filters, components: values })}
             placeholder="All components"
+          />
+
+          <MultiSelectDropdown
+            label="User"
+            options={userOptions}
+            selected={filters.users}
+            onChange={values => onChange({ ...filters, users: values })}
+            placeholder="All users"
+          />
+
+          <MultiSelectDropdown
+            label="District"
+            options={districtOptions}
+            selected={filters.districts}
+            onChange={values => onChange({ ...filters, districts: values })}
+            placeholder="All districts"
           />
 
           <div className="flex flex-col gap-1">

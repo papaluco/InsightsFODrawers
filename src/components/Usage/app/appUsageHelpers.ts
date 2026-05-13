@@ -9,7 +9,7 @@ import {
 import { 
   Users, Building2, Activity, Clock, TrendingUp, 
   RefreshCw, MousePointerClick, 
-  Layers, Gauge, Globe
+  Layers, Gauge, Globe, AlertCircle, Zap, Shield
 } from 'lucide-react';
 
 
@@ -68,6 +68,10 @@ export const TAB_TAILWIND: Record<string, string> = {
   Timming:   'bg-teal-50 text-teal-600',
   Funnel:    'bg-pink-50 text-pink-600',
   Event:     'bg-violet-50 text-violet-600',
+  Usage:     'bg-blue-50 text-blue-600',
+  Error:     'bg-rose-50 text-rose-600',    
+  Peformance:  'bg-green-50 text-green-600',
+  Reliability: 'bg-emerald-50 text-emerald-600',
 };
 
 // Centralized Icon Registry
@@ -85,6 +89,10 @@ export const APP_ICONS = {
   TRENDS: TrendingUp,
   PAGES: Layers,
   EVENT: Globe,
+  ERROR: AlertCircle, // Placeholder - consider using an AlertTriangle icon
+  PERFORMANCE: Zap, // Placeholder - consider using a Speedometer icon
+  RELIABILITY: Shield, // Placeholder - consider using a ShieldCheck icon
+  USAGE: Users,
   
   // Generic KPI Header Icon
   KPI_SECTION: Gauge, // Or Target/LayoutDashboard

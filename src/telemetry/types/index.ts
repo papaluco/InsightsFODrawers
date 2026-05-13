@@ -8,6 +8,21 @@
 
 // ─── Primitive Types ──────────────────────────────────────────────────────────
 
+/**
+ * The 8 event category buckets shown in Telemetry Settings.
+ * Usage and performance events are gated against this list.
+ * Error events are always captured regardless.
+ */
+export type EventCategoryId =
+  | 'navigation'
+  | 'core_workflows'
+  | 'feature_engagement'
+  | 'filters_search'
+  | 'grid_interactions'
+  | 'reports_exports'
+  | 'ai_interactions'
+  | 'debug_diagnostics';
+
 /** Which observability domain an event belongs to. */
 export type TelemetryEventDomain =
   | 'usage'
@@ -246,8 +261,10 @@ export interface TelemetryConfig {
   criticalErrorsAlwaysCaptured: boolean;
   /** When true, error messages and stack traces are sanitized before storage. */
   errorSanitizationEnabled: boolean;
-  /** District IDs excluded from usage analytics (demo/test/internal districts). */
+  /** District IDs excluded from usage and performance tracking (demo/test/internal). Errors always fire. */
   excludedDistrictIds: string[];
+  /** Which event category buckets are enabled. Usage and performance events are gated against this list. */
+  enabledEventCategoryIds: EventCategoryId[];
   /** Max events per batch flush. */
   batchSize: number;
   /** How often the queue flushes in milliseconds. */
@@ -257,22 +274,6 @@ export interface TelemetryConfig {
   /** Default module tag applied to events that don't specify one. */
   module: string;
   performance: PerformanceTelemetryConfig;
-}
-
-/** Per-district configuration override managed by the Product Team. */
-export interface TelemetryDistrictOverride {
-  districtId: string;
-  districtName: string;
-  usageTrackingEnabled: boolean;
-  errorTrackingEnabled: boolean;
-  performanceTrackingMode: PerformanceTrackingMode;
-  overrideEnabled: boolean;
-}
-
-/** Effective configuration for a specific district after global + override resolution. */
-export interface ResolvedTelemetryConfig extends TelemetryConfig {
-  districtId?: string;
-  overriddenBy?: 'global' | 'district';
 }
 
 // ─── Timer ────────────────────────────────────────────────────────────────────
@@ -326,9 +327,6 @@ export interface ITelemetryTransport {
 //
 // GET  /api/v1/telemetry/sessions/:sessionId/timeline
 //   Response body: TelemetryEvent[]  (all domains, sorted by timestamp asc)
-//
-// GET  /api/v1/telemetry/config/resolve?districtId=:id
-//   Response body: ResolvedTelemetryConfig
 // =============================================================================
 
 export interface TelemetryEventBatch {

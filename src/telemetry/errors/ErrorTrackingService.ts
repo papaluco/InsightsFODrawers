@@ -1,4 +1,4 @@
-import type { ErrorTelemetryEvent, ErrorSeverity } from '../types';
+import type { ErrorTelemetryEvent } from '../types';
 import { telemetryQueue } from '../core/TelemetryQueue';
 import { TelemetryConfigResolver } from '../core/TelemetryConfigResolver';
 import { SessionManager } from '../session/SessionManager';
@@ -31,19 +31,6 @@ function sanitizeStackTrace(stack: string): string {
   return safe.split('\n').slice(0, 10).join('\n');
 }
 
-// ─── Capture gating ───────────────────────────────────────────────────────────
-
-function shouldCapture(severity: ErrorSeverity, districtId?: string): boolean {
-  try {
-    const cfg = TelemetryConfigResolver.resolve(districtId);
-    if (cfg.errorTrackingEnabled) return true;
-    // Error tracking disabled but critical/high always captured
-    return cfg.criticalErrorsAlwaysCaptured && (severity === 'critical' || severity === 'high');
-  } catch {
-    return true; // fail open for errors
-  }
-}
-
 // ─── Input type ───────────────────────────────────────────────────────────────
 
 type TrackErrorInput =
@@ -73,8 +60,6 @@ type TrackErrorInput =
 export const ErrorTrackingService = {
   track(eventName: string, input: TrackErrorInput): void {
     try {
-      if (!shouldCapture(input.severity, input.districtId)) return;
-
       const sanitize = TelemetryConfigResolver.getGlobalConfig().errorSanitizationEnabled;
       const cfg      = DEFAULT_TELEMETRY_CONFIG;
 

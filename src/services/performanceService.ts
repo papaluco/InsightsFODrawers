@@ -7,6 +7,8 @@ export interface PerfFilters {
   categories: PerformanceCategory[];
   modules: string[];
   components: string[];
+  users: string[];
+  districts: string[];
   isSlow: '' | 'true' | 'false';
   isSuccess: '' | 'true' | 'false';
   eventSearch: string;
@@ -15,6 +17,7 @@ export interface PerfFilters {
 export const DEFAULT_PERF_FILTERS: PerfFilters = {
   startDate: '', endDate: '',
   categories: [], modules: [], components: [],
+  users: [], districts: [],
   isSlow: '', isSuccess: '', eventSearch: '',
 };
 
@@ -100,8 +103,12 @@ export async function getPerfData(filters: Partial<PerfFilters> = {}): Promise<P
 
   const toOpt = (v: string) => ({ value: v, label: v.replace(/_/g, ' ') });
 
+  let events = res.events.map(toPerfEvent);
+  if (filters.users?.length)     events = events.filter(e => e.userId     && filters.users!.includes(e.userId));
+  if (filters.districts?.length) events = events.filter(e => e.districtId && filters.districts!.includes(e.districtId));
+
   return {
-    events: res.events.map(toPerfEvent),
+    events,
     kpis: {
       total:       res.kpis.total,
       slowCount:   res.kpis.slow_count,

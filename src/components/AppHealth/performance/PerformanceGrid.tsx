@@ -15,7 +15,8 @@ interface Props {
 
 type ColKey =
   | 'timestamp' | 'eventName' | 'performanceCategory' | 'durationMs'
-  | 'isSlow' | 'success' | 'module' | 'component' | 'thresholdMs' | 'sessionId' | 'page';
+  | 'isSlow' | 'success' | 'module' | 'component' | 'userId' | 'districtId'
+  | 'thresholdMs' | 'sessionId' | 'page';
 
 interface ColDef { key: ColKey; label: string; defaultVisible: boolean; sortable: boolean; }
 
@@ -28,6 +29,8 @@ const COLUMNS: ColDef[] = [
   { key: 'success',             label: 'Status',     defaultVisible: true,  sortable: true  },
   { key: 'module',              label: 'Module',     defaultVisible: true,  sortable: true  },
   { key: 'component',           label: 'Component',  defaultVisible: true,  sortable: true  },
+  { key: 'userId',              label: 'User',       defaultVisible: true,  sortable: true  },
+  { key: 'districtId',          label: 'District',   defaultVisible: true,  sortable: true  },
   { key: 'thresholdMs',         label: 'Threshold',  defaultVisible: false, sortable: true  },
   { key: 'sessionId',           label: 'Session',    defaultVisible: false, sortable: false },
   { key: 'page',                label: 'Page',       defaultVisible: false, sortable: true  },
@@ -47,6 +50,8 @@ function getCsvValue(e: PerformanceTelemetryEvent, key: ColKey): string {
     case 'success':             return e.success ? 'Success' : 'Failed';
     case 'module':              return e.module;
     case 'component':           return e.component ?? '';
+    case 'userId':              return e.userId ?? '';
+    case 'districtId':          return e.districtId ?? '';
     case 'thresholdMs':         return e.thresholdMs != null ? String(e.thresholdMs) : '';
     case 'sessionId':           return e.sessionId;
     case 'page':                return e.page ?? '';
@@ -109,6 +114,8 @@ const PerformanceGrid: React.FC<Props> = ({ events, onRowClick }) => {
         case 'success':             cmp = Number(a.success) - Number(b.success); break;
         case 'module':              cmp = a.module.localeCompare(b.module); break;
         case 'component':           cmp = (a.component ?? '').localeCompare(b.component ?? ''); break;
+        case 'userId':              cmp = (a.userId ?? '').localeCompare(b.userId ?? ''); break;
+        case 'districtId':          cmp = (a.districtId ?? '').localeCompare(b.districtId ?? ''); break;
         case 'thresholdMs':         cmp = (a.thresholdMs ?? 0) - (b.thresholdMs ?? 0); break;
         case 'page':                cmp = (a.page ?? '').localeCompare(b.page ?? ''); break;
       }
@@ -299,6 +306,8 @@ const PerformanceGrid: React.FC<Props> = ({ events, onRowClick }) => {
                         )}
                         {col.key === 'module'      && <span className="text-xs">{e.module}</span>}
                         {col.key === 'component'   && <span className="text-xs text-gray-600">{e.component ?? <span className="text-gray-300">—</span>}</span>}
+                        {col.key === 'userId'      && <span className="text-xs text-gray-600">{e.userId ?? <span className="text-gray-300">—</span>}</span>}
+                        {col.key === 'districtId'  && <span className="text-xs text-gray-600">{e.districtId ?? <span className="text-gray-300">—</span>}</span>}
                         {col.key === 'thresholdMs' && <span className="text-xs text-gray-400">{e.thresholdMs != null ? fmtMs(e.thresholdMs) : <span className="text-gray-300">—</span>}</span>}
                         {col.key === 'sessionId'   && <span className="font-mono text-xs text-gray-400">{e.sessionId}</span>}
                         {col.key === 'page'        && <span className="text-xs">{e.page ?? <span className="text-gray-300">—</span>}</span>}
