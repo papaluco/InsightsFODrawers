@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MenuUsageSummary } from '../../../types/menuUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
-import { MENU_ICONS, MENU_TAB_TAILWIND } from './menuUsageHelpers';
+import { USAGE_ICONS, TAB_TAILWIND } from '../common/usageHelpers';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
@@ -42,58 +42,58 @@ const MenuOverviewKPICards: React.FC<Props> = ({ summary, onActiveUsersClick, on
             <FeedbackKPICard
               label="Page Views"
               value={summary.pageViews.toLocaleString()}
-              icon={<MENU_ICONS.PAGE_VIEWS size={20} />}
-              colorClass={MENU_TAB_TAILWIND.PageViews}
+              icon={<USAGE_ICONS.PageViews size={20} />}
+              colorClass={TAB_TAILWIND.PageViews}
             />
 
             <FeedbackKPICard
               label="Interactions"
               value={summary.interactions.toLocaleString()}
-              icon={<MENU_ICONS.OVERVIEW size={20} />}
-              colorClass={MENU_TAB_TAILWIND.Interactions}
+              icon={<USAGE_ICONS.Interactions size={20} />}
+              colorClass={TAB_TAILWIND.Interactions}
             />
 
             <FeedbackKPICard
               label="Interaction Rate"
               value={`${summary.interactionRate.toLocaleString()}x`}
-              icon={<MENU_ICONS.CHART size={20} />}
-              colorClass={MENU_TAB_TAILWIND.Overview}
+              icon={<USAGE_ICONS.Chart size={20} />}
+              colorClass={TAB_TAILWIND.Overview}
             />
 
             <FeedbackKPICard
               label="Menu Items Views"
               value={summary.menuItemsDrawerViews.toLocaleString()}
-              icon={<MENU_ICONS.MENU_ITEMS size={20} />}
-              colorClass={MENU_TAB_TAILWIND['Menu Items']}
+              icon={<USAGE_ICONS.MenuItems size={20} />}
+              colorClass={TAB_TAILWIND.MenuAnalysis}
             />
 
             <FeedbackKPICard
               label="School Perf. Views"
               value={summary.schoolPerformanceDrawerViews.toLocaleString()}
-              icon={<MENU_ICONS.SCHOOL_PERF size={20} />}
-              colorClass={MENU_TAB_TAILWIND['School Performance']}
+              icon={<USAGE_ICONS.SchoolPerformance size={20} />}
+              colorClass={TAB_TAILWIND.SchoolPerformance}
             />
 
             <FeedbackKPICard
               label="Metric Changes"
               value={summary.metricChanges.toLocaleString()}
-              icon={<MENU_ICONS.FILTER size={20} />}
-              colorClass={MENU_TAB_TAILWIND.Metrics}
+              icon={<USAGE_ICONS.Filters size={20} />}
+              colorClass={TAB_TAILWIND.Metrics}
             />
 
             <FeedbackKPICard
               label="Filter Changes"
               value={summary.filterChanges.toLocaleString()}
-              icon={<MENU_ICONS.FILTER size={20} />}
-              colorClass={MENU_TAB_TAILWIND.Filters}
+              icon={<USAGE_ICONS.Filters size={20} />}
+              colorClass={TAB_TAILWIND.Filters}
             />
 
             <ClickableCard onClick={onActiveUsersClick}>
               <FeedbackKPICard
                 label="Active Users"
                 value={summary.activeUsers.toLocaleString()}
-                icon={<MENU_ICONS.USER size={20} />}
-                colorClass={MENU_TAB_TAILWIND.Users}
+                icon={<USAGE_ICONS.User size={20} />}
+                colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
 
@@ -101,8 +101,8 @@ const MenuOverviewKPICards: React.FC<Props> = ({ summary, onActiveUsersClick, on
               <FeedbackKPICard
                 label="Active Districts"
                 value={summary.activeDistricts.toLocaleString()}
-                icon={<MENU_ICONS.DISTRICT size={20} />}
-                colorClass={MENU_TAB_TAILWIND.Districts}
+                icon={<USAGE_ICONS.District size={20} />}
+                colorClass={TAB_TAILWIND.Districts}
               />
             </ClickableCard>
           </div>

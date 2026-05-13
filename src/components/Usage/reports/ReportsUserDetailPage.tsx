@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { UserStatRow, ReportUsageEvent } from '../../../types/reportUsageTypes';
 import { REPORT_DISTRICT_NAMES } from '../../../data/mockReportUsageData';
-import { fmtDate, EVENT_COLORS, EVENT_LABELS, CHART_COLORS } from './reportUsageHelpers';
+import { EVENT_LABELS } from './reportUsageHelpers';
+import { fmtDate, EVENT_COLORS, CHART_COLORS } from '../common/usageHelpers';
 import { calcReportUserScore, getEngagementTier } from '../../../utils/engagementTiers';
 import EngagementTierBadge from '../../Common/EngagementTierBadge';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KPIStatRow } from '../../../types/insightsUsageTypes';
-import { KPI_COLORS } from './insightsUsageHelpers';
+import { KPI_COLORS } from '../../Usage/common/usageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (

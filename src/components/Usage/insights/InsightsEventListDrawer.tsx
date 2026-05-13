@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, GripVertical, ChevronUp, ChevronDown, BarChart3 } from 'lucide-react';
 import { InsightsUsageEvent, INSIGHTS_EVENT_FRIENDLY } from '../../../types/insightsUsageTypes';
 import { INSIGHTS_USER_NAMES, INSIGHTS_DISTRICT_NAMES } from '../../../data/mockInsightsUsageData';
-import { fmtDate } from './insightsUsageHelpers';
+import { fmtDate } from '../common/usageHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, ChevronLeftIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';

@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { MenuUsageEvent, MENU_EVENT_FRIENDLY } from '../../../types/menuUsageTypes';
-import { fmtDateTime, getMenuEventFriendlyLabel, MENU_EVENT_COLORS } from './menuUsageHelpers';
+import { getMenuEventFriendlyLabel } from './menuUsageHelpers';
+import { fmtDateTime, EVENT_COLORS } from '../common/usageHelpers';
 import { MENU_USER_NAMES, MENU_DISTRICT_NAMES } from '../../../data/mockMenuUsageData';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon, ChevronLeftIcon } from '../../Common/Icons';
@@ -303,7 +304,7 @@ const MenuEventListDrawer: React.FC<Props> = ({
                     <td key={col.key} className="px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap">
                       {col.key === 'eventType' && (
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: MENU_EVENT_COLORS[e.eventType] ?? '#64748b' }} />
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: EVENT_COLORS[e.eventType] ?? '#64748b' }} />
                           <span className="text-slate-700 font-medium">{getMenuEventFriendlyLabel(e.eventType, e.context)}</span>
                         </div>
                       )}

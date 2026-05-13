@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown, MessageSquare, AlertTriangle, GripVertical } from 'lucide-react';
 import { MenuDistrictStatRow } from '../../../types/menuUsageTypes';
-import { fmtDate } from './menuUsageHelpers';
+import { fmtDate } from '../common/usageHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';

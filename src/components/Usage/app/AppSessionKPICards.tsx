@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { XCircle, CheckCircle, BarChart2 } from 'lucide-react';
 import { AppSessionStatRow } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
-import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
+import { TAB_TAILWIND , USAGE_ICONS } from '../../Usage/common/usageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -68,15 +68,15 @@ const AppSessionKPICards: React.FC<Props> = ({
         <div className="border-t border-gray-100 px-5 py-4">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <ClickableCard onClick={onTotalSessionsClick}>
-              <FeedbackKPICard label="Total Sessions" value={total.toLocaleString()} icon={<APP_ICONS.SESSIONS size={20} />} colorClass={TAB_TAILWIND.Sessions} />
+              <FeedbackKPICard label="Total Sessions" value={total.toLocaleString()} icon={<USAGE_ICONS.Sessions size={20} />} colorClass={TAB_TAILWIND.Sessions} />
             </ClickableCard>
 
-            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<APP_ICONS.TIME size={20} />} colorClass={TAB_TAILWIND.Sessions} />
+            <FeedbackKPICard label="Avg Duration" value={`${avgDuration} min`} icon={<USAGE_ICONS.Time size={20} />} colorClass={TAB_TAILWIND.Sessions} />
 
             <FeedbackKPICard label="Median Duration" value={`${Math.round(median * 10) / 10} min`} icon={<BarChart2 size={20} />} colorClass={TAB_TAILWIND.Sessions} />
 
             <ClickableCard onClick={onSessionsPerUserClick}>
-              <FeedbackKPICard label="Sessions/User" value={sessionsPerUser.toString()} icon={<APP_ICONS.USER size={20} />} colorClass={TAB_TAILWIND.Sessions} />
+              <FeedbackKPICard label="Sessions/User" value={sessionsPerUser.toString()} icon={<USAGE_ICONS.User size={20} />} colorClass={TAB_TAILWIND.Sessions} />
             </ClickableCard>
 
             <ClickableCard onClick={onAppClosedClick}>

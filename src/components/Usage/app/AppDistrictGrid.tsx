@@ -1,12 +1,12 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown, MessageSquare, AlertTriangle, GripVertical } from 'lucide-react';
 import { AppDistrictStatRow } from '../../../types/appUsageTypes';
-import { fmtDate, fmtDuration } from './appUsageHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
 import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';
 import type { ICSVReportData } from '../../Downloading/CSVGen/CSVContract';
+import { fmtDate, fmtDuration } from '../common/usageHelpers';
 
 interface Props {
   data: AppDistrictStatRow[];

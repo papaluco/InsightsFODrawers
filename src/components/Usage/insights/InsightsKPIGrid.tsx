@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown, AlertTriangle, MessageSquare, GripVertical } from 'lucide-react';
 import { KPIStatRow } from '../../../types/insightsUsageTypes';
-import { KPI_COLORS } from './insightsUsageHelpers';
+import { KPI_COLORS } from '../../Usage/common/usageHelpers';
 import { AlertIcon, SettingsIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
 import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';

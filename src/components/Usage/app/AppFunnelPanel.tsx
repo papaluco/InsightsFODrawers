@@ -10,6 +10,7 @@ import {
   AppUserStatRow,
   AppSessionStatRow,
 } from '../../../types/appUsageTypes';
+import { getTopicTailwind } from '../common/usageHelpers';
 
 
 interface Props {
@@ -20,12 +21,6 @@ interface Props {
   onUserClick: (user: AppUserStatRow) => void;
   onSessionClick: (session: AppSessionStatRow) => void;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  Insights: 'text-indigo-600',
-  'Menu Analysis': 'text-emerald-600',
-  Reports: 'text-blue-600',
-};
 
 const formatPercent = (value: number) => `${Math.round(value * 10) / 10}%`;
 
@@ -227,13 +222,18 @@ const renderCategory = (
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
       >
         <div className="text-left">
-          <h3 className={`text-xs font-bold uppercase tracking-widest ${CATEGORY_COLORS[category] ?? 'text-gray-500'}`}>
-            {category}
-          </h3>
-          <p className="text-xs text-slate-500 mt-1 normal-case font-normal tracking-normal">
-            {getCategoryIntroText(category, funnels, allFunnelData)}
-          </p>
-        </div>
+  <h3
+    className={`text-xs font-bold uppercase tracking-widest ${
+      getTopicTailwind(category).split(' ')[1] ?? 'text-gray-500'
+    }`}
+  >
+    {category}
+  </h3>
+
+  <p className="text-xs text-slate-500 mt-1 normal-case font-normal tracking-normal">
+    {getCategoryIntroText(category, funnels, allFunnelData)}
+  </p>
+</div>
 
         <CollapseChevron expanded={expanded} />
       </button>

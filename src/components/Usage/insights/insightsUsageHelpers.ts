@@ -27,27 +27,6 @@ export function applyInsightsFilters(
   });
 }
 
-export function fmtDate(iso: string): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-export const INSIGHTS_EVENT_COLORS: Record<string, string> = {
-  KPI_RENDERED:              '#94a3b8',
-  INSIGHTS_PAGE_VIEWED:      '#6366f1',
-  SITE_FILTER_CHANGED:       '#8b5cf6',
-  DATE_RANGE_CHANGED:        '#06b6d4',
-  KPI_DRAWER_OPENED:         '#10b981',
-  TREND_KPI_CHANGED:         '#f59e0b',
-  BENCHMARK_CONFIG_OPENED:   '#f97316',
-  BENCHMARK_UPDATED:         '#ef4444',
-  BULK_UPDATE:               '#ec4899',
-  LAYOUT_CONFIG_CHANGED:     '#14b8a6',
-  DASHBOARD_DOWNLOAD:        '#64748b',
-  KPI_DRAWER_DOWNLOAD:       '#475569',
-  KPI_SCHOOLIE_OPENED:       '#a855f7',
-  DASHBOARD_SCHOOLIE_OPENED: '#7c3aed',
-};
 
 // Event types hidden by default — less operationally relevant for most users
 const DEPRIORITIZED_EVENTS = new Set([
@@ -67,25 +46,6 @@ export const DEFAULT_INSIGHTS_CHART_ITEMS: OrderedSelectItem[] =
     selected: !DEPRIORITIZED_EVENTS.has(value),
   }));
 
-export const KPI_COLORS: Record<string, string> = {
-  // Standard KPIs
-  MPLH: '#6366f1',
-  PNA:  '#10b981',
-  ENP:  '#f59e0b',
-  REV:  '#3b82f6',
-  FCS:  '#ef4444',
-  LBR:  '#8b5cf6',
-  BKF:  '#06b6d4',
-  LNH:  '#f97316',
-  ALC:  '#ec4899',
-  PRC:  '#14b8a6',
-  TRD:  '#84cc16',
-  SBD:  '#64748b',
-  // Inventory KPIs (id-004 Maplewood only)
-  INV:  '#a78bfa',
-  WST:  '#fb923c',
-  FVR:  '#34d399',
-};
 
 // ─── Funnel definitions ───────────────────────────────────────────────────────
 

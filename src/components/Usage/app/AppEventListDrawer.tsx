@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { X, MessageSquare, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { AppUsageEvent, AppUserStatRow, AppSessionStatRow, APP_EVENT_FRIENDLY } from '../../../types/appUsageTypes';
-import { fmtDateTime, APP_ICONS, TAB_COLORS  } from './appUsageHelpers';
+import { fmtDateTime, TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 import { APP_USER_NAMES, APP_DISTRICT_NAMES } from '../../../data/mockAppUsageData';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon, ChevronLeftIcon } from '../../Common/Icons';
@@ -186,9 +186,9 @@ const AppEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose, z
             </button>
             <div
   className="w-10 h-10 rounded-xl flex items-center justify-center"
-  style={{ backgroundColor: `${TAB_COLORS.Event}1A` }}
+  style={{ backgroundColor: `${TAB_COLORS.Events}1A` }}
 >
-  <APP_ICONS.EVENT size={20} style={{ color: TAB_COLORS.Event }} />
+  <USAGE_ICONS.Event size={20} style={{ color: TAB_COLORS.Events }} />
 </div>
 
 <div>

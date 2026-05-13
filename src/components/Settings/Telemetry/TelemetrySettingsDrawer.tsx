@@ -8,7 +8,7 @@ import type {
 import { TelemetryConfigResolver } from '../../../telemetry';
 import { MultiSelectDropdown } from '../../Common/MultiSelectDropdown';
 import FeedbackKPICard from '../../Usage/feedback/FeedbackKPICard';
-import { APP_ICONS, TAB_TAILWIND } from '../../Usage/app/appUsageHelpers';
+import { TAB_TAILWIND , USAGE_ICONS } from '../../Usage/common/usageHelpers';
 
 interface DistrictOption {
   id: string;
@@ -221,7 +221,7 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
       <div className="px-8 py-5 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${TAB_TAILWIND.Event}`}>
-            <APP_ICONS.KPI_SECTION size={20} />
+            <USAGE_ICONS.KPI size={20} />
           </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">Telemetry Settings</h2>
@@ -248,28 +248,28 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
             <FeedbackKPICard
               label="Usage Tracking"
               value={cfg.usageTrackingEnabled ? 'Enabled' : 'Disabled'}
-              icon={<APP_ICONS.USAGE size={20} />}
+              icon={<USAGE_ICONS.Usage size={20} />}
               colorClass={TAB_TAILWIND.Usage}
             />
 
             <FeedbackKPICard
               label="Error Tracking"
               value="Always On"
-              icon={<APP_ICONS.ERROR size={20} />}
+              icon={<USAGE_ICONS.Error size={20} />}
               colorClass={TAB_TAILWIND.Error}
             />
 
             <FeedbackKPICard
               label="Performance Mode"
               value={cfg.performance.performanceTrackingMode.replace('_', ' ')}
-              icon={<APP_ICONS.PERFORMANCE size={20} />}
-              colorClass={TAB_TAILWIND.Peformance}
+              icon={<USAGE_ICONS.Performance size={20} />}
+              colorClass={TAB_TAILWIND.Performance}
             />
 
             <FeedbackKPICard
               label="Excluded Districts"
               value={excludedDistrictIds.length.toLocaleString()}
-              icon={<APP_ICONS.DISTRICT size={20} />}
+              icon={<USAGE_ICONS.District size={20} />}
               colorClass={TAB_TAILWIND.Districts}
             />
           </div>
@@ -281,7 +281,7 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
               {/* Usage Tracking */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <SectionHeader
-                  icon={<APP_ICONS.USAGE size={16} />}
+                  icon={<USAGE_ICONS.Usage size={16} />}
                   title="Usage Tracking"
                   sub="Controls product analytics capture"
                   colorClass={TAB_TAILWIND.Usage}
@@ -298,7 +298,7 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
               {/* Error Tracking */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <SectionHeader
-                  icon={<APP_ICONS.ERROR size={16} />}
+                  icon={<USAGE_ICONS.Error size={16} />}
                   title="Error Tracking"
                   sub="Operational error telemetry"
                   colorClass={TAB_TAILWIND.Error}
@@ -331,10 +331,10 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
               {/* Performance Tracking */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <SectionHeader
-                  icon={<APP_ICONS.PERFORMANCE size={16} />}
+                  icon={<USAGE_ICONS.Performance size={16} />}
                   title="Performance Tracking"
                   sub="Controls performance telemetry capture volume"
-                  colorClass={TAB_TAILWIND.Peformance}
+                  colorClass={TAB_TAILWIND.Performance}
                 />
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
@@ -427,7 +427,7 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
               {/* Event Categories */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <SectionHeader
-                  icon={<APP_ICONS.EVENT size={16} />}
+                  icon={<USAGE_ICONS.Event size={16} />}
                   title="Event Categories"
                   sub="Applies to usage and performance telemetry. Errors are tracked separately."
                   colorClass={TAB_TAILWIND.Event}
@@ -482,7 +482,7 @@ export const TelemetrySettingsDrawer: React.FC<Props> = ({
               {/* Excluded Districts */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <SectionHeader
-                  icon={<APP_ICONS.DISTRICT size={16} />}
+                  icon={<USAGE_ICONS.District size={16} />}
                   title="Excluded Districts"
                   sub="Exclude demo, test, training, and internal districts from usage analytics and rollups"
                   colorClass={TAB_TAILWIND.Districts}

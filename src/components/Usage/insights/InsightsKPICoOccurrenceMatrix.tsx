@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { InsightsUsageEvent } from '../../../types/insightsUsageTypes';
-import { KPI_COLORS } from './insightsUsageHelpers';
+import { KPI_COLORS } from '../../Usage/common/usageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (

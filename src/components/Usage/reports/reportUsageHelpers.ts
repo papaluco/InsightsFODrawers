@@ -1,14 +1,5 @@
 import { ReportUsageEvent, ReportUsageFilters, ReportEventType } from '../../../types/reportUsageTypes';
 
-export const EVENT_COLORS: Record<ReportEventType, string> = {
-  REPORT_VIEWED:       '#6366f1',
-  REPORT_RUN:          '#10b981',
-  REPORT_DOWNLOADED:   '#f59e0b',
-  REPORT_EMAILED:      '#3b82f6',
-  REPORT_DISTRIBUTED:  '#8b5cf6',
-  REPORT_CONFIG_VIEWED:'#94a3b8',
-};
-
 export const EVENT_LABELS: Record<ReportEventType, string> = {
   REPORT_VIEWED:       'Viewed',
   REPORT_RUN:          'Run',
@@ -17,11 +8,6 @@ export const EVENT_LABELS: Record<ReportEventType, string> = {
   REPORT_DISTRIBUTED:  'Distributed',
   REPORT_CONFIG_VIEWED:'Config Viewed',
 };
-
-export const CHART_COLORS = [
-  '#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6',
-  '#ef4444', '#ec4899', '#14b8a6', '#f97316', '#84cc16',
-];
 
 export function pct(a: number, b: number): string {
   if (b === 0) return '0%';
@@ -49,14 +35,14 @@ export function applyReportFilters(events: ReportUsageEvent[], filters: ReportUs
     if (filters.startDate && e.timestamp.slice(0, 10) < filters.startDate) return false;
     if (filters.endDate && e.timestamp.slice(0, 10) > filters.endDate) return false;
     if (filters.platform && e.platform !== filters.platform) return false;
-    if (filters.district && e.districtId !== filters.district) return false;
+    if (filters.districts?.length && !filters.districts.includes(e.districtId)) return false;
     if (filters.userId && e.userId !== filters.userId) return false;
     if (filters.reportName && e.context.reportName !== filters.reportName) return false;
     if (filters.reportType && e.context.reportType !== filters.reportType) return false;
     if (filters.module && e.context.module !== filters.module) return false;
     if (filters.dataSource && e.context.dataSource !== filters.dataSource) return false;
     if (filters.entryPoint && e.context.entryPoint !== filters.entryPoint) return false;
-    if (filters.eventType && e.eventType !== filters.eventType) return false;
+    if (filters.eventTypes?.length && !filters.eventTypes.includes(e.eventType)) return false;
     return true;
   });
 }

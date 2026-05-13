@@ -6,134 +6,9 @@ import {
   APP_INSIGHTS_INTERACTION_TYPES,
   APP_REPORTS_INTERACTION_TYPES,
 } from '../../../types/appUsageTypes';
-import { 
-  Users, Building2, Activity, Clock, TrendingUp, 
-  RefreshCw, MousePointerClick, 
-  Layers, Gauge, Globe, AlertCircle, Zap, Shield
-} from 'lucide-react';
+import { FUNNEL_COLORS, EVENT_COLORS } from '../common/usageHelpers';
 
 
-export const APP_CHART_COLORS = [
-  '#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6',
-  '#ec4899', '#14b8a6', '#f97316', '#64748b', '#ef4444',
-];
-
-export const APP_EVENT_COLORS: Record<string, string> = {
-  PAGE_VIEWED:                  '#6366f1',
-  APP_CLOSED:                   '#64748b',
-  KPI_DRAWER_OPENED:            '#3b82f6',
-  KPI_DRAWER_DOWNLOAD:          '#f97316',
-  KPI_SCHOOLIE_OPENED:          '#8b5cf6',
-  SITE_FILTER_CHANGED:          '#10b981',
-  DATE_RANGE_CHANGED:           '#14b8a6',
-  KPI_LAYOUT_UPDATED:           '#64748b',
-  TREND_KPI_SELECTED:           '#06b6d4',
-  BENCHMARK_CONFIG_OPENED:      '#84cc16',
-  DASHBOARD_DOWNLOAD_TRIGGERED: '#f59e0b',
-  DASHBOARD_SCHOOLIE_OPENED:    '#ec4899',
-  REPORT_VIEWED:                '#6366f1',
-  REPORT_RUN:                   '#10b981',
-  REPORT_DOWNLOADED:            '#f59e0b',
-  REPORT_DISTRIBUTED:           '#8b5cf6',
-  REPORT_EMAILED:               '#3b82f6',
-  REPORT_CONFIG_VIEWED:         '#64748b',
-};
-
-export const PAGE_COLORS: Record<string, string> = {
-  Workspace:    '#6366f1', // Indigo (Tech/General)
-  Insights:     '#3b82f6', // Blue (Data/Depth)
-  MenuAnalysis: '#f97316', // Orange (Spice/Food/Plating) - Very distinct from Teal
-  Reports:      '#f59e0b', // Amber (Warmth)
-  TimeAnalysis: '#14b8a6', // Teal (Time/Calendar)
-  Funnel:       '#ec4899', // Pink (Flow/Conversion)
-  Event:        '#8b5cf6',
-};
-
-export const TAB_COLORS: Record<string, string> = {
-  Overview:    '#6366f1', // Indigo (Tech/General)
-  Users:       '#3b82f6', // Blue (Data/Depth)
-  Districts:   '#f97316', // Orange (Spice/Food/Plating) - Very distinct from Teal
-  Sessions:    '#f59e0b', // Amber (Warmth)
-  Timming:     '#14b8a6', // Teal (Time/Calendar)
-  Funnel:      '#ec4899', // Pink (Flow/Conversion)
-  Event:       '#8b5cf6',
-};
-
-// Tailwind class equivalents of TAB_COLORS for use with FeedbackKPICard colorClass prop
-export const TAB_TAILWIND: Record<string, string> = {
-  Overview:  'bg-indigo-50 text-indigo-600',
-  Users:     'bg-blue-50 text-blue-600',
-  Districts: 'bg-orange-50 text-orange-600',
-  Sessions:  'bg-amber-50 text-amber-600',
-  Timming:   'bg-teal-50 text-teal-600',
-  Funnel:    'bg-pink-50 text-pink-600',
-  Event:     'bg-violet-50 text-violet-600',
-  Usage:     'bg-blue-50 text-blue-600',
-  Error:     'bg-rose-50 text-rose-600',    
-  Peformance:  'bg-green-50 text-green-600',
-  Reliability: 'bg-emerald-50 text-emerald-600',
-};
-
-// Centralized Icon Registry
-export const APP_ICONS = {
-  // Section/Tab Icons
-  OVERVIEW: Activity,
-  DISTRICT: Building2,
-  USER: Users,
-  
-  // Metric/Functional Icons
-  SESSIONS: Activity,
-  PAGE_VIEWS: MousePointerClick,
-  TIME: Clock,
-  FREQUENCY: RefreshCw,
-  TRENDS: TrendingUp,
-  PAGES: Layers,
-  EVENT: Globe,
-  ERROR: AlertCircle, // Placeholder - consider using an AlertTriangle icon
-  PERFORMANCE: Zap, // Placeholder - consider using a Speedometer icon
-  RELIABILITY: Shield, // Placeholder - consider using a ShieldCheck icon
-  USAGE: Users,
-  
-  // Generic KPI Header Icon
-  KPI_SECTION: Gauge, // Or Target/LayoutDashboard
-};
-
-
-export const ENTRY_POINT_COLORS: Record<string, string> = {
-  Workspace:          '#6366f1',
-  InsightsDirect:     '#3b82f6',
-  MenuAnalysisDirect: '#10b981',
-  ReportsDirect:      '#f59e0b',
-};
-
-export const ENTRY_POINT_LABELS: Record<string, string> = {
-  Workspace:          'Workspace',
-  InsightsDirect:     'Insights Direct',
-  MenuAnalysisDirect: 'Menu Analysis Direct',
-  ReportsDirect:      'Reports Direct',
-};
-
-export function fmtDuration(minutes: number, isDerived = false): string {
-  const m = Math.round(minutes);
-  if (m < 1) return isDerived ? '< 1 min (est.)' : '< 1 min';
-  if (m < 60) return isDerived ? `${m} min (est.)` : `${m} min`;
-  const h = Math.floor(m / 60);
-  const rem = m % 60;
-  const base = rem > 0 ? `${h}h ${rem}m` : `${h}h`;
-  return isDerived ? `${base} (est.)` : base;
-}
-
-export function fmtDate(ts: string): string {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-export function fmtDateTime(ts: string): string {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
-}
 
 export function getEventFriendlyLabel(eventType: string, context: AppUsageEvent['context'] = {}): string {
   const base = APP_EVENT_FRIENDLY[eventType as keyof typeof APP_EVENT_FRIENDLY] ?? eventType;
@@ -164,7 +39,7 @@ const WORKSPACE_STEP = {
   stepKey: 'viewed_workspace',
   label: 'Viewed Workspace',
   description: 'User started at the Workspace.',
-  color: PAGE_COLORS.Workspace,
+  color: FUNNEL_COLORS.Workspace,
   match: (evs: AppUsageEvent[]) => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Workspace'),
 };
 
@@ -182,7 +57,7 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
-        color: PAGE_COLORS.Insights,
+        color: FUNNEL_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
     ],
@@ -198,14 +73,14 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
-        color: PAGE_COLORS.Insights,
+        color: FUNNEL_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'interacted_insights',
         label: 'Interacted with Insights',
         description: 'User performed a meaningful action on the Insights Dashboard.',
-        color: APP_EVENT_COLORS.SITE_FILTER_CHANGED,
+        color: EVENT_COLORS.SITE_FILTER_CHANGED,
         match: evs => evs.some(e => APP_INSIGHTS_INTERACTION_TYPES.includes(e.eventType)),
       },
     ],
@@ -221,14 +96,14 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
-        color: PAGE_COLORS.Insights,
+        color: FUNNEL_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_kpi_drawer',
         label: 'Opened KPI Drawer',
         description: 'User opened a KPI detail drawer.',
-        color: APP_EVENT_COLORS.KPI_DRAWER_OPENED,
+        color: EVENT_COLORS.KPI_DRAWER_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_OPENED'),
       },
     ],
@@ -244,21 +119,21 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
-        color: PAGE_COLORS.Insights,
+        color: FUNNEL_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_kpi_drawer',
         label: 'Opened KPI Drawer',
         description: 'User opened a KPI detail drawer.',
-        color: APP_EVENT_COLORS.KPI_DRAWER_OPENED,
+        color: EVENT_COLORS.KPI_DRAWER_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_OPENED'),
       },
       {
         stepKey: 'downloaded_from_drawer',
         label: 'Downloaded from Drawer',
         description: 'User exported data from a KPI drawer.',
-        color: APP_EVENT_COLORS.KPI_DRAWER_DOWNLOAD,
+        color: EVENT_COLORS.KPI_DRAWER_DOWNLOAD,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_DOWNLOAD'),
       },
     ],
@@ -274,21 +149,21 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
-        color: PAGE_COLORS.Insights,
+        color: FUNNEL_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_kpi_drawer',
         label: 'Opened KPI Drawer',
         description: 'User opened a KPI detail drawer.',
-        color: APP_EVENT_COLORS.KPI_DRAWER_OPENED,
+        color: EVENT_COLORS.KPI_DRAWER_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_DRAWER_OPENED'),
       },
       {
         stepKey: 'opened_schoolie_from_drawer',
         label: 'Opened Schoolie from Drawer',
         description: 'User opened Schoolie AI analysis from a KPI drawer.',
-        color: APP_EVENT_COLORS.KPI_SCHOOLIE_OPENED,
+        color: EVENT_COLORS.KPI_SCHOOLIE_OPENED,
         match: evs => evs.some(e => e.eventType === 'KPI_SCHOOLIE_OPENED'),
       },
     ],
@@ -304,14 +179,14 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_insights',
         label: 'Viewed Insights',
         description: 'User reached the Insights Dashboard.',
-        color: PAGE_COLORS.Insights,
+        color: FUNNEL_COLORS.Insights,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Insights'),
       },
       {
         stepKey: 'opened_schoolie_dashboard',
         label: 'Opened Schoolie from Dashboard',
         description: 'User opened Schoolie AI analysis from the Insights Dashboard.',
-        color: APP_EVENT_COLORS.DASHBOARD_SCHOOLIE_OPENED,
+        color: EVENT_COLORS.DASHBOARD_SCHOOLIE_OPENED,
         match: evs => evs.some(e => e.eventType === 'DASHBOARD_SCHOOLIE_OPENED'),
       },
     ],
@@ -328,7 +203,7 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_menu',
         label: 'Viewed Menu Analysis',
         description: 'User reached the Menu Analysis page.',
-        color: PAGE_COLORS.MenuAnalysis,
+        color: FUNNEL_COLORS.MenuAnalysis,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'MenuAnalysis'),
       },
     ],
@@ -344,14 +219,14 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_menu',
         label: 'Viewed Menu Analysis',
         description: 'User reached the Menu Analysis page.',
-        color: PAGE_COLORS.MenuAnalysis,
+        color: FUNNEL_COLORS.MenuAnalysis,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'MenuAnalysis'),
       },
       {
         stepKey: 'interacted_menu',
         label: 'Interacted with Menu Analysis',
         description: 'User performed a meaningful action on Menu Analysis.',
-        color: APP_EVENT_COLORS.SITE_FILTER_CHANGED,
+        color: EVENT_COLORS.SITE_FILTER_CHANGED,
         // Will be populated when Menu Analysis tracking is finalized
         match: () => false,
       },
@@ -369,7 +244,7 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_reports',
         label: 'Viewed Reports',
         description: 'User reached the Reports page.',
-        color: PAGE_COLORS.Reports,
+        color: FUNNEL_COLORS.Reports,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Reports'),
       },
     ],
@@ -385,14 +260,14 @@ export const APP_FUNNELS: AppFunnelDef[] = [
         stepKey: 'viewed_reports',
         label: 'Viewed Reports',
         description: 'User reached the Reports page.',
-        color: PAGE_COLORS.Reports,
+        color: FUNNEL_COLORS.Reports,
         match: evs => evs.some(e => e.eventType === 'PAGE_VIEWED' && e.page === 'Reports'),
       },
       {
         stepKey: 'interacted_reports',
         label: 'Interacted with Reports',
         description: 'User ran, downloaded, configured, distributed, or emailed a report.',
-        color: APP_EVENT_COLORS.REPORT_RUN,
+        color: EVENT_COLORS.REPORT_RUN,
         match: evs => evs.some(e => APP_REPORTS_INTERACTION_TYPES.includes(e.eventType)),
       },
     ],

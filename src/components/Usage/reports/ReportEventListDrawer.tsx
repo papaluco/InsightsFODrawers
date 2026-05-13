@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { X, Eye, Play, Download, Mail, Share2, Settings as LucideSettings, MessageSquare, GripVertical, ChevronUp, ChevronDown, BarChart3 } from 'lucide-react';
 import { ReportUsageEvent, ReportEventType } from '../../../types/reportUsageTypes';
-import { fmtDate } from './reportUsageHelpers';
+import { fmtDate } from '../common/usageHelpers';
 import { getUsageEventFriendlyName } from '../../../constants/usageEventTypes';
 import { REPORT_USER_NAMES, REPORT_DISTRICT_NAMES } from '../../../data/mockReportUsageData';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';

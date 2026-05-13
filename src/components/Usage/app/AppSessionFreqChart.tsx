@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AppUsageEvent } from '../../../types/appUsageTypes';
-import { APP_EVENT_COLORS, PAGE_COLORS, APP_ICONS, TAB_COLORS } from './appUsageHelpers';
+import { PAGE_COLORS, EVENT_COLORS, TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 
 type Grouping = 'daily' | 'weekly' | 'monthly';
 type CountMode = 'sessions' | 'pageViews'; // Added count mode type
@@ -10,11 +10,11 @@ interface Props {
   events: AppUsageEvent[];
 }
 
-const SESSIONS_COLOR = APP_EVENT_COLORS.REPORT_DISTRIBUTED; // #8b5cf6
-const PAGE_VIEWS_COLOR = APP_EVENT_COLORS.PAGE_VIEWED;      // #6366f1
+const SESSIONS_COLOR = EVENT_COLORS.REPORT_DISTRIBUTED; // #8b5cf6
+const PAGE_VIEWS_COLOR = EVENT_COLORS.PAGE_VIEWED;      // #6366f1
 const TAB_COLOR = TAB_COLORS.Overview;      // #6366f1
 const TIME_ANALYSIS_COLOR = PAGE_COLORS.TimeAnalysis;      // Teal #14b8a6
-const SectionIcon = APP_ICONS.SESSIONS; // Assuming you have an icon defined for this in your helpers
+const SectionIcon = USAGE_ICONS.Sessions; // Assuming you have an icon defined for this in your helpers
 
 function formatPeriodKey(ts: string, grouping: Grouping): string {
   const d = new Date(ts);

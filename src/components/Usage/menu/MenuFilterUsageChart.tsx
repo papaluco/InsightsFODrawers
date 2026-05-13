@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import { MenuFilterUsageStat } from '../../../types/menuUsageTypes';
-import { MENU_ICONS, MENU_EVENT_COLORS } from './menuUsageHelpers';
+import { USAGE_ICONS, EVENT_COLORS } from '../common/usageHelpers';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
@@ -23,7 +23,7 @@ const MenuFilterUsageChart: React.FC<Props> = ({ data, onBarClick }) => {
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left"
       >
         <div className="flex items-center gap-2.5">
-          <MENU_ICONS.FILTER size={16} className="text-teal-500" />
+          <USAGE_ICONS.Filters size={16} className="text-teal-500" />
           <span className="text-sm font-semibold text-gray-900">Filter Usage</span>
           {total > 0 && (
             <span className="text-xs text-gray-400 font-normal">{total.toLocaleString()} filter events</span>
@@ -47,23 +47,42 @@ const MenuFilterUsageChart: React.FC<Props> = ({ data, onBarClick }) => {
                     dataKey="filter"
                     tick={{ fontSize: 11, fill: '#374151' }}
                     width={160}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [`${value.toLocaleString()} uses`]}
-                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    radius={[0, 4, 4, 0]}
-                    maxBarSize={22}
-                    onClick={(entry) => onBarClick?.(entry as MenuFilterUsageStat)}
-                    style={{ cursor: onBarClick ? 'pointer' : undefined }}
-                  >
-                    {data.map((d) => (
-                      <Cell key={d.eventType} fill={MENU_EVENT_COLORS[d.eventType] ?? '#64748b'} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                    />
+                    <Tooltip
+                      formatter={(value) => {
+                        const numericValue =
+                          typeof value === 'number' ? value : Number(value ?? 0);
+
+                        return [`${numericValue.toLocaleString()} uses`, 'Uses'];
+                      }}
+                      contentStyle={{
+                        fontSize: 12,
+                        borderRadius: 8,
+                        border: '1px solid #e5e7eb',
+                      }}
+                    />
+
+                    <Bar
+                      dataKey="count"
+                      radius={[0, 4, 4, 0]}
+                      maxBarSize={22}
+                      onClick={(_, index) => {
+                        const item = data[index];
+
+                        if (!item) return;
+
+                        onBarClick?.(item);
+                      }}
+                      style={{ cursor: onBarClick ? 'pointer' : undefined }}
+                    >
+                      {data.map((d) => (
+                        <Cell
+                          key={d.eventType}
+                          fill={EVENT_COLORS[d.eventType] ?? '#64748b'}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
               </ResponsiveContainer>
 
               <div className="mt-3 space-y-1.5">
@@ -74,7 +93,7 @@ const MenuFilterUsageChart: React.FC<Props> = ({ data, onBarClick }) => {
                     className="w-full flex items-center justify-between px-1 py-0.5 rounded hover:bg-gray-50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: MENU_EVENT_COLORS[d.eventType] ?? '#64748b' }} />
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: EVENT_COLORS[d.eventType] ?? '#64748b' }} />
                       <span className="text-sm text-gray-700">{d.filter}</span>
                     </div>
                     <span className="text-sm font-semibold text-gray-900">{d.count.toLocaleString()}</span>

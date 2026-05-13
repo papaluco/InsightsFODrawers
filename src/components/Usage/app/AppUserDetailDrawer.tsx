@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { X, Zap } from 'lucide-react';
 import { AppUserStatRow, AppSessionStatRow } from '../../../types/appUsageTypes';
-import { fmtDate, fmtDuration, APP_ICONS, TAB_COLORS, TAB_TAILWIND } from './appUsageHelpers';
+import { USAGE_ICONS } from '../common/usageHelpers';
+import { fmtDate, fmtDuration, TAB_COLORS, TAB_TAILWIND } from '../common/usageHelpers';
 import AppSessionGrid from './AppSessionGrid';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 
@@ -60,7 +61,7 @@ const AppUserDetailDrawer: React.FC<Props> = ({
         <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TAB_COLORS.Users}1A` }}>
-              <APP_ICONS.USER size={20} style={{ color: TAB_COLORS.Users }} />
+              <USAGE_ICONS.User size={20} style={{ color: TAB_COLORS.Users }} />
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900">{user?.userName ?? 'User Detail'}</h3>
@@ -83,10 +84,10 @@ const AppUserDetailDrawer: React.FC<Props> = ({
         {user && (
           <div className="flex-1 overflow-y-auto bg-gray-50 px-6 py-5 space-y-5">
             <div className="grid grid-cols-4 gap-3">
-              <FeedbackKPICard label="Sessions" value={user.sessions.toLocaleString()} icon={<APP_ICONS.SESSIONS size={16} />} colorClass={TAB_TAILWIND.Sessions} />
-              <FeedbackKPICard label="Events" value={user.eventCount.toLocaleString()} icon={<APP_ICONS.EVENT size={16} />} colorClass={TAB_TAILWIND.Event} />
-              <FeedbackKPICard label="Avg Duration" value={fmtDuration(user.avgSessionDuration)} icon={<APP_ICONS.TIME size={16} />} colorClass={TAB_TAILWIND.Timming} />
-              <FeedbackKPICard label="Last Active" value={fmtDate(user.lastActive)} icon={<APP_ICONS.TIME size={16} />} colorClass={TAB_TAILWIND.Timming} />
+              <FeedbackKPICard label="Sessions" value={user.sessions.toLocaleString()} icon={<USAGE_ICONS.Sessions size={16} />} colorClass={TAB_TAILWIND.Sessions} />
+              <FeedbackKPICard label="Events" value={user.eventCount.toLocaleString()} icon={<USAGE_ICONS.Event size={16} />} colorClass={TAB_TAILWIND.Event} />
+              <FeedbackKPICard label="Avg Duration" value={fmtDuration(user.avgSessionDuration)} icon={<USAGE_ICONS.Time size={16} />} colorClass={TAB_TAILWIND.Timming} />
+              <FeedbackKPICard label="Last Active" value={fmtDate(user.lastActive)} icon={<USAGE_ICONS.Time size={16} />} colorClass={TAB_TAILWIND.Timming} />
             </div>
 
             <AppSessionGrid

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Label, ResponsiveContainer } from 'recharts';
-import { CHART_COLORS, pct } from './reportUsageHelpers';
+import { CHART_COLORS, pct } from '../../Usage/common/usageHelpers';
 
 export interface ReportPieItem {
   name: string;

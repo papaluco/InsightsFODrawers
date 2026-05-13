@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { MenuUsageEvent, MENU_EVENT_FRIENDLY } from '../../../types/menuUsageTypes';
-import { fmtDateTime, MENU_EVENT_COLORS } from './menuUsageHelpers';
+import { fmtDateTime, EVENT_COLORS } from '../common/usageHelpers';
+
 import { MENU_USER_NAMES, MENU_DISTRICT_NAMES } from '../../../data/mockMenuUsageData';
 
 interface Props {
@@ -23,7 +24,7 @@ const MenuEventDetailDrawer: React.FC<Props> = ({ event, isOpen, onClose, zIndex
   if (!isOpen || !event) return null;
 
   const friendlyType = MENU_EVENT_FRIENDLY[event.eventType] ?? event.eventType;
-  const color = MENU_EVENT_COLORS[event.eventType] ?? '#64748b';
+  const color = EVENT_COLORS[event.eventType] ?? '#64748b';
   const userName = MENU_USER_NAMES[event.userId] ?? event.userId;
   const districtName = MENU_DISTRICT_NAMES[event.districtId] ?? event.districtId;
 

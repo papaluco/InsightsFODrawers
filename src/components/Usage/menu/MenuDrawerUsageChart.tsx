@@ -3,7 +3,7 @@ import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { MenuDrawerUsageStat } from '../../../types/menuUsageTypes';
-import { MENU_ICONS, DRAWER_COLORS } from './menuUsageHelpers';
+import { USAGE_ICONS, getTopicColor } from '../common/usageHelpers';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
@@ -13,15 +13,46 @@ interface Props {
 }
 
 const RADIAN = Math.PI / 180;
-const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
-  cx: number; cy: number; midAngle: number; innerRadius: number; outerRadius: number; percent: number;
-}) => {
+
+const renderLabel = (props: any) => {
+  const {
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  } = props;
+
+  if (
+    typeof cx !== 'number' ||
+    typeof cy !== 'number' ||
+    typeof midAngle !== 'number' ||
+    typeof innerRadius !== 'number' ||
+    typeof outerRadius !== 'number' ||
+    typeof percent !== 'number'
+  ) {
+    return null;
+  }
+
   if (percent < 0.05) return null;
+
   const r = innerRadius + (outerRadius - innerRadius) * 0.55;
+
   const x = cx + r * Math.cos(-midAngle * RADIAN);
+
   const y = cy + r * Math.sin(-midAngle * RADIAN);
+
   return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700}>
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontSize={12}
+      fontWeight={700}
+    >
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   );
@@ -44,7 +75,7 @@ const MenuDrawerUsageChart: React.FC<Props> = ({ data, onMenuItemsClick, onSchoo
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left"
       >
         <div className="flex items-center gap-2.5">
-          <MENU_ICONS.CHART size={16} className="text-orange-500" />
+          <USAGE_ICONS.Chart size={16} className="text-orange-500" />
           <span className="text-sm font-semibold text-gray-900">Drawer Usage</span>
           {total > 0 && (
             <span className="text-xs text-gray-400 font-normal">{total.toLocaleString()} total opens</span>
@@ -60,26 +91,39 @@ const MenuDrawerUsageChart: React.FC<Props> = ({ data, onMenuItemsClick, onSchoo
           ) : (
             <>
               <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={data}
-                    dataKey="count"
-                    nameKey="drawerType"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
-                    labelLine={false}
-                    label={renderLabel}
-                    onClick={(entry) => handleSliceClick(entry as MenuDrawerUsageStat)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {data.map(entry => (
-                      <Cell key={entry.drawerType} fill={DRAWER_COLORS[entry.drawerType] ?? '#64748b'} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number, name: string) => [`${value.toLocaleString()} opens`, name]}
+                  <PieChart>
+                    <Pie
+                      data={data}
+                      dataKey="count"
+                      nameKey="drawerType"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={85}
+                      labelLine={false}
+                      label={renderLabel}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {data.map((entry) => (
+                        <Cell
+                          key={entry.drawerType}
+                          fill={getTopicColor(entry.drawerType) ?? '#64748b'}
+                          onClick={() => handleSliceClick(entry)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                    formatter={(value, name) => {
+  const numericValue =
+    typeof value === 'number' ? value : Number(value ?? 0);
+
+  return [
+    `${numericValue.toLocaleString()} opens`,
+    String(name ?? ''),
+  ];
+}}
+                    
                     contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
                   />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -94,7 +138,7 @@ const MenuDrawerUsageChart: React.FC<Props> = ({ data, onMenuItemsClick, onSchoo
                     className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: DRAWER_COLORS[d.drawerType] ?? '#64748b' }} />
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: getTopicColor(d.drawerType) ?? '#64748b' }} />
                       <span className="text-sm text-gray-700">{d.drawerType}</span>
                     </div>
                     <div className="flex items-center gap-3">

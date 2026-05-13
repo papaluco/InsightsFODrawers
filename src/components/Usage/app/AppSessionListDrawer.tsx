@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { AppSessionStatRow } from '../../../types/appUsageTypes';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import AppSessionGrid from './AppSessionGrid';
-import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
+import { TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 
 interface Props {
   sessions: AppSessionStatRow[];
@@ -51,7 +51,7 @@ const AppSessionListDrawer: React.FC<Props> = ({
           </button>
 
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TAB_COLORS.Sessions}1A` }}>
-            <APP_ICONS.SESSIONS size={20} style={{ color: TAB_COLORS.Sessions }} />
+            <USAGE_ICONS.Sessions size={20} style={{ color: TAB_COLORS.Sessions }} />
           </div>
 
           <div>

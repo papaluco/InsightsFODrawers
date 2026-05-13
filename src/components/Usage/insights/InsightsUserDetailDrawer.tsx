@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Star, Activity, Layers, Bot, Download, TrendingUp } from 'lucide-react';
 import { InsightsUserStatRow, InsightsUsageEvent, INSIGHTS_EVENT_FRIENDLY, INSIGHTS_INTERACTION_TYPES, KPIStatRow } from '../../../types/insightsUsageTypes';
 import { INSIGHTS_DISTRICT_KPIS, INSIGHTS_DISTRICT_NAMES } from '../../../data/mockInsightsUsageData';
-import { fmtDate, KPI_COLORS } from '../insights/insightsUsageHelpers';
+import { fmtDate, KPI_COLORS } from '../common/usageHelpers';
 import { calcInsightsUserScore, getEngagementTier } from '../../../utils/engagementTiers';
 import EngagementTierBadge from '../../Common/EngagementTierBadge';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';

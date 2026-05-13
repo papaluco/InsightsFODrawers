@@ -20,7 +20,8 @@ import {
   getMenuMetricStats,
   getMenuFilterStats,
 } from '../../../services/menuUsageService';
-import { applyMenuFilters, MENU_TAB_COLORS } from './menuUsageHelpers';
+import { applyMenuFilters } from './menuUsageHelpers';
+import { TAB_COLORS } from '../common/usageHelpers';
 import MenuUsageFiltersBar from './MenuUsageFilters';
 import MenuOverviewKPICards from './MenuOverviewKPICards';
 import MenuDrawerUsageChart from './MenuDrawerUsageChart';
@@ -33,11 +34,11 @@ import MenuEventListDrawer from './MenuEventListDrawer';
 type Tab = 'overview' | 'menuItems' | 'schoolPerf' | 'users' | 'districts';
 
 const TABS: { id: Tab; label: string; color: string }[] = [
-  { id: 'overview',   label: 'Overview',          color: MENU_TAB_COLORS['Overview'] },
-  { id: 'menuItems',  label: 'Menu Items',         color: MENU_TAB_COLORS['Menu Items'] },
-  { id: 'schoolPerf', label: 'School Performance', color: MENU_TAB_COLORS['School Performance'] },
-  { id: 'users',      label: 'Users',              color: MENU_TAB_COLORS['Users'] },
-  { id: 'districts',  label: 'Districts',          color: MENU_TAB_COLORS['Districts'] },
+  { id: 'overview',   label: 'Overview',           color: TAB_COLORS.Overview },
+  { id: 'menuItems',  label: 'Menu Items',         color: TAB_COLORS.MenuAnalysis},
+  { id: 'schoolPerf', label: 'School Performance', color: TAB_COLORS.SchoolPerformance },
+  { id: 'users',      label: 'Users',              color: TAB_COLORS.Users },
+  { id: 'districts',  label: 'Districts',          color: TAB_COLORS.Districts },
 ];
 
 interface EventDrill { events: MenuUsageEvent[]; title: string; }

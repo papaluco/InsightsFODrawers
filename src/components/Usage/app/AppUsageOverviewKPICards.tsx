@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { UserCheck } from 'lucide-react';
 import { AppUsageSummary } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
-import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
+import { TAB_TAILWIND , USAGE_ICONS } from '../../Usage/common/usageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -65,7 +65,7 @@ const AppOverviewKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Active Users"
                 value={summary.activeUsers.toLocaleString()}
-                icon={<APP_ICONS.USER size={20} />}
+                icon={<USAGE_ICONS.User size={20} />}
                 colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
@@ -74,7 +74,7 @@ const AppOverviewKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Active Districts"
                 value={summary.activeDistricts.toLocaleString()}
-                icon={<APP_ICONS.DISTRICT size={20} />}
+                icon={<USAGE_ICONS.District size={20} />}
                 colorClass={TAB_TAILWIND.Districts}
               />
             </ClickableCard>
@@ -83,7 +83,7 @@ const AppOverviewKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Total Sessions"
                 value={summary.totalSessions.toLocaleString()}
-                icon={<APP_ICONS.SESSIONS size={20} />}
+                icon={<USAGE_ICONS.Sessions size={20} />}
                 colorClass={TAB_TAILWIND.Sessions}
               />
             </ClickableCard>
@@ -91,7 +91,7 @@ const AppOverviewKPICards: React.FC<Props> = ({
             <FeedbackKPICard
               label="Avg Session"
               value={`${summary.avgSessionDuration} min`}
-              icon={<APP_ICONS.TIME size={20} />}
+              icon={<USAGE_ICONS.Time size={20} />}
               colorClass={TAB_TAILWIND.Timming}
             />
 
@@ -99,7 +99,7 @@ const AppOverviewKPICards: React.FC<Props> = ({
               label="DAU / WAU / MAU"
               value={`${summary.dau}`}
               subtitle={`/ ${summary.wau} / ${summary.mau}`}
-              icon={<APP_ICONS.TRENDS size={20} />}
+              icon={<USAGE_ICONS.Trends size={20} />}
               colorClass={TAB_TAILWIND.Overview}
             />
 
@@ -115,7 +115,7 @@ const AppOverviewKPICards: React.FC<Props> = ({
             <FeedbackKPICard
               label="Retention"
               value={`${summary.retentionPercent}%`}
-              icon={<APP_ICONS.FREQUENCY size={20} />}
+              icon={<USAGE_ICONS.Frequency size={20} />}
               colorClass={TAB_TAILWIND.Users}
             />
           </div>

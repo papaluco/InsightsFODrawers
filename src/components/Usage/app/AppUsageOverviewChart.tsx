@@ -3,7 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { AppUsageEvent } from '../../../types/appUsageTypes';
-import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
+import { TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 
 type Grouping = 'daily' | 'weekly' | 'monthly';
 type Metric = 'sessions' | 'users' | 'districts';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const TAB_COLOR = TAB_COLORS.Overview;      // #6366f1
-const SectionIcon = APP_ICONS.TRENDS; // Assuming you have an icon defined for this in your helpers
+const SectionIcon = USAGE_ICONS.Trends; // Assuming you have an icon defined for this in your helpers
 
 function formatKey(ts: string, grouping: Grouping): string {
   const d = new Date(ts);

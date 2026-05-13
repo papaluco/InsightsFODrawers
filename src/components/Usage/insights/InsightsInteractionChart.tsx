@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { InsightsUsageEvent, INSIGHTS_EVENT_FRIENDLY } from '../../../types/insightsUsageTypes';
-import { INSIGHTS_EVENT_COLORS, DEFAULT_INSIGHTS_CHART_ITEMS } from './insightsUsageHelpers';
+import { InsightsUsageEvent } from '../../../types/insightsUsageTypes';
+import { DEFAULT_INSIGHTS_CHART_ITEMS } from './insightsUsageHelpers';
+import { EVENT_COLORS } from '../../Usage/common/usageHelpers';
 import { DragReorderSelect, OrderedSelectItem } from '../../Common/DragReorderSelect';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
@@ -93,11 +94,11 @@ const InsightsInteractionChart: React.FC<Props> = ({ events, onBarClick }) => {
                 <Bar
                   dataKey="count"
                   radius={[0, 4, 4, 0]}
-                  onClick={d => onBarClick?.(d.eventType as string)}
+                  onClick={(_, index) => { const item = data[index]; if (!item) return;   onBarClick?.(item.eventType); }}
                   style={{ cursor: onBarClick ? 'pointer' : 'default' }}
                 >
                   {data.map((d, i) => (
-                    <Cell key={i} fill={INSIGHTS_EVENT_COLORS[d.eventType] ?? '#6366f1'} opacity={0.85} />
+                    <Cell key={i} fill={EVENT_COLORS[d.eventType] ?? '#6366f1'} opacity={0.85} />
                   ))}
                 </Bar>
               </BarChart>

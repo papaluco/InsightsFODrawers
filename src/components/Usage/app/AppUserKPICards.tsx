@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { UserPlus, Zap } from 'lucide-react';
 import { AppUserStatRow } from '../../../types/appUsageTypes';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
-import { APP_ICONS, TAB_TAILWIND } from './appUsageHelpers';
+import { TAB_TAILWIND , USAGE_ICONS } from '../../Usage/common/usageHelpers';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -76,7 +75,7 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Active Users"
                 value={activeUsers.toLocaleString()}
-                icon={<APP_ICONS.USER size={20} />}
+                icon={<USAGE_ICONS.User size={20} />}
                 colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
@@ -85,7 +84,7 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="New Users"
                 value={newUsers.toLocaleString()}
-                icon={<UserPlus size={20} />}
+                icon={<USAGE_ICONS.User size={20} />}
                 colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
@@ -94,7 +93,7 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Returning Users"
                 value={returningUsers.toLocaleString()}
-                icon={<APP_ICONS.FREQUENCY size={20} />}
+                icon={<USAGE_ICONS.Frequency size={20} />}
                 colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
@@ -103,7 +102,7 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Power Users"
                 value={powerUsers.toLocaleString()}
-                icon={<Zap size={20} />}
+                icon={<USAGE_ICONS.SchoolieFeedback size={20} />}
                 colorClass={TAB_TAILWIND.Users}
               />
             </ClickableCard>
@@ -112,7 +111,7 @@ const AppUserKPICards: React.FC<Props> = ({
               <FeedbackKPICard
                 label="Avg Sessions"
                 value={avgSessions.toString()}
-                icon={<APP_ICONS.SESSIONS size={20} />}
+                icon={<USAGE_ICONS.Sessions size={20} />}
                 colorClass={TAB_TAILWIND.Sessions}
               />
             </ClickableCard>
@@ -120,7 +119,7 @@ const AppUserKPICards: React.FC<Props> = ({
             <FeedbackKPICard
               label="Avg Duration"
               value={`${avgDuration} min`}
-              icon={<APP_ICONS.TIME size={20} />}
+              icon={<USAGE_ICONS.Time size={20} />}
               colorClass={TAB_TAILWIND.Sessions}
             />
           </div>

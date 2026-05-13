@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown, MessageSquare, GripVertical } from 'lucide-react';
 import { InsightsDistrictStatRow } from '../../../types/insightsUsageTypes';
-import { fmtDate } from './insightsUsageHelpers';
+import { fmtDate } from '../common/usageHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon } from '../../Common/Icons';
 import EngagementTierBadge from '../../Common/EngagementTierBadge';

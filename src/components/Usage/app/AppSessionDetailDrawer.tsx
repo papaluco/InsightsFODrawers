@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { X, FileText, Filter, PanelRight, Zap, Download, Bot, BarChart3, ChevronRight } from 'lucide-react';
 import { AppUsageEvent, AppSessionStatRow } from '../../../types/appUsageTypes';
 import { getAppSessionEvents } from '../../../services/appUsageService';
-import { fmtDateTime, fmtDuration, ENTRY_POINT_LABELS, getEventFriendlyLabel, APP_ICONS, TAB_COLORS } from './appUsageHelpers';
+import { getEventFriendlyLabel } from './appUsageHelpers';
+import { fmtDateTime, fmtDuration, ENTRY_POINT_LABELS, TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 import { APP_USER_NAMES, APP_DISTRICT_NAMES } from '../../../data/mockAppUsageData';
 
 interface Props {
@@ -93,7 +94,7 @@ const AppSessionDetailDrawer: React.FC<Props> = ({
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ backgroundColor: `${TAB_COLORS.Sessions}1A` }}
             >
-              <APP_ICONS.SESSIONS size={20} style={{ color: TAB_COLORS.Sessions }} />
+              <USAGE_ICONS.Sessions size={20} style={{ color: TAB_COLORS.Sessions }} />
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900">Session Detail</h3>

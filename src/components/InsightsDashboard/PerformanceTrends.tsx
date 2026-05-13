@@ -98,7 +98,6 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
         <div className="flex items-center gap-2">
 
           {/* Copy Button Section */}
-        
           <CopyMenu onCopyData={copyChartDataToClipboard} onCopyImage={copyChartImageToClipboard} />
 
           {/* Schoolie Button Section */}

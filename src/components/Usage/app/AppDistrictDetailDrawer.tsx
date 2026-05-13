@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { AppDistrictStatRow, AppSessionStatRow } from '../../../types/appUsageTypes';
-import { fmtDate, APP_ICONS, TAB_COLORS } from './appUsageHelpers';
+import { fmtDate, TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 import AppSessionGrid from './AppSessionGrid';
 
 interface Props {
@@ -69,7 +69,7 @@ const AppDistrictDetailDrawer: React.FC<Props> = ({
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ backgroundColor: `${TAB_COLORS.Districts}1A` }}
             >
-              <APP_ICONS.DISTRICT size={20} style={{ color: TAB_COLORS.Districts }} />
+              <USAGE_ICONS.District size={20} style={{ color: TAB_COLORS.Districts }} />
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900">

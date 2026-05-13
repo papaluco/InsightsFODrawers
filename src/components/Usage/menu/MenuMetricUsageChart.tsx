@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 import { MenuMetricUsageStat } from '../../../types/menuUsageTypes';
-import { MENU_ICONS, MENU_CHART_COLORS } from './menuUsageHelpers';
+import { USAGE_ICONS, CHART_COLORS } from '../common/usageHelpers';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
@@ -22,7 +22,7 @@ const MenuMetricUsageChart: React.FC<Props> = ({ data }) => {
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left"
       >
         <div className="flex items-center gap-2.5">
-          <MENU_ICONS.FILTER size={16} className="text-violet-500" />
+          <USAGE_ICONS.Filters size={16} className="text-violet-500" />
           <span className="text-sm font-semibold text-gray-900">Metric Usage</span>
           {total > 0 && (
             <span className="text-xs text-gray-400 font-normal">{total.toLocaleString()} metric selections</span>
@@ -48,12 +48,13 @@ const MenuMetricUsageChart: React.FC<Props> = ({ data }) => {
                     width={130}
                   />
                   <Tooltip
-                    formatter={(value: number) => [`${value.toLocaleString()} selections`]}
+                    formatter={(value) => { const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+                      return [`${numericValue.toLocaleString()} selections`]; }}
                     contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={22}>
                     {data.map((_, i) => (
-                      <Cell key={i} fill={MENU_CHART_COLORS[i % MENU_CHART_COLORS.length]} />
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -63,7 +64,7 @@ const MenuMetricUsageChart: React.FC<Props> = ({ data }) => {
                 {data.map((d, i) => (
                   <div key={d.metric} className="flex items-center justify-between px-1">
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: MENU_CHART_COLORS[i % MENU_CHART_COLORS.length] }} />
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
                       <span className="text-sm text-gray-700">{d.metric}</span>
                     </div>
                     <div className="flex items-center gap-3">

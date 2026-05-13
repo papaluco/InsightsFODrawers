@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { AppDistrictStatRow } from '../../../types/appUsageTypes';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import AppDistrictGrid from './AppDistrictGrid';
-import { APP_ICONS, TAB_COLORS } from './appUsageHelpers';
+import { TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 
 interface Props {
   districts: AppDistrictStatRow[];
@@ -47,7 +47,7 @@ const AppDistrictListDrawer: React.FC<Props> = ({
           </button>
 
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${TAB_COLORS.Districts}1A` }}>
-            <APP_ICONS.DISTRICT size={20} style={{ color: TAB_COLORS.Districts }} />
+            <USAGE_ICONS.District size={20} style={{ color: TAB_COLORS.Districts }} />
           </div>
 
           <div>

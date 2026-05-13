@@ -15,7 +15,8 @@ import {
   getUserStats,
   getDistrictStats,
 } from '../../../services/reportUsageService';
-import { applyReportFilters, EVENT_COLORS } from './reportUsageHelpers';
+import { applyReportFilters } from './reportUsageHelpers';
+import { EVENT_COLORS } from '../../Usage/common/usageHelpers';
 import { getUsageEventFriendlyName } from '../../../constants/usageEventTypes';
 import ReportsUsageFilters from './ReportsUsageFilters';
 import ReportsKPICards from './ReportsKPICards';

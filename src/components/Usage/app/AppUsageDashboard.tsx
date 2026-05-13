@@ -16,7 +16,8 @@ import {
   getAppDistrictStats,
   getAppSessionStats,
 } from '../../../services/appUsageService';
-import { applyAppFilters, PAGE_COLORS, ENTRY_POINT_COLORS, ENTRY_POINT_LABELS, APP_CHART_COLORS } from './appUsageHelpers';
+import { applyAppFilters } from './appUsageHelpers';
+import { PAGE_COLORS, ENTRY_POINT_COLORS, ENTRY_POINT_LABELS, CHART_COLORS } from '../common/usageHelpers';
 import AppUsageFiltersBar from './AppUsageFilters';
 import AppUsageOverviewKPICards from './AppUsageOverviewKPICards';
 import AppUsageOverviewChart from './AppUsageOverviewChart';
@@ -118,7 +119,7 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
       .sort((a, b) => b.value - a.value);
   }, [filteredEvents]);
 
-  const pageUsageColors = pageUsageData.map(d => PAGE_COLORS[d.name] ?? APP_CHART_COLORS[0]);
+  const pageUsageColors = pageUsageData.map(d => PAGE_COLORS[d.name] ?? CHART_COLORS[0]);
 
   const entryPointData = useMemo(() => {
     const counts = new Map<string, number>();
@@ -134,7 +135,7 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
 
   const entryPointColors = entryPointData.map(d => {
     const key = Object.entries(ENTRY_POINT_LABELS).find(([, v]) => v === d.name)?.[0];
-    return key ? (ENTRY_POINT_COLORS[key] ?? APP_CHART_COLORS[0]) : APP_CHART_COLORS[0];
+    return key ? (ENTRY_POINT_COLORS[key] ?? CHART_COLORS[0]) : CHART_COLORS[0];
   });
 
   const platformData = useMemo(() => {
@@ -148,7 +149,7 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
       .sort((a, b) => b.value - a.value);
   }, [filteredEvents]);
 
-  const platformColors = platformData.map((_, i) => APP_CHART_COLORS[i % APP_CHART_COLORS.length]);
+  const platformColors = platformData.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
   // --- Drawer stack helpers ---
 

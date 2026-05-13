@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { ChevronUp, ChevronDown, MessageSquare, AlertCircle, GripVertical } from 'lucide-react';
 import { AppSessionStatRow } from '../../../types/appUsageTypes';
-import { fmtDateTime, fmtDuration, ENTRY_POINT_LABELS } from './appUsageHelpers';
+import { fmtDateTime, fmtDuration, ENTRY_POINT_LABELS } from '../common/usageHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
