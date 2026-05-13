@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { SchoolieIcon } from '../Common/Icons';
+import { CopyMenu } from '../Common/CopyMenu';
+import { toBlob } from 'html-to-image';
 import {
   ComposedChart,
   Bar,
@@ -12,6 +14,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { useRef } from 'react';
 
 // Mock data to match the visual in your screenshot
 const MOCK_CHART_DATA = [
@@ -42,19 +45,71 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
     return "#ef4444"; // Red (Below Benchmark)
   };
 
+ 
+    // Function to export chart as an image
+    const chartRef = useRef<HTMLDivElement>(null);
+
+    const copyChartDataToClipboard = async () => {
+      const headers = ['Month', 'Actual', 'Benchmark'];
+
+      const rows = MOCK_CHART_DATA.map((item) => [
+        item.name,
+        item.value.toLocaleString(),
+        item.benchmark.toLocaleString(),
+      ]);
+
+      const text = [
+        'Performance Trends',
+        `KPI: ${selectedKPI}`,
+        '',
+        [headers, ...rows].map((row) => row.join('\t')).join('\n'),
+      ].join('\n');
+
+      await navigator.clipboard.writeText(text);
+    };
+
+    const copyChartImageToClipboard = async () => {
+      if (!chartRef.current) return;
+
+      if (!navigator.clipboard || !window.ClipboardItem) {
+        await copyChartDataToClipboard();
+        return;
+      }
+
+      const blob = await toBlob(chartRef.current, {
+        backgroundColor: '#ffffff',
+        pixelRatio: 2,
+      });
+
+      if (!blob) return;
+
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob,
+        }),
+      ]);
+    };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-6">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-lg font-bold text-gray-800">Performance Trends</h3>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+
+          {/* Copy Button Section */}
+        
+          <CopyMenu onCopyData={copyChartDataToClipboard} onCopyImage={copyChartImageToClipboard} />
+
+          {/* Schoolie Button Section */}
           {onSchoolieClick && (
             <button
               onClick={onSchoolieClick}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+              title="Ask Schoolie"
+              className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-lg hover:shadow-sm transition-all group border-none"
             >
-              <SchoolieIcon className="h-4 w-4" size={16} />
-              Ask Schoolie
+              <SchoolieIcon size={24} className="text-gray-500 group-hover:text-indigo-600 transition-colors"
+              />
             </button>
           )}
           <select
@@ -69,96 +124,101 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
         </div>
       </div>
 
-      {/* Chart Container */}
-      <div className="h-[400px] min-h-[400px] w-full">
-        <ResponsiveContainer width="100%" height="100%" debounce={1}>
-          <ComposedChart
-            data={MOCK_CHART_DATA}
-            margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+      {/* Chart Export Container */}
+      <div ref={chartRef} className="bg-white">
+        {/* Chart Container */}
+        <div className="h-[400px] min-h-[400px] w-full">
+          <ResponsiveContainer width="100%" height="100%" debounce={1}>
+            <ComposedChart
+              data={MOCK_CHART_DATA}
+              margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
 
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: '#0f172a', // Slate-900 (Much darker/higher contrast)
-                fontSize: 9,
-                fontWeight: 400,
-                letterSpacing: '0.1em'
-              }}
-              angle={-45}
-              textAnchor="end"
-              height={60}
-              dy={10}
-            />
-
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: '#0f172a', // Slate-900 
-                fontSize: 9,
-                fontWeight: 400,
-                letterSpacing: '0.1em'
-              }}
-              tickFormatter={(val) => val.toLocaleString()}
-              width={60}
-              label={{
-                value: 'NUMBER',
-                angle: -90,
-                position: 'insideLeft',
-                offset: 0,
-                style: {
-                  fill: '#0f172a', // Matching the dark Slate-900
-                  fontSize: 10,
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: '#0f172a',
+                  fontSize: 9,
                   fontWeight: 400,
-                  letterSpacing: '0.2em',
-                  textAnchor: 'middle'
-                }
-              }}
-            />
+                  letterSpacing: '0.1em'
+                }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                dy={10}
+              />
 
-            <Tooltip
-              cursor={{ fill: '#f9fafb' }}
-              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fill: '#0f172a',
+                  fontSize: 9,
+                  fontWeight: 400,
+                  letterSpacing: '0.1em'
+                }}
+                tickFormatter={(val) => val.toLocaleString()}
+                width={60}
+                label={{
+                  value: 'NUMBER',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 0,
+                  style: {
+                    fill: '#0f172a',
+                    fontSize: 10,
+                    fontWeight: 400,
+                    letterSpacing: '0.2em',
+                    textAnchor: 'middle'
+                  }
+                }}
+              />
 
-            <Legend
-              verticalAlign="bottom"
-              align="right"
-              iconType="circle"
-              wrapperStyle={{ paddingTop: '40px' }}
-            />
+              <Tooltip
+                cursor={{ fill: '#f9fafb' }}
+                contentStyle={{
+                  borderRadius: '8px',
+                  border: 'none',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                }}
+              />
 
-            {/* Bars for Actual Values */}
-            <Bar dataKey="value" name="Actual" barSize={25} radius={[4, 4, 0, 0]}>
-              {MOCK_CHART_DATA.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={getBarColor(entry.value, entry.benchmark)}
-                />
-              ))}
-            </Bar>
+              <Legend
+                verticalAlign="bottom"
+                align="right"
+                iconType="circle"
+                wrapperStyle={{ paddingTop: '40px' }}
+              />
 
-            {/* Line for Benchmark */}
-            <Line
-              type="monotone"
-              dataKey="benchmark"
-              name="Benchmark"
-              stroke="#6366f1"
-              strokeWidth={2}
-              dot={{ r: 4, fill: '#fff', stroke: '#6366f1', strokeWidth: 2 }}
-              activeDot={{ r: 6 }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
+              <Bar dataKey="value" name="Actual" barSize={25} radius={[4, 4, 0, 0]}>
+                {MOCK_CHART_DATA.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={getBarColor(entry.value, entry.benchmark)}
+                  />
+                ))}
+              </Bar>
 
-      {/* X-Axis Central Label */}
-      <div className="text-center text-xs font-normal text-slate-900 uppercase tracking-widest mt-3">
-        Months
+              <Line
+                type="monotone"
+                dataKey="benchmark"
+                name="Benchmark"
+                stroke="#6366f1"
+                strokeWidth={2}
+                dot={{ r: 4, fill: '#fff', stroke: '#6366f1', strokeWidth: 2 }}
+                activeDot={{ r: 6 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* X-Axis Central Label */}
+        <div className="text-center text-xs font-normal text-slate-900 uppercase tracking-widest mt-3">
+          Months
+        </div>
       </div>
     </div>
   );

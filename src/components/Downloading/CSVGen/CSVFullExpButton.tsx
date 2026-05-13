@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, Loader2, CheckCircle, Info, X, FileText } from 'lucide-react';
+import { Database, Loader2, CheckCircle, Info, X } from 'lucide-react';
 
 /**
  * ! DEMO CODE NOTE:

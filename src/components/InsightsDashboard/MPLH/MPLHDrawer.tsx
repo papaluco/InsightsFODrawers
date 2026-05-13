@@ -52,22 +52,27 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen || isLoading || openedAtRef.current === null || firedRef.current) return;
-    firedRef.current = true;
-    const durationMs = Math.round(performance.now() - openedAtRef.current);
-    telemetry.trackPerformance('mplh_drawer_load', {
-      performanceCategory: 'drawer_load',
-      durationMs,
-      thresholdMs: 2000,
-      success: true,
-      module: 'insights',
-      source: 'frontend',
-      component: 'MPLHDrawer',
-      page: 'InsightsDashboard',
-    });
-    openedAtRef.current = null;
-  }, [isOpen, isLoading]);
+useEffect(() => {
+  if (!isOpen || isLoading || openedAtRef.current === null || firedRef.current) return;
+
+  firedRef.current = true;
+
+  const durationMs = Math.round(performance.now() - openedAtRef.current);
+
+  telemetry.trackPerformance('mplh_drawer_load', {
+    eventName: 'mplh_drawer_load',
+    performanceCategory: 'drawer_load',
+    durationMs,
+    thresholdMs: 2000,
+    success: true,
+    module: 'insights',
+    source: 'frontend',
+    component: 'MPLHDrawer',
+    page: 'InsightsDashboard',
+  });
+
+  openedAtRef.current = null;
+}, [isOpen, isLoading]);
 
   // --- PDF DATA MAPPING ---
   const pdfData = useMemo(() => {

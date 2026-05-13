@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import { SchoolieIcon } from '../Common/Icons';
+import { SchoolieIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon } from '../Common/Icons';
+import { CopyButton } from '../Common/CopyButton';
 
 interface SchoolPerformanceData {
   school: string;
@@ -49,8 +49,8 @@ const PERFORMANCE_DATA: SchoolPerformanceData[] = [
 const SortIcon = ({ column, config }: { column: string, config: any }) => {
   if (config?.key !== column) return <div className="w-4 h-4 opacity-0" />;
   return config.direction === 'asc' 
-    ? <ChevronUp className="w-4 h-4 text-blue-600" /> 
-    : <ChevronDown className="w-4 h-4 text-blue-600" />;
+    ? <ChevronUpIcon className="w-4 h-4 text-blue-600" /> 
+    : <ChevronDownIcon className="w-4 h-4 text-blue-600" />;
 };
 
 interface SchoolPerformanceGridProps {
@@ -97,6 +97,53 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
     setSortConfig({ key, direction });
   };
 
+  // Function to copy grid data to clipboard in a tabular format
+  const copyGridToClipboard = async () => {
+    const headers = [
+      'School',
+      'Eco Dis',
+      'Meals',
+      'MEQs',
+      'Breakfast',
+      'Lunch',
+      'Snack',
+      'Supper',
+      'Revenue',
+      'Waste',
+      'Inventory Value',
+      'Inventory Turnover',
+      'Physical Inventory Discrepancy',
+      'MPLH',
+      'PNA',
+      'ENP',
+    ];
+
+    const rows = sortedData.map((row) => [
+      row.school,
+      row.ecoDis,
+      row.meals.toLocaleString(),
+      row.meqs.toLocaleString(),
+      row.breakfast,
+      row.lunch,
+      row.snack,
+      row.supper,
+      row.revenue,
+      row.waste,
+      row.inventoryValue,
+      row.inventoryTurnover,
+      row.physicalInventoryDiscrepancy,
+      row.mplh,
+      row.pna,
+      row.enp,
+    ]);
+
+    const text = [headers, ...rows]
+      .map((row) => row.join('\t'))
+      .join('\n');
+
+    await navigator.clipboard.writeText(text);
+  };
+
   const TableHeader = ({ label, sortKey, align = "center" }: { label: string, sortKey?: keyof SchoolPerformanceData, align?: "left" | "center" | "right" }) => (
     <th 
       onClick={() => sortKey && handleSort(sortKey)} 
@@ -116,18 +163,23 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
             <h3 className="text-lg font-bold text-gray-800">School Performance</h3>
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider"> - Showing results for: Current Month </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Copy Button Section */}
+          <CopyButton onCopy={copyGridToClipboard} />
+
+          {/* Schoolie Button Section */}
           {onSchoolieClick && (
             <button
               onClick={onSchoolieClick}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+              title="Ask Schoolie"
+              className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-lg hover:shadow-sm transition-all group border-none"
             >
-              <SchoolieIcon className="h-4 w-4" size={16} />
-              Ask Schoolie
+              <SchoolieIcon size={24} className="text-gray-500 group-hover:text-indigo-600 transition-colors"
+              />
             </button>
           )}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search school..."
@@ -211,7 +263,7 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
               disabled={currentPage === 1} 
               className="p-1 border border-gray-200 rounded disabled:opacity-30 hover:bg-gray-50"
             >
-              <ChevronLeft className="w-4 h-4 text-gray-600"/>
+              <ChevronLeftIcon className="w-4 h-4 text-gray-600"/>
             </button>
             <span className="text-xs text-gray-600 font-medium">Page {currentPage} of {totalPages}</span>
             <button 
@@ -219,7 +271,7 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
               disabled={currentPage === totalPages} 
               className="p-1 border border-gray-200 rounded disabled:opacity-30 hover:bg-gray-50"
             >
-              <ChevronRight className="w-4 h-4 text-gray-600"/>
+              <ChevronRightIcon className="w-4 h-4 text-gray-600"/>
             </button>
           </div>
         )}
