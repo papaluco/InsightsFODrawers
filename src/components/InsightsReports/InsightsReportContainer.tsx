@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { UnifiedReport, ReportSource, ReportHistoryItem } from '../../types/ReportTypes';
 import { getReports, getReportHistory, toggleStarReport } from '../../services/insightsReportService';
 import { trackReportEvent } from '../../services/reportUsageService';
+import { MOCK_CURRENT_USER } from '../../data/mockCurrentUser';
 import ReportListTable from './ReportListTable';
 import { ProductFeedback } from '../Feedback/ProductFeedback';
 import StarredReportsGrid from './StarredReportsGrid';
@@ -140,8 +141,8 @@ const InsightsReportsContainer: React.FC = () => {
       setConfigDrawer({ isOpen: true, report, historyItem: resolvedItem });
       trackReportEvent({
         eventType: 'REPORT_CONFIG_VIEWED',
-        userId: 'current-user',
-        districtId: 'current-district',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
         platform: 'SchoolCafe',
         context: {
           reportId: report.id,
@@ -235,8 +236,8 @@ const InsightsReportsContainer: React.FC = () => {
             onDistributeReport={(report) => {
               trackReportEvent({
                 eventType: 'REPORT_DISTRIBUTED',
-                userId: 'current-user',
-                districtId: 'current-district',
+                userId: MOCK_CURRENT_USER.userId,
+                districtId: MOCK_CURRENT_USER.districtId,
                 platform: 'SchoolCafe',
                 context: {
                   reportId: report.id,
@@ -276,8 +277,8 @@ const InsightsReportsContainer: React.FC = () => {
             onDistributeReport={(report) => {
               trackReportEvent({
                 eventType: 'REPORT_DISTRIBUTED',
-                userId: 'current-user',
-                districtId: 'current-district',
+                userId: MOCK_CURRENT_USER.userId,
+                districtId: MOCK_CURRENT_USER.districtId,
                 platform: 'SchoolCafe',
                 context: {
                   reportId: report.id,

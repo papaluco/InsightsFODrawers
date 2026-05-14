@@ -13,6 +13,8 @@ import {
   getExistingFeedback,
 } from '../../services/feedbackService';
 import { FEEDBACK_REASONS } from './feedbackConstants';
+import { telemetry } from '../../telemetry';
+import { MOCK_CURRENT_USER } from '../../data/mockCurrentUser';
 
 interface ProductFeedbackProps {
   feedbackType: FeedbackType;
@@ -49,8 +51,8 @@ export const ProductFeedback: React.FC<ProductFeedbackProps> = ({
     const checkExisting = async () => {
       try {
         const key: FeedbackContextKey = {
-          userId: 'demo-user',
-          districtId: 'demo-district',
+          userId: MOCK_CURRENT_USER.userId,
+          districtId: MOCK_CURRENT_USER.districtId,
           sourceEntryPoint: sourceEntryPoint as SchoolieSourceEntryPoint,
           feedbackType,
           analysisIdentifier,
@@ -78,9 +80,9 @@ export const ProductFeedback: React.FC<ProductFeedbackProps> = ({
     userComment: string
   ): SchoolieFeedbackPayload {
     return {
-      userId: 'demo-user',
-      districtId: 'demo-district',
-      platform: 'SchoolCafe',
+      userId: MOCK_CURRENT_USER.userId,
+      districtId: MOCK_CURRENT_USER.districtId,
+      platform: MOCK_CURRENT_USER.platform,
       sourceEntryPoint: sourceEntryPoint as SchoolieSourceEntryPoint,
       feedbackType,
       feedbackValue: value,
@@ -109,6 +111,19 @@ export const ProductFeedback: React.FC<ProductFeedbackProps> = ({
         setExistingFeedbackId(created.feedbackId);
       }
       setSubmitState('success');
+      telemetry.trackUsage('schoolie_feedback_submitted', {
+        module: 'feedback',
+        component: 'ProductFeedback',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
+        properties: {
+          feedbackType,
+          feedbackValue: value,
+          sourceEntryPoint,
+          analysisIdentifier,
+          reasonCodes,
+        },
+      });
     } catch {
       setSubmitState('error');
     }

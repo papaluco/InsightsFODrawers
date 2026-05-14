@@ -26,6 +26,7 @@ export interface SchoolieFeedbackPayload {
 
   kpiIdentifier?: string;
   analysisIdentifier?: string;
+  sessionId?: string;
   drawerType?: "District" | "Site";
   cacheStatus?: "Cached" | "NewlyGenerated";
 
@@ -44,6 +45,7 @@ export interface SchoolieFeedbackContext {
   feedbackType?: FeedbackType;
   kpiIdentifier?: string;
   analysisIdentifier?: string;
+  sessionId?: string;
   drawerType?: "District" | "Site";
   dateRange?: string;
   promptType?: string;
@@ -66,6 +68,7 @@ export interface FeedbackRecord {
   sourceEntryPoint: SchoolieSourceEntryPoint;
   kpiIdentifier?: string;
   analysisIdentifier?: string;
+  sessionId?: string;
   drawerType?: "District" | "Site";
   promptType: string;
   promptVersion: number;

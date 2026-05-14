@@ -5,6 +5,7 @@ import { SchoolieIcon } from '../../Common/Icons';
 import { AIKPIDrawer } from '../AIKPIDrawer';
 import { ProductFeedback } from '../../Feedback/ProductFeedback';
 import { trackInsightsEvent } from '../../../services/insightsUsageService';
+import { MOCK_CURRENT_USER } from '../../../data/mockCurrentUser';
 
 interface ENPDrawerProps {
   isOpen: boolean;
@@ -78,7 +79,7 @@ export function ENPDrawer({
                 <button
                   onClick={() => {
                     setIsAIOpen(true);
-                    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'ENP' } });
+                    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'ENP' } });
                   }}
                   className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
                 >

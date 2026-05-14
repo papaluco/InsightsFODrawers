@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Send, AlertTriangle } from 'lucide-react';
 import { SchoolieIcon } from '../../Common/Icons';
 import { getUsageChatResponse } from '../../../services/schoolieService';
+import { telemetry } from '../../../telemetry';
+import { MOCK_CURRENT_USER } from '../../../data/mockCurrentUser';
 
 interface ChatMessage {
   id: string;
@@ -17,6 +19,7 @@ interface Props {
   suggestedPrompts: string[];
   dataLabel: string;
   payload: Record<string, unknown>;
+  analysisIdentifier: string;
 }
 
 const parseBold = (text: string): React.ReactNode => {
@@ -67,6 +70,7 @@ const SchoolieUsageChatDrawer: React.FC<Props> = ({
   suggestedPrompts,
   dataLabel,
   payload,
+  analysisIdentifier,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -93,9 +97,47 @@ const SchoolieUsageChatDrawer: React.FC<Props> = ({
       return;
     }
     setIsLoading(true);
+    const timer = telemetry.startPerformanceTimer('schoolie_chat_response', {
+      performanceCategory: 'ai_response',
+      module: 'usage',
+      component: 'SchoolieUsageChatDrawer',
+      thresholdMs: 15000,
+    });
+    telemetry.trackUsage('ai_request_started', {
+      module: 'usage',
+      component: 'SchoolieUsageChatDrawer',
+      userId: MOCK_CURRENT_USER.userId,
+      districtId: MOCK_CURRENT_USER.districtId,
+      properties: { analysisIdentifier, sourceEntryPoint: 'UsageScreen', isInitial: true, modelVersion: 'gpt-4o' },
+    });
     getUsageChatResponse('', true, systemPrompt, payload)
-      .then(content => setMessages([{ id: '0', role: 'assistant', content }]))
-      .catch(() => setMessages([{ id: '0', role: 'assistant', content: 'An error occurred during analysis. Please close and reopen to try again.', isError: true }]))
+      .then(content => {
+        timer.success();
+        telemetry.trackUsage('ai_response_success', {
+          module: 'usage',
+          component: 'SchoolieUsageChatDrawer',
+          userId: MOCK_CURRENT_USER.userId,
+          districtId: MOCK_CURRENT_USER.districtId,
+          properties: { analysisIdentifier, sourceEntryPoint: 'UsageScreen', isInitial: true },
+        });
+        setMessages([{ id: '0', role: 'assistant', content }]);
+      })
+      .catch((err: unknown) => {
+        timer.failure(err instanceof Error ? err : undefined);
+        telemetry.trackUsage('ai_response_error', {
+          module: 'usage',
+          component: 'SchoolieUsageChatDrawer',
+          userId: MOCK_CURRENT_USER.userId,
+          districtId: MOCK_CURRENT_USER.districtId,
+          properties: {
+            analysisIdentifier,
+            sourceEntryPoint: 'UsageScreen',
+            isInitial: true,
+            errorMessage: err instanceof Error ? err.message : 'Unknown error',
+          },
+        });
+        setMessages([{ id: '0', role: 'assistant', content: 'An error occurred during analysis. Please close and reopen to try again.', isError: true }]);
+      })
       .finally(() => setIsLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -118,10 +160,43 @@ const SchoolieUsageChatDrawer: React.FC<Props> = ({
     const userMsg: ChatMessage = { id: `u-${Date.now()}`, role: 'user', content };
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
+    const timer = telemetry.startPerformanceTimer('schoolie_chat_response', {
+      performanceCategory: 'ai_response',
+      module: 'usage',
+      component: 'SchoolieUsageChatDrawer',
+      thresholdMs: 15000,
+    });
+    telemetry.trackUsage('ai_request_started', {
+      module: 'usage',
+      component: 'SchoolieUsageChatDrawer',
+      userId: MOCK_CURRENT_USER.userId,
+      districtId: MOCK_CURRENT_USER.districtId,
+      properties: { analysisIdentifier, sourceEntryPoint: 'UsageScreen', modelVersion: 'gpt-4o' },
+    });
     try {
       const response = await getUsageChatResponse(content, false, systemPrompt, payload);
+      timer.success();
+      telemetry.trackUsage('ai_response_success', {
+        module: 'usage',
+        component: 'SchoolieUsageChatDrawer',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
+        properties: { analysisIdentifier, sourceEntryPoint: 'UsageScreen' },
+      });
       setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: response }]);
-    } catch {
+    } catch (err) {
+      timer.failure(err instanceof Error ? err : undefined);
+      telemetry.trackUsage('ai_response_error', {
+        module: 'usage',
+        component: 'SchoolieUsageChatDrawer',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
+        properties: {
+          analysisIdentifier,
+          sourceEntryPoint: 'UsageScreen',
+          errorMessage: err instanceof Error ? err.message : 'Unknown error',
+        },
+      });
       setMessages(prev => [...prev, { id: `e-${Date.now()}`, role: 'assistant', content: 'An error occurred. Please try again.', isError: true }]);
     } finally {
       setIsLoading(false);

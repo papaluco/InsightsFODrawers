@@ -90,6 +90,7 @@ const MenuAnalysisUsageDrawer: React.FC<Props> = ({ isOpen, onClose }) => {
         suggestedPrompts={MENU_SUGGESTED_PROMPTS}
         dataLabel={dataLabel}
         payload={usagePayload}
+        analysisIdentifier="MenuAnalysis"
       />
     </>
   );

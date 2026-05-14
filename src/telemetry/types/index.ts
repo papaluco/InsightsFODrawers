@@ -177,6 +177,8 @@ export interface UsageTelemetryEvent extends TelemetryEventBase {
   eventDomain: 'usage';
   /** Behavioral classification for grouping and funnel analysis. */
   usageCategory: UsageCategory;
+  /** AI analysis context (e.g. 'SchoolieUsageDashboard', 'MPLH'). Populates analysis_identifier column. */
+  analysisIdentifier?: string;
 }
 
 export interface ErrorTelemetryEvent extends TelemetryEventBase {

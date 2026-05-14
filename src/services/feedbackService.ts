@@ -23,6 +23,7 @@ type DbRow = {
   source_entry_point: string | null;
   kpi_identifier:     string | null;
   analysis_identifier: string | null;
+  session_id:         string | null;
   drawer_type:        string | null;
   prompt_type:        string | null;
   prompt_version:     number | null;
@@ -52,6 +53,7 @@ function fromDb(row: DbRow): FeedbackRecord {
     sourceEntryPoint: (row.source_entry_point ?? '') as SchoolieSourceEntryPoint,
     kpiIdentifier:        row.kpi_identifier ?? undefined,
     analysisIdentifier:   row.analysis_identifier ?? undefined,
+    sessionId:            row.session_id ?? undefined,
     drawerType:           (row.drawer_type ?? undefined) as 'District' | 'Site' | undefined,
     promptType:       row.prompt_type ?? '',
     promptVersion:    row.prompt_version ?? 1,
@@ -77,6 +79,7 @@ function toInsertRow(payload: SchoolieFeedbackPayload): InsertRow {
     source_entry_point: payload.sourceEntryPoint,
     kpi_identifier:      payload.kpiIdentifier ?? null,
     analysis_identifier: payload.analysisIdentifier ?? null,
+    session_id:          payload.sessionId ?? null,
     drawer_type:         payload.drawerType ?? null,
     prompt_type:        payload.promptType,
     prompt_version:     payload.promptVersion,

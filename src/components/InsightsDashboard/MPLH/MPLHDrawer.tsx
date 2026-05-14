@@ -15,6 +15,7 @@ import { CSVMPLHAdapter } from '../../Downloading/CSVGen/adapters/CSVMPLHAdapter
 import { CSVFullExpButton } from '../../Downloading/CSVGen/CSVFullExpButton';
 import { trackInsightsEvent } from '../../../services/insightsUsageService';
 import { telemetry } from '../../../telemetry';
+import { MOCK_CURRENT_USER } from '../../../data/mockCurrentUser';
 
 interface MPLHDrawerProps {
   isOpen: boolean;
@@ -151,7 +152,7 @@ useEffect(() => {
                   </div>
                   <PDFExpButton
                     data={pdfData}
-                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'PDF' } })}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'PDF' } })}
                   />
 
                   {/* Data Section */}
@@ -163,26 +164,26 @@ useEffect(() => {
                     subtext="Download grid data as seen"
                     csvData={csvTypeData}
                     onClose={onClose}
-                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                   <CSVExpButton
                     title="Summary by School (.csv)"
                     subtext="Download grid data as seen"
                     csvData={csvSchoolData}
                     onClose={onClose}
-                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                   <CSVFullExpButton
                     title="Full Raw Data (.csv)"
                     subtext="Download all underlying data"
-                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
+                    onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                 </ExportMenu>
 
                 <button
                   onClick={() => {
                     setIsAIOpen(true);
-                    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH' } });
+                    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'MPLH' } });
                   }}
                   className="flex items-center space-x-2 px-3 py-1.5 bg-white text-gray-700 hover:text-indigo-600 transition-all font-bold text-sm group"
                 >

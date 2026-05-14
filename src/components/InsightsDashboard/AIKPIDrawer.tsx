@@ -4,6 +4,8 @@ import { SchoolieIcon, SparklesIcon } from '../Common/Icons';
 import { KPIKey, AIResponsePayload } from '../../types/SchoolieTypes';
 import { getKPIAnalysis } from '../../services/schoolieService';
 import { ProductFeedback } from '../Feedback/ProductFeedback';
+import { telemetry } from '../../telemetry';
+import { MOCK_CURRENT_USER } from '../../data/mockCurrentUser';
 
 export interface AIKPIDrawerProps {
   isOpen: boolean;
@@ -49,19 +51,67 @@ export const AIKPIDrawer: React.FC<AIKPIDrawerProps> = ({
     setResponse(null);
 
     let cancelled = false;
+    const timer = telemetry.startPerformanceTimer('schoolie_kpi_response', {
+      performanceCategory: 'ai_response',
+      module: 'insights',
+      component: 'AIKPIDrawer',
+      thresholdMs: 15000,
+    });
+
+    telemetry.trackUsage('ai_request_started', {
+      module: 'insights',
+      component: 'AIKPIDrawer',
+      userId: MOCK_CURRENT_USER.userId,
+      districtId: MOCK_CURRENT_USER.districtId,
+      properties: {
+        analysisIdentifier: kpiKey,
+        sourceEntryPoint: 'KpiDrawer',
+        promptVersion: 1,
+        modelVersion: 'gpt-4o',
+      },
+    });
+
     getKPIAnalysis(kpiKey).then(data => {
       if (cancelled) return;
+      timer.success();
+      telemetry.trackUsage('ai_response_success', {
+        module: 'insights',
+        component: 'AIKPIDrawer',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
+        properties: {
+          analysisIdentifier: kpiKey,
+          sourceEntryPoint: 'KpiDrawer',
+          fromCache: data.fromCache,
+        },
+      });
       if (!data.data) {
         setDrawerState('empty');
       } else {
         setResponse(data);
         setDrawerState('success');
       }
-    }).catch(() => {
-      if (!cancelled) setDrawerState('error');
+    }).catch((err: unknown) => {
+      if (cancelled) return;
+      timer.failure(err instanceof Error ? err : undefined);
+      telemetry.trackUsage('ai_response_error', {
+        module: 'insights',
+        component: 'AIKPIDrawer',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
+        properties: {
+          analysisIdentifier: kpiKey,
+          sourceEntryPoint: 'KpiDrawer',
+          errorMessage: err instanceof Error ? err.message : 'Unknown error',
+        },
+      });
+      setDrawerState('error');
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      timer.cancel();
+    };
   }, [isOpen, kpiKey, retryKey]);
 
   useEffect(() => {

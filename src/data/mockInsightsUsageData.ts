@@ -1,6 +1,8 @@
 import { InsightsUsageEvent, InsightsEventType } from '../types/insightsUsageTypes';
+import { MOCK_CURRENT_USER } from './mockCurrentUser';
 
 export const INSIGHTS_USER_NAMES: Record<string, string> = {
+  [MOCK_CURRENT_USER.userId]: MOCK_CURRENT_USER.userName,
   'iu-001': 'Sarah Jenkins',
   'iu-002': 'Michael Chen',
   'iu-003': 'Amanda Torres',
@@ -12,6 +14,7 @@ export const INSIGHTS_USER_NAMES: Record<string, string> = {
 };
 
 export const INSIGHTS_DISTRICT_NAMES: Record<string, string> = {
+  [MOCK_CURRENT_USER.districtId]: MOCK_CURRENT_USER.districtName,
   'id-001': 'Greenfield USD',
   'id-002': 'Riverside ISD',
   'id-003': 'Northside CSD',
@@ -19,6 +22,7 @@ export const INSIGHTS_DISTRICT_NAMES: Record<string, string> = {
 };
 
 export const INSIGHTS_DISTRICT_TIMEZONES: Record<string, string> = {
+  [MOCK_CURRENT_USER.districtId]: 'America/Chicago',
   'id-001': 'America/New_York',
   'id-002': 'America/Los_Angeles',
   'id-003': 'America/Chicago',
@@ -284,4 +288,32 @@ export const mockInsightsUsageEvents: InsightsUsageEvent[] = [
   ev('SITE_FILTER_CHANGED',  's-025', 'iu-003', 'id-003', 'PrimeroEdge', d(22, 11, 3)),
   ev('KPI_DRAWER_OPENED',    's-025', 'iu-003', 'id-003', 'PrimeroEdge', d(22, 11, 8),  { kpi: 'REV', isDistrictDrawer: true }),
   ev('TREND_KPI_CHANGED',    's-025', 'iu-003', 'id-003', 'PrimeroEdge', d(22, 11, 12), { kpi: 'REV' }),
+
+  // ── Session s-026: Demo Admin, Demo School District, SC — d(2,9) ──────────
+  ...rk('s-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 0), ['ALC', 'SBD']),
+  ev('INSIGHTS_PAGE_VIEWED',      's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 0)),
+  ev('KPI_DRAWER_OPENED',         's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 3),  { kpi: 'MPLH', isDistrictDrawer: true }),
+  ev('KPI_SCHOOLIE_OPENED',       's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 5),  { kpi: 'MPLH' }),
+  ev('KPI_DRAWER_OPENED',         's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 10), { kpi: 'PNA',  isDistrictDrawer: true }),
+  ev('KPI_SCHOOLIE_OPENED',       's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 12), { kpi: 'PNA' }),
+  ev('DASHBOARD_SCHOOLIE_OPENED', 's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 18)),
+  ev('KPI_DRAWER_DOWNLOAD',       's-026', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(2, 9, 22), { kpi: 'MPLH', format: 'CSV' }),
+
+  // ── Session s-027: Demo Admin, Demo School District, SC — d(5,10) ─────────
+  ...rk('s-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 0), ['TRD']),
+  ev('INSIGHTS_PAGE_VIEWED', 's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 0)),
+  ev('DATE_RANGE_CHANGED',   's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 2)),
+  ev('KPI_DRAWER_OPENED',    's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 6),  { kpi: 'ENP', isDistrictDrawer: true }),
+  ev('KPI_SCHOOLIE_OPENED',  's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 8),  { kpi: 'ENP' }),
+  ev('TREND_KPI_CHANGED',    's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 12), { kpi: 'ENP' }),
+  ev('BENCHMARK_CONFIG_OPENED', 's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 16)),
+  ev('BENCHMARK_UPDATED',    's-027', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(5, 10, 18)),
+
+  // ── Session s-028: Demo Admin, Demo School District, SC — d(12,14) ────────
+  ...rk('s-028', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(12, 14, 0), []),
+  ev('INSIGHTS_PAGE_VIEWED',      's-028', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(12, 14, 0)),
+  ev('SITE_FILTER_CHANGED',       's-028', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(12, 14, 2)),
+  ev('KPI_DRAWER_OPENED',         's-028', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(12, 14, 7),  { kpi: 'MPLH', isDistrictDrawer: true }),
+  ev('DASHBOARD_SCHOOLIE_OPENED', 's-028', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(12, 14, 15)),
+  ev('DASHBOARD_DOWNLOAD',        's-028', MOCK_CURRENT_USER.userId, MOCK_CURRENT_USER.districtId, 'SchoolCafe', d(12, 14, 22), { format: 'PDF' }),
 ];

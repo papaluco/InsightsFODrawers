@@ -28,7 +28,8 @@ Deno.serve(async (req) => {
         site_id: e.siteId ?? null, user_id: e.userId ?? null,
         route: e.route ?? null, page: e.page ?? null,
         component: e.component ?? null, action: e.action ?? null,
-        usage_category: e.usageCategory, properties: e.properties ?? null,
+        usage_category: e.usageCategory, analysis_identifier: e.analysisIdentifier ?? null,
+        properties: e.properties ?? null,
       }));
       const { error } = await supabase.from('telemetry_usage_events').upsert(rows, { onConflict: 'event_id' });
       if (error) { console.error('[ingest] usage insert failed:', error.message); failed += usage.length; }

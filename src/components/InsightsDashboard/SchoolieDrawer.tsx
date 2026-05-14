@@ -4,6 +4,8 @@ import { SchoolieIcon } from '../Common/Icons';
 import { ProductFeedback } from '../Feedback/ProductFeedback';
 import { getPromptAnalysis } from '../../services/schoolieService';
 import { SchoolieSourceEntryPoint } from '../../types/feedbackTypes';
+import { telemetry } from '../../telemetry';
+import { MOCK_CURRENT_USER } from '../../data/mockCurrentUser';
 
 export interface SchoolieDrawerProps {
   isOpen: boolean;
@@ -42,9 +44,40 @@ export const SchoolieDrawer: React.FC<SchoolieDrawerProps> = ({
     setHtml('');
 
     let cancelled = false;
+    const timer = telemetry.startPerformanceTimer('schoolie_kpi_response', {
+      performanceCategory: 'ai_response',
+      module: 'insights',
+      component: 'SchoolieDrawer',
+      thresholdMs: 15000,
+    });
+
+    telemetry.trackUsage('ai_request_started', {
+      module: 'insights',
+      component: 'SchoolieDrawer',
+      userId: MOCK_CURRENT_USER.userId,
+      districtId: MOCK_CURRENT_USER.districtId,
+      properties: {
+        analysisIdentifier: promptId,
+        sourceEntryPoint,
+        promptVersion: 1,
+        modelVersion: 'gpt-4o',
+      },
+    });
+
     getPromptAnalysis(promptId)
       .then(data => {
         if (cancelled) return;
+        timer.success();
+        telemetry.trackUsage('ai_response_success', {
+          module: 'insights',
+          component: 'SchoolieDrawer',
+          userId: MOCK_CURRENT_USER.userId,
+          districtId: MOCK_CURRENT_USER.districtId,
+          properties: {
+            analysisIdentifier: promptId,
+            sourceEntryPoint,
+          },
+        });
         if (!data?.html) {
           setDrawerState('empty');
         } else {
@@ -53,11 +86,27 @@ export const SchoolieDrawer: React.FC<SchoolieDrawerProps> = ({
           setDrawerState('success');
         }
       })
-      .catch(() => {
-        if (!cancelled) setDrawerState('error');
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        timer.failure(err instanceof Error ? err : undefined);
+        telemetry.trackUsage('ai_response_error', {
+          module: 'insights',
+          component: 'SchoolieDrawer',
+          userId: MOCK_CURRENT_USER.userId,
+          districtId: MOCK_CURRENT_USER.districtId,
+          properties: {
+            analysisIdentifier: promptId,
+            sourceEntryPoint,
+            errorMessage: err instanceof Error ? err.message : 'Unknown error',
+          },
+        });
+        setDrawerState('error');
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      timer.cancel();
+    };
   }, [isOpen, promptId, retryKey]);
 
   useEffect(() => {

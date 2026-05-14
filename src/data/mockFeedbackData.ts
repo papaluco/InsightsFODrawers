@@ -1,4 +1,5 @@
 import { FeedbackRecord } from '../types/feedbackTypes';
+import { MOCK_CURRENT_USER } from './mockCurrentUser';
 
 /** In-memory store — acts as the mock database for feedback records. */
 export const mockFeedbackStore: FeedbackRecord[] = [
@@ -10,6 +11,7 @@ export const mockFeedbackStore: FeedbackRecord[] = [
     feedbackType: 'Schoolie',
     sourceEntryPoint: 'KpiDrawer',
     kpiIdentifier: 'MPLH',
+    sessionId: 'sch-s017',
     drawerType: 'District',
     promptType: 'kpi_analysis',
     promptVersion: 1,
@@ -143,6 +145,7 @@ export const mockFeedbackStore: FeedbackRecord[] = [
     feedbackType: 'Schoolie',
     sourceEntryPoint: 'KpiDrawer',
     kpiIdentifier: 'PAID_NOT_APPLIED',
+    sessionId: 'sch-s017',
     drawerType: 'District',
     promptType: 'kpi_analysis',
     promptVersion: 1,
@@ -240,6 +243,7 @@ export const mockFeedbackStore: FeedbackRecord[] = [
     feedbackType: 'Schoolie',
     sourceEntryPoint: 'KpiDrawer',
     kpiIdentifier: 'MEALS',
+    sessionId: 'sch-s018',
     drawerType: 'District',
     promptType: 'kpi_analysis',
     promptVersion: 1,
@@ -339,7 +343,7 @@ export const mockFeedbackStore: FeedbackRecord[] = [
   { feedbackId: 'fb-025', feedbackType: 'Schoolie', userId: 'user-003', districtId: 'district-002', platform: 'PrimeroEdge', sourceEntryPoint: 'Workspace', promptType: 'workspace_analysis', promptVersion: 1, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-03-07T13:45:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Riverside USD' } },
   { feedbackId: 'fb-026', feedbackType: 'Schoolie', userId: 'user-006', districtId: 'district-004', platform: 'SchoolCafe', sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'BREAKFAST', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 1, feedbackValue: 'thumbs_down', reasonCodes: ['incorrect_data'], comment: 'Breakfast count seems off — we had higher numbers last month.', cacheStatus: 'NewlyGenerated', createdAt: '2026-03-10T09:30:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Summit Valley Schools' } },
   { feedbackId: 'fb-027', feedbackType: 'Schoolie', userId: 'user-004', districtId: 'district-003', platform: 'SchoolCafe', sourceEntryPoint: 'TrendAnalysis', promptType: 'trend_analysis', promptVersion: 1, feedbackValue: 'thumbs_down', reasonCodes: ['missing_recommendation'], cacheStatus: 'NewlyGenerated', createdAt: '2026-03-12T14:00:00.000Z', contextJson: { dateRange: 'Jan-Feb 2026', districtName: 'Lakeview ISD' } },
-  { feedbackId: 'fb-028', feedbackType: 'Schoolie', userId: 'user-001', districtId: 'district-001', platform: 'SchoolCafe', sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'ENP', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 2, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-03-15T10:00:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Mercer County District' } },
+  { feedbackId: 'fb-028', feedbackType: 'Schoolie', userId: 'user-001', districtId: 'district-001', platform: 'SchoolCafe', sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'ENP', sessionId: 'sch-s018', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 2, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-03-15T10:00:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Mercer County District' } },
   { feedbackId: 'fb-029', feedbackType: 'Schoolie', userId: 'user-002', districtId: 'district-001', platform: 'SchoolCafe', sourceEntryPoint: 'CompareSites', promptType: 'compare_sites', promptVersion: 1, feedbackValue: 'thumbs_down', reasonCodes: ['hard_to_understand'], cacheStatus: 'Cached', createdAt: '2026-03-18T09:15:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Mercer County District' } },
   { feedbackId: 'fb-030', feedbackType: 'Schoolie', userId: 'user-005', districtId: 'district-005', platform: 'PrimeroEdge', sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'REVENUE', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 1, feedbackValue: 'thumbs_down', reasonCodes: ['not_useful'], cacheStatus: 'NewlyGenerated', createdAt: '2026-03-20T15:30:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Prairie Ridge District' } },
   { feedbackId: 'fb-031', feedbackType: 'Schoolie', userId: 'user-003', districtId: 'district-002', platform: 'PrimeroEdge', sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'MPLH', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 2, feedbackValue: 'thumbs_up', cacheStatus: 'Cached', createdAt: '2026-03-22T11:00:00.000Z', contextJson: { dateRange: 'Feb 2026', districtName: 'Riverside USD' } },
@@ -362,9 +366,18 @@ export const mockFeedbackStore: FeedbackRecord[] = [
   { feedbackId: 'fb-048', feedbackType: 'Schoolie', userId: 'user-005', districtId: 'district-005', platform: 'PrimeroEdge', sourceEntryPoint: 'TrendAnalysis', promptType: 'trend_analysis', promptVersion: 2, feedbackValue: 'thumbs_down', reasonCodes: ['missing_recommendation', 'too_vague'], cacheStatus: 'NewlyGenerated', createdAt: '2026-04-30T15:00:00.000Z', contextJson: { dateRange: 'Feb-Apr 2026', districtName: 'Prairie Ridge District' } },
   { feedbackId: 'fb-049', feedbackType: 'Schoolie', userId: 'user-003', districtId: 'district-002', platform: 'PrimeroEdge', sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'MEALS', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 1, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-01T10:15:00.000Z', contextJson: { dateRange: 'Apr 2026', districtName: 'Riverside USD' } },
   { feedbackId: 'fb-050', feedbackType: 'Schoolie', userId: 'user-006', districtId: 'district-004', platform: 'SchoolCafe', sourceEntryPoint: 'Dashboard', promptType: 'dashboard_analysis', promptVersion: 2, feedbackValue: 'thumbs_down', reasonCodes: ['not_useful'], comment: 'The summary was too generic for our district.', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-02T08:00:00.000Z', contextJson: { dateRange: 'Apr 2026', districtName: 'Summit Valley Schools' } },
+
+  // Demo-user feedback records — joinable with MOCK_CURRENT_USER across all dashboards.
+  { feedbackId: 'fb-d01', feedbackType: 'Schoolie', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'MPLH', sessionId: 'sch-s001', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 1, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-12T09:05:30.000Z', contextJson: { dateRange: 'Jul 1, 2025 - May 12, 2026', districtName: MOCK_CURRENT_USER.districtName } },
+  { feedbackId: 'fb-d02', feedbackType: 'Schoolie', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'PNA', sessionId: 'sch-s002', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 1, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-12T09:12:30.000Z', contextJson: { dateRange: 'Jul 1, 2025 - May 12, 2026', districtName: MOCK_CURRENT_USER.districtName } },
+  { feedbackId: 'fb-d03', feedbackType: 'Schoolie', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, sourceEntryPoint: 'Dashboard', sessionId: 'sch-s006', promptType: 'dashboard_analysis', promptVersion: 2, feedbackValue: 'thumbs_down', reasonCodes: ['too_vague', 'missing_recommendation'], comment: 'Would like school-level breakdowns in the summary.', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-12T09:18:45.000Z', contextJson: { dateRange: 'Jul 1, 2025 - May 12, 2026', districtName: MOCK_CURRENT_USER.districtName } },
+  { feedbackId: 'fb-d04', feedbackType: 'Schoolie', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'ENP', sessionId: 'sch-s003', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 1, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-09T10:35:00.000Z', contextJson: { dateRange: 'Jul 1, 2025 - May 9, 2026', districtName: MOCK_CURRENT_USER.districtName } },
+  { feedbackId: 'fb-d05', feedbackType: 'Schoolie', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, sourceEntryPoint: 'KpiDrawer', kpiIdentifier: 'MPLH', sessionId: 'sch-s001', drawerType: 'District', promptType: 'kpi_analysis', promptVersion: 2, feedbackValue: 'thumbs_up', cacheStatus: 'Cached', createdAt: '2026-05-04T08:35:30.000Z', contextJson: { dateRange: 'Jul 1, 2025 - May 4, 2026', districtName: MOCK_CURRENT_USER.districtName } },
+  { feedbackId: 'fb-d06', feedbackType: 'Schoolie', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, sourceEntryPoint: 'Dashboard', sessionId: 'sch-s007', promptType: 'dashboard_analysis', promptVersion: 2, feedbackValue: 'thumbs_up', cacheStatus: 'NewlyGenerated', createdAt: '2026-05-04T08:42:00.000Z', contextJson: { dateRange: 'Jul 1, 2025 - May 4, 2026', districtName: MOCK_CURRENT_USER.districtName } },
 ];
 
 export const USER_DISPLAY_NAMES: Record<string, string> = {
+  [MOCK_CURRENT_USER.userId]: MOCK_CURRENT_USER.userName,
   'user-001': 'Sarah Mitchell',
   'user-002': 'James Rodriguez',
   'user-003': 'Emily Chen',
@@ -374,6 +387,7 @@ export const USER_DISPLAY_NAMES: Record<string, string> = {
 };
 
 export const DISTRICT_DISPLAY_NAMES: Record<string, string> = {
+  [MOCK_CURRENT_USER.districtId]: MOCK_CURRENT_USER.districtName,
   'district-001': 'Mercer County District',
   'district-002': 'Riverside USD',
   'district-003': 'Lakeview ISD',

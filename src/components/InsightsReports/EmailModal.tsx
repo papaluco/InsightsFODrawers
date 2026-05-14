@@ -4,6 +4,7 @@ import 'react-quill/dist/quill.snow.css';
 import { XIcon, MaximizeIcon, MinimizeIcon, ChevronDownIcon, CheckIcon } from '../Common/Icons';
 import { ReportSource } from '../../types/ReportTypes';
 import { trackReportEvent } from '../../services/reportUsageService';
+import { MOCK_CURRENT_USER } from '../../data/mockCurrentUser';
 
 interface EmailModalProps {
   isOpen: boolean;
@@ -70,8 +71,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({ isOpen, onClose, reportI
     if (reportInfo) {
       trackReportEvent({
         eventType: 'REPORT_EMAILED',
-        userId: 'current-user',
-        districtId: 'current-district',
+        userId: MOCK_CURRENT_USER.userId,
+        districtId: MOCK_CURRENT_USER.districtId,
         platform: 'SchoolCafe',
         context: {
           reportId: reportInfo.name.toLowerCase().replace(/\s+/g, '-'),

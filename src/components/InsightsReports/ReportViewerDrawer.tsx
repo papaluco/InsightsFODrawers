@@ -14,6 +14,7 @@ import {
 
 import { getReportData } from '../../services/insightsReportService';
 import { trackReportEvent } from '../../services/reportUsageService';
+import { MOCK_CURRENT_USER } from '../../data/mockCurrentUser';
 import { telemetry } from '../../telemetry';
 import { ReportPaging } from './ReportPaging';
 import { ReportSource } from '../../types/ReportTypes';
@@ -80,8 +81,8 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
             if (reportInfo) {
                 trackReportEvent({
                     eventType: 'REPORT_VIEWED',
-                    userId: 'current-user',
-                    districtId: 'current-district',
+                    userId: MOCK_CURRENT_USER.userId,
+                    districtId: MOCK_CURRENT_USER.districtId,
                     platform: 'SchoolCafe',
                     context: {
                         reportId: reportInfo.name.toLowerCase().replace(/\s+/g, '-'),
@@ -313,8 +314,8 @@ const ReportViewerDrawer: React.FC<ReportViewerDrawerProps> = ({ isOpen, onClose
                                             if (reportInfo) {
                                                 trackReportEvent({
                                                     eventType: 'REPORT_DOWNLOADED',
-                                                    userId: 'current-user',
-                                                    districtId: 'current-district',
+                                                    userId: MOCK_CURRENT_USER.userId,
+                                                    districtId: MOCK_CURRENT_USER.districtId,
                                                     platform: 'SchoolCafe',
                                                     context: {
                                                         reportId: reportInfo.name.toLowerCase().replace(/\s+/g, '-'),

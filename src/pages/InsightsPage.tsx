@@ -3,6 +3,7 @@ import { SchoolieDrawer } from '../components/InsightsDashboard/SchoolieDrawer';
 import { ProductFeedback } from '../components/Feedback/ProductFeedback';
 import type { SchoolieSourceEntryPoint } from '../types/feedbackTypes';
 import { trackInsightsEvent } from '../services/insightsUsageService';
+import { MOCK_CURRENT_USER } from '../data/mockCurrentUser';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import { DASHBOARD_METRICS, DASHBOARD_GRID_DATA } from '../data/mockDashData';
@@ -41,8 +42,8 @@ function InsightsPage() {
   useEffect(() => {
     trackInsightsEvent({
       eventType: 'INSIGHTS_PAGE_VIEWED',
-      userId: 'current-user',
-      districtId: 'current-district',
+      userId: MOCK_CURRENT_USER.userId,
+      districtId: MOCK_CURRENT_USER.districtId,
       platform: 'SchoolCafe',
       context: {},
     });
@@ -112,7 +113,7 @@ function InsightsPage() {
  
   // 3. Trigger Download
   saveAs(blob, `Schoolie_Insights_${new Date().toISOString().split('T')[0]}.pdf`);
-  trackInsightsEvent({ eventType: 'DASHBOARD_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { format: 'PDF' } });
+  trackInsightsEvent({ eventType: 'DASHBOARD_DOWNLOAD', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { format: 'PDF' } });
   } catch (error) {
     console.error("Export failed:", error);
   } finally {
@@ -138,7 +139,7 @@ function InsightsPage() {
       subtitle: 'AI analysis of your performance trend data',
       sourceEntryPoint: 'TrendAnalysis',
     });
-    trackInsightsEvent({ eventType: 'DASHBOARD_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'TREND' } });
+    trackInsightsEvent({ eventType: 'DASHBOARD_SCHOOLIE_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'TREND' } });
   };
 
   const handleOpenGridSchoolie = () => {
@@ -148,7 +149,7 @@ function InsightsPage() {
       subtitle: 'AI analysis of school performance metrics',
       sourceEntryPoint: 'Dashboard',
     });
-    trackInsightsEvent({ eventType: 'DASHBOARD_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'INSIGHTS_GRID' } });
+    trackInsightsEvent({ eventType: 'DASHBOARD_SCHOOLIE_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'INSIGHTS_GRID' } });
   };
 
   // CLOSE HANDLERS
@@ -214,15 +215,15 @@ function InsightsPage() {
           districtENPBenchmark={districtENPBenchmark}
           onOpenMPLH={() => {
             setIsDrawerOpen(true);
-            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', isDistrictDrawer: true } });
+            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'MPLH', isDistrictDrawer: true } });
           }}
           onOpenPNA={() => {
             setIsPNADrawerOpen(true);
-            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'PNA', isDistrictDrawer: true } });
+            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'PNA', isDistrictDrawer: true } });
           }}
           onOpenENP={() => {
             setIsENPDrawerOpen(true);
-            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'ENP', isDistrictDrawer: true } });
+            trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'ENP', isDistrictDrawer: true } });
           }}
         />
 

@@ -1,6 +1,8 @@
 import { AppUsageEvent, AppEventType, AppPage, AppEntryPoint } from '../types/appUsageTypes';
+import { MOCK_CURRENT_USER } from './mockCurrentUser';
 
 export const APP_USER_NAMES: Record<string, string> = {
+  [MOCK_CURRENT_USER.userId]: MOCK_CURRENT_USER.userName,
   'user-a01': 'Hannah Green',
   'user-a02': 'Marcus Rivera',
   'user-a03': 'Priya Patel',
@@ -22,6 +24,7 @@ export const APP_USER_NAMES: Record<string, string> = {
 };
 
 export const APP_DISTRICT_NAMES: Record<string, string> = {
+  [MOCK_CURRENT_USER.districtId]: MOCK_CURRENT_USER.districtName,
   'district-a01': 'Mercer County USD',
   'district-a02': 'Lakewood ISD',
   'district-a03': 'Sunrise Valley USD',
@@ -31,6 +34,7 @@ export const APP_DISTRICT_NAMES: Record<string, string> = {
 };
 
 export const APP_DISTRICT_TIMEZONES: Record<string, string> = {
+  [MOCK_CURRENT_USER.districtId]: 'America/Chicago',
   'district-a01': 'America/New_York',
   'district-a02': 'America/Chicago',
   'district-a03': 'America/Los_Angeles',
@@ -40,6 +44,7 @@ export const APP_DISTRICT_TIMEZONES: Record<string, string> = {
 };
 
 export const APP_USER_FIRST_SEEN: Record<string, string> = {
+  [MOCK_CURRENT_USER.userId]: '2026-01-05',
   'user-a01': '2026-01-10',
   'user-a02': '2026-01-15',
   'user-a03': '2026-01-22',
@@ -298,4 +303,33 @@ function generateMockAppEvents(): AppUsageEvent[] {
   return events;
 }
 
-export const mockAppUsageEvents: AppUsageEvent[] = generateMockAppEvents();
+const generatedAppEvents = generateMockAppEvents();
+
+// Demo-user sessions — ensures drill-through from Schoolie dashboard returns results.
+const demoAppEvents: AppUsageEvent[] = [
+  // Session demo-app-001: Insights power session (2 days ago)
+  { eventType: 'PAGE_VIEWED',            sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-12T09:00:00.000Z', context: { entryPoint: 'InsightsDirect' } },
+  { eventType: 'KPI_DRAWER_OPENED',      sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-12T09:03:00.000Z', context: { kpi: 'MPLH', drawerType: 'District' } },
+  { eventType: 'KPI_SCHOOLIE_OPENED',    sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-12T09:05:00.000Z', context: { kpi: 'MPLH' } },
+  { eventType: 'KPI_DRAWER_OPENED',      sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-12T09:10:00.000Z', context: { kpi: 'PNA',  drawerType: 'District' } },
+  { eventType: 'KPI_SCHOOLIE_OPENED',    sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-12T09:12:00.000Z', context: { kpi: 'PNA' } },
+  { eventType: 'DASHBOARD_SCHOOLIE_OPENED', sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights', timestamp: '2026-05-12T09:18:00.000Z', context: {} },
+  { eventType: 'PAGE_VIEWED',            sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Reports',     timestamp: '2026-05-12T09:22:00.000Z', context: {} },
+  { eventType: 'REPORT_VIEWED',          sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Reports',     timestamp: '2026-05-12T09:24:00.000Z', context: { reportId: 'rpt-001', reportName: 'MPLH Performance' } },
+  { eventType: 'APP_CLOSED',             sessionId: 'demo-app-001', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Reports',     timestamp: '2026-05-12T09:30:00.000Z', context: {} },
+
+  // Session demo-app-002: Menu Analysis + Reports (5 days ago)
+  { eventType: 'PAGE_VIEWED',            sessionId: 'demo-app-002', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Workspace',   timestamp: '2026-05-09T10:00:00.000Z', context: { entryPoint: 'Workspace' } },
+  { eventType: 'PAGE_VIEWED',            sessionId: 'demo-app-002', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'MenuAnalysis', timestamp: '2026-05-09T10:05:00.000Z', context: {} },
+  { eventType: 'PAGE_VIEWED',            sessionId: 'demo-app-002', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Reports',     timestamp: '2026-05-09T10:12:00.000Z', context: {} },
+  { eventType: 'REPORT_RUN',             sessionId: 'demo-app-002', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Reports',     timestamp: '2026-05-09T10:14:00.000Z', context: { reportId: 'rpt-002', reportName: 'Participation Trends' } },
+  { eventType: 'APP_CLOSED',             sessionId: 'demo-app-002', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Reports',     timestamp: '2026-05-09T10:22:00.000Z', context: {} },
+
+  // Session demo-app-003: Insights-only quick check (10 days ago)
+  { eventType: 'PAGE_VIEWED',            sessionId: 'demo-app-003', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-04T08:30:00.000Z', context: { entryPoint: 'InsightsDirect' } },
+  { eventType: 'KPI_DRAWER_OPENED',      sessionId: 'demo-app-003', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-04T08:33:00.000Z', context: { kpi: 'ENP', drawerType: 'District' } },
+  { eventType: 'KPI_SCHOOLIE_OPENED',    sessionId: 'demo-app-003', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-04T08:35:00.000Z', context: { kpi: 'ENP' } },
+  { eventType: 'DATE_RANGE_CHANGED',     sessionId: 'demo-app-003', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: MOCK_CURRENT_USER.platform, page: 'Insights',     timestamp: '2026-05-04T08:40:00.000Z', context: {} },
+];
+
+export const mockAppUsageEvents: AppUsageEvent[] = [...generatedAppEvents, ...demoAppEvents];

@@ -84,6 +84,7 @@ const InsightsUsageDrawer: React.FC<Props> = ({ isOpen, onClose }) => {
         suggestedPrompts={INSIGHTS_SUGGESTED_PROMPTS}
         dataLabel={dataLabel}
         payload={usagePayload}
+        analysisIdentifier="AppUsage"
       />
     </>
   );
