@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Target, Loader2 } from 'lucide-react';
 import { PNADetails } from './PNADetails';
 import { SchoolieIcon } from '../../Common/Icons';
@@ -25,7 +25,6 @@ export function PNADrawer({
   onOpenSingleSchool,
   dateRange = 'Jul 1, 2025 - Apr 3, 2026',
   isLoading = false,
-  showAIAssistant = false,
 }: PNADrawerProps) {
 
   const [isAIOpen, setIsAIOpen] = useState(false);
@@ -90,7 +89,7 @@ export function PNADrawer({
             </div>
             
             <div className="flex items-center space-x-2">
-              {showAIAssistant && (
+
                 <button
                   onClick={() => {
                     setIsAIOpen(true);
@@ -100,7 +99,7 @@ export function PNADrawer({
                 >
                   <SchoolieIcon size={60} />
                 </button>
-              )}
+
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"

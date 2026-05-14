@@ -12,7 +12,7 @@ import { toPng } from 'html-to-image'; // You will need to npm install html-to-i
 import { SimpleHeader } from '../components/InsightsDashboard/SimpleHeader';
 import { KPICards } from '../components/InsightsDashboard/KPICards';
 import { SchoolPerformanceGrid } from '../components/InsightsDashboard/SchoolPerformanceGrid';
-import { TestLinks } from '../components/InsightsDashboard/TestLinks';
+
 import { PerformanceTrends } from '../components/InsightsDashboard/PerformanceTrends';
 
 // PDF Logic
@@ -131,25 +131,6 @@ function InsightsPage() {
     if (navOrigin === 'ENP_LIST') setIsENPDrawerOpen(true);
   }, [navOrigin]);
 
-  // AI CLICK HANDLERS
-  const handleOpenMPLHWithAI = () => {
-    setShowAIAssistant(true);
-    setIsDrawerOpen(true);
-    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH' } });
-  };
-
-  const handleOpenENPWithAI = () => {
-    setShowENPAIAssistant(true);
-    setIsENPDrawerOpen(true);
-    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'ENP' } });
-  };
-
-  const handleOpenPNAWithAI = () => {
-    setShowPNAAIAssistant(true);
-    setIsPNADrawerOpen(true);
-    trackInsightsEvent({ eventType: 'KPI_SCHOOLIE_OPENED', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'PNA' } });
-  };
-
   const handleOpenTrendsSchoolie = () => {
     setSchoolieDrawer({
       promptId: 'trend_analysis',
@@ -186,10 +167,9 @@ function InsightsPage() {
     setShowPNAAIAssistant(false);
   };
 
-  const openSingleFromDashboard = (metric: 'MPLH' | 'PNA' | 'ENP') => {
-    setSelectedSchool('Lincoln Elementary'); 
+  const openSingleFromGrid = (schoolName: string, metric: 'MPLH' | 'PNA' | 'ENP') => {
+    setSelectedSchool(schoolName);
     setNavOrigin('DASHBOARD');
-    
     if (metric === 'MPLH') setIsSingleSchoolDrawerOpen(true);
     if (metric === 'PNA') setIsSingleSchoolPNADrawerOpen(true);
     if (metric === 'ENP') setIsSingleSchoolENPDrawerOpen(true);
@@ -247,20 +227,12 @@ function InsightsPage() {
         />
 
         {/* --- SCHOOL PERFORMANCE GRID --- */}
-        <SchoolPerformanceGrid onSchoolieClick={handleOpenGridSchoolie} />
+        <SchoolPerformanceGrid onSchoolieClick={handleOpenGridSchoolie} onOpenSingleSchool={openSingleFromGrid} />
 
         {/* --- PERFORMANCE Trends --- */}
         <div ref={chartRef}>
           <PerformanceTrends onSchoolieClick={handleOpenTrendsSchoolie} />
         </div>
-
-        {/* --- NAVIGATION LINKS --- */}
-        <TestLinks
-          onOpenSingle={openSingleFromDashboard}
-          onOpenAI={handleOpenMPLHWithAI}
-          onOpenAIENP={handleOpenENPWithAI}
-          onOpenAIPNA={handleOpenPNAWithAI}
-        />
 
         <div className="mt-8 pt-8 border-t border-gray-200">
           <ProductFeedback

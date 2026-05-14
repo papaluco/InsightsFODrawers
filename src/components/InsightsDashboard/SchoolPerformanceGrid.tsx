@@ -55,9 +55,10 @@ const SortIcon = ({ column, config }: { column: string, config: any }) => {
 
 interface SchoolPerformanceGridProps {
   onSchoolieClick?: () => void;
+  onOpenSingleSchool?: (schoolName: string, metric: 'MPLH' | 'PNA' | 'ENP') => void;
 }
 
-export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ onSchoolieClick }) => {
+export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ onSchoolieClick, onOpenSingleSchool }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number | 'All'>(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -229,9 +230,21 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
                 <td className="px-3 py-4 text-xs text-center text-gray-500">{row.inventoryValue}</td>
                 <td className="px-3 py-4 text-xs text-center text-gray-500">{row.inventoryTurnover}</td>
                 <td className="px-3 py-4 text-xs text-center text-gray-500">{row.physicalInventoryDiscrepancy}</td>
-                <td className="px-3 py-4 text-xs text-center text-gray-500 font-medium">{row.mplh}</td>
-                <td className="px-3 py-4 text-xs text-center text-emerald-500 font-medium">{row.pna}</td>
-                <td className="px-3 py-4 text-xs text-center text-gray-500 font-medium">{row.enp}</td>
+                <td className="px-3 py-4 text-xs text-center text-gray-500 font-medium">
+                  {onOpenSingleSchool ? (
+                    <button onClick={() => onOpenSingleSchool(row.school, 'MPLH')} className="hover:underline hover:text-blue-600 cursor-pointer transition-colors">{row.mplh}</button>
+                  ) : row.mplh}
+                </td>
+                <td className="px-3 py-4 text-xs text-center text-emerald-500 font-medium">
+                  {onOpenSingleSchool ? (
+                    <button onClick={() => onOpenSingleSchool(row.school, 'PNA')} className="hover:underline hover:text-blue-600 cursor-pointer transition-colors">{row.pna}</button>
+                  ) : row.pna}
+                </td>
+                <td className="px-3 py-4 text-xs text-center text-gray-500 font-medium">
+                  {onOpenSingleSchool ? (
+                    <button onClick={() => onOpenSingleSchool(row.school, 'ENP')} className="hover:underline hover:text-blue-600 cursor-pointer transition-colors">{row.enp}</button>
+                  ) : row.enp}
+                </td>
               </tr>
             ))}
           </tbody>

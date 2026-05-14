@@ -23,7 +23,6 @@ export function ENPDrawer({
   benchmarkENP,
   onOpenSingleSchool,
   dateRange = 'Jul 1, 2025 - Apr 3, 2026',
-  showAIAssistant = false,
 }: ENPDrawerProps) {
 
   const [isAIOpen, setIsAIOpen] = useState(false);
@@ -75,7 +74,7 @@ export function ENPDrawer({
               <p className="text-sm text-gray-500">Analysis for {dateRange}</p>
             </div>
             <div className="flex items-center space-x-2">
-              {showAIAssistant && (
+
                 <button
                   onClick={() => {
                     setIsAIOpen(true);
@@ -85,7 +84,7 @@ export function ENPDrawer({
                 >
                   <SchoolieIcon size={60} />
                 </button>
-              )}
+
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"

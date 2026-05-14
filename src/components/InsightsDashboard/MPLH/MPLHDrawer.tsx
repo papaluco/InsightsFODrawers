@@ -37,7 +37,6 @@ export const MPLHDrawer: React.FC<MPLHDrawerProps> = ({
   onOpenSingleSchool,
   dateRange = 'Jul 1, 2025 - Apr 3, 2026',
   isLoading = false,
-  showAIAssistant = false,
 }) => {
   const [isAIOpen, setIsAIOpen] = useState(false);
   const openedAtRef = useRef<number | null>(null);
@@ -144,7 +143,7 @@ useEffect(() => {
             <div className="flex items-center space-x-2">
 
               {/* --- EXPORT MENU --- */}
-              {showAIAssistant && (
+
                 <ExportMenu>
                   {/* Visual Section */}
                   <div className="px-4 py-1.5 bg-slate-50 border-b border-slate-100">
@@ -179,9 +178,7 @@ useEffect(() => {
                     onDownload={() => trackInsightsEvent({ eventType: 'KPI_DRAWER_DOWNLOAD', userId: 'current-user', districtId: 'current-district', platform: 'SchoolCafe', context: { kpi: 'MPLH', format: 'CSV' } })}
                   />
                 </ExportMenu>
-              )}
 
-              {showAIAssistant && (
                 <button
                   onClick={() => {
                     setIsAIOpen(true);
@@ -191,7 +188,6 @@ useEffect(() => {
                 >
                   <SchoolieIcon size={60} />
                 </button>
-              )}
 
               <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-500" />
