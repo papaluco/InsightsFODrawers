@@ -6,6 +6,10 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props {
   summary: MenuUsageSummary;
+  onPageViewsClick?: () => void;
+  onInteractionsClick?: () => void;
+  onMenuItemsClick?: () => void;
+  onSchoolPerfClick?: () => void;
   onActiveUsersClick?: () => void;
   onActiveDistrictsClick?: () => void;
 }
@@ -23,7 +27,15 @@ const ClickableCard: React.FC<{ onClick?: () => void; children: React.ReactNode 
   );
 };
 
-const MenuOverviewKPICards: React.FC<Props> = ({ summary, onActiveUsersClick, onActiveDistrictsClick }) => {
+const MenuOverviewKPICards: React.FC<Props> = ({
+  summary,
+  onPageViewsClick,
+  onInteractionsClick,
+  onMenuItemsClick,
+  onSchoolPerfClick,
+  onActiveUsersClick,
+  onActiveDistrictsClick,
+}) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -38,20 +50,24 @@ const MenuOverviewKPICards: React.FC<Props> = ({ summary, onActiveUsersClick, on
 
       {expanded && (
         <div className="border-t border-gray-100 px-5 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-9 gap-3">
-            <FeedbackKPICard
-              label="Page Views"
-              value={summary.pageViews.toLocaleString()}
-              icon={<USAGE_ICONS.PageViews size={20} />}
-              colorClass={TAB_TAILWIND.PageViews}
-            />
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+            <ClickableCard onClick={onPageViewsClick}>
+              <FeedbackKPICard
+                label="Page Views"
+                value={summary.pageViews.toLocaleString()}
+                icon={<USAGE_ICONS.PageViews size={20} />}
+                colorClass={TAB_TAILWIND.PageViews}
+              />
+            </ClickableCard>
 
-            <FeedbackKPICard
-              label="Interactions"
-              value={summary.interactions.toLocaleString()}
-              icon={<USAGE_ICONS.Interactions size={20} />}
-              colorClass={TAB_TAILWIND.Interactions}
-            />
+            <ClickableCard onClick={onInteractionsClick}>
+              <FeedbackKPICard
+                label="Interactions"
+                value={summary.interactions.toLocaleString()}
+                icon={<USAGE_ICONS.Interactions size={20} />}
+                colorClass={TAB_TAILWIND.Interactions}
+              />
+            </ClickableCard>
 
             <FeedbackKPICard
               label="Interaction Rate"
@@ -60,33 +76,23 @@ const MenuOverviewKPICards: React.FC<Props> = ({ summary, onActiveUsersClick, on
               colorClass={TAB_TAILWIND.Overview}
             />
 
-            <FeedbackKPICard
-              label="Menu Items Views"
-              value={summary.menuItemsDrawerViews.toLocaleString()}
-              icon={<USAGE_ICONS.MenuItems size={20} />}
-              colorClass={TAB_TAILWIND.MenuAnalysis}
-            />
+            <ClickableCard onClick={onMenuItemsClick}>
+              <FeedbackKPICard
+                label="Menu Items Views"
+                value={summary.menuItemsDrawerViews.toLocaleString()}
+                icon={<USAGE_ICONS.MenuItems size={20} />}
+                colorClass={TAB_TAILWIND.MenuItems}
+              />
+            </ClickableCard>
 
-            <FeedbackKPICard
-              label="School Perf. Views"
-              value={summary.schoolPerformanceDrawerViews.toLocaleString()}
-              icon={<USAGE_ICONS.SchoolPerformance size={20} />}
-              colorClass={TAB_TAILWIND.SchoolPerformance}
-            />
-
-            <FeedbackKPICard
-              label="Metric Changes"
-              value={summary.metricChanges.toLocaleString()}
-              icon={<USAGE_ICONS.Filters size={20} />}
-              colorClass={TAB_TAILWIND.Metrics}
-            />
-
-            <FeedbackKPICard
-              label="Filter Changes"
-              value={summary.filterChanges.toLocaleString()}
-              icon={<USAGE_ICONS.Filters size={20} />}
-              colorClass={TAB_TAILWIND.Filters}
-            />
+            <ClickableCard onClick={onSchoolPerfClick}>
+              <FeedbackKPICard
+                label="School Perf. Views"
+                value={summary.schoolPerformanceDrawerViews.toLocaleString()}
+                icon={<USAGE_ICONS.SchoolPerformance size={20} />}
+                colorClass={TAB_TAILWIND.SchoolPerformance}
+              />
+            </ClickableCard>
 
             <ClickableCard onClick={onActiveUsersClick}>
               <FeedbackKPICard

@@ -1,7 +1,9 @@
 import {
   MenuUsageEvent,
   MenuUsageFilters,
+  MenuSessionRow,
   MENU_EVENT_FRIENDLY,
+  MENU_INTERACTION_TYPES,
 } from '../../../types/menuUsageTypes';
 
 
@@ -16,6 +18,31 @@ export function getMenuEventFriendlyLabel(eventType: string, context: MenuUsageE
     return `Sort: ${context.sortColumn} ${context.sortDirection ?? ''}`.trim();
   }
   return base;
+}
+
+export function deriveMenuSessions(events: MenuUsageEvent[]): MenuSessionRow[] {
+  const sessionMap = new Map<string, MenuUsageEvent[]>();
+  for (const e of events) {
+    const arr = sessionMap.get(e.sessionId) ?? [];
+    arr.push(e);
+    sessionMap.set(e.sessionId, arr);
+  }
+  return Array.from(sessionMap.entries()).map(([sessionId, evs]) => {
+    const sorted = [...evs].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    return {
+      sessionId,
+      userId: evs[0].userId,
+      districtId: evs[0].districtId,
+      platform: evs[0].platform,
+      eventCount: evs.length,
+      pageViews: evs.filter(e => e.eventType === 'MENU_ANALYSIS_PAGE_VIEWED').length,
+      interactions: evs.filter(e => MENU_INTERACTION_TYPES.includes(e.eventType)).length,
+      menuItemsDrawerViews: evs.filter(e => e.eventType === 'MENU_ITEMS_DRAWER_VIEWED').length,
+      schoolPerformanceDrawerViews: evs.filter(e => e.eventType === 'SCHOOL_PERFORMANCE_DRAWER_VIEWED').length,
+      firstEvent: sorted[0].timestamp,
+      lastEvent: sorted[sorted.length - 1].timestamp,
+    };
+  });
 }
 
 export function applyMenuFilters(events: MenuUsageEvent[], filters: MenuUsageFilters): MenuUsageEvent[] {

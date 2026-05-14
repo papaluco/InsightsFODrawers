@@ -23,5 +23,9 @@
       "Bash(find c:\\\\\\\\Users\\\\\\\\Johnathon\\\\\\\\OneDrive\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\InsightsFODrawers\\\\\\\\src -type d -name \"*InsightsReport*\")",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\Johnathon\\\\\\\\OneDrive\\\\\\\\Documents\\\\\\\\GitHub\\\\\\\\InsightsFODrawers\\\\\\\\src\\\\\\\\components\" -maxdepth 2 -type f -name \"*Insights*\")"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }

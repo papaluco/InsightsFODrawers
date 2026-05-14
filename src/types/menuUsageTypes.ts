@@ -177,3 +177,17 @@ export interface MenuDistrictStatRow {
   lastActivity: string;
   hasNoActivity: boolean;
 }
+
+export interface MenuSessionRow {
+  sessionId: string;
+  userId: string;
+  districtId: string;
+  platform: MenuPlatform;
+  eventCount: number;
+  pageViews: number;
+  interactions: number;
+  menuItemsDrawerViews: number;
+  schoolPerformanceDrawerViews: number;
+  firstEvent: string;
+  lastEvent: string;
+}

@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { X, MessageSquare, GripVertical, ChevronUp, ChevronDown, BarChart3 } from 'lucide-react';
+import { X, MessageSquare, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { InsightsUsageEvent, INSIGHTS_EVENT_FRIENDLY } from '../../../types/insightsUsageTypes';
 import { INSIGHTS_USER_NAMES, INSIGHTS_DISTRICT_NAMES } from '../../../data/mockInsightsUsageData';
-import { fmtDate } from '../common/usageHelpers';
+import { fmtDate, EVENT_COLORS, TAB_COLORS, USAGE_ICONS } from '../common/usageHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
-import { FilterIcon, SettingsIcon, ChevronLeftIcon } from '../../Common/Icons';
+import { FilterIcon, SettingsIcon, AlertIcon, ChevronLeftIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
 import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';
 import type { ICSVReportData } from '../../Downloading/CSVGen/CSVContract';
@@ -16,12 +16,12 @@ interface ColDef { key: ColKey; label: string; defaultVisible: boolean; }
 
 const COLUMNS: ColDef[] = [
   { key: 'eventType',    label: 'Event',    defaultVisible: true },
-  { key: 'kpi',         label: 'KPI',      defaultVisible: true },
-  { key: 'userName',    label: 'User',     defaultVisible: true },
-  { key: 'districtName',label: 'District', defaultVisible: true },
-  { key: 'platform',    label: 'Platform', defaultVisible: false },
-  { key: 'sessionId',   label: 'Session',  defaultVisible: false },
-  { key: 'timestamp',   label: 'Date',     defaultVisible: true },
+  { key: 'kpi',          label: 'KPI',      defaultVisible: true },
+  { key: 'userName',     label: 'User',     defaultVisible: true },
+  { key: 'districtName', label: 'District', defaultVisible: true },
+  { key: 'platform',     label: 'Platform', defaultVisible: true },
+  { key: 'sessionId',    label: 'Session',  defaultVisible: true },
+  { key: 'timestamp',    label: 'Date',     defaultVisible: true },
 ];
 
 const ALL_COL_KEYS: ColKey[] = COLUMNS.map(c => c.key);
@@ -31,13 +31,13 @@ const DEFAULT_VISIBLE: ColKey[] = COLUMNS.filter(c => c.defaultVisible).map(c =>
 function getCellValue(e: InsightsUsageEvent, key: ColKey): string {
   switch (key) {
     case 'eventType':    return INSIGHTS_EVENT_FRIENDLY[e.eventType] ?? e.eventType;
-    case 'kpi':         return e.context.kpi ?? '—';
-    case 'userName':    return INSIGHTS_USER_NAMES[e.userId] ?? e.userId;
-    case 'districtName':return INSIGHTS_DISTRICT_NAMES[e.districtId] ?? e.districtId;
-    case 'platform':    return e.platform;
-    case 'sessionId':   return e.sessionId;
-    case 'timestamp':   return e.timestamp;
-    default:            return '';
+    case 'kpi':          return e.context.kpi ?? '—';
+    case 'userName':     return INSIGHTS_USER_NAMES[e.userId] ?? e.userId;
+    case 'districtName': return INSIGHTS_DISTRICT_NAMES[e.districtId] ?? e.districtId;
+    case 'platform':     return e.platform;
+    case 'sessionId':    return e.sessionId;
+    case 'timestamp':    return e.timestamp;
+    default:             return '';
   }
 }
 
@@ -46,23 +46,25 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
+  zIndex?: number;
+  isTopmost?: boolean;
 }
 
-const InsightsEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClose }) => {
+const InsightsEventListDrawer: React.FC<Props> = ({
+  events, title, isOpen, onClose, zIndex = 52, isTopmost = true,
+}) => {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(20);
+  const [perPage, setPerPage] = useState(10);
   const [selectedEvent, setSelectedEvent] = useState<InsightsUsageEvent | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
   const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
   const [colOrder, setColOrder] = useState<ColKey[]>(ALL_COL_KEYS);
   const [showColPicker, setShowColPicker] = useState(false);
-  const pickerRef = useRef<HTMLDivElement>(null);
-
   const [sortConfig, setSortConfig] = useState<{ key: ColKey; dir: 'asc' | 'desc' } | null>(null);
   const [draggedKey, setDraggedKey] = useState<ColKey | null>(null);
   const [dragOverKey, setDragOverKey] = useState<ColKey | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -73,11 +75,17 @@ const InsightsEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClo
   }, [showColPicker]);
 
   useEffect(() => {
-    if (!isOpen || isDetailOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler, true);
-    return () => document.removeEventListener('keydown', handler, true);
-  }, [isOpen, isDetailOpen, onClose]);
+    const h = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !isOpen) return;
+      if (isDetailOpen) return;
+      if (!isTopmost) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+    };
+    window.addEventListener('keydown', h, true);
+    return () => window.removeEventListener('keydown', h, true);
+  }, [isOpen, isDetailOpen, isTopmost, onClose]);
 
   const orderedVisibleCols = useMemo(
     () => colOrder.filter(k => visibleCols.includes(k)).map(k => COL_BY_KEY.get(k)!),
@@ -113,183 +121,226 @@ const InsightsEventListDrawer: React.FC<Props> = ({ events, title, isOpen, onClo
     rows: filtered.map(e => orderedVisibleCols.map(c => getCellValue(e, c.key))),
   }), [filtered, orderedVisibleCols]);
 
-  const handleSort = (key: ColKey) => {
+  const requestSort = (key: ColKey) => {
     setSortConfig(prev =>
       prev?.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }
     );
+    setPage(1);
   };
 
-  const handleDragStart = (key: ColKey) => setDraggedKey(key);
-  const handleDragOver = (e: React.DragEvent, key: ColKey) => { e.preventDefault(); setDragOverKey(key); };
-  const handleDrop = (targetKey: ColKey) => {
-    if (!draggedKey || draggedKey === targetKey) { setDraggedKey(null); setDragOverKey(null); return; }
+  const handleCellClick = (e: InsightsUsageEvent, key: ColKey) => {
+    if (key === 'eventType') {
+      setSelectedEvent(e);
+      setIsDetailOpen(true);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, key: ColKey) => { setDraggedKey(key); e.dataTransfer.effectAllowed = 'move'; };
+  const handleDragOver = (e: React.DragEvent, key: ColKey) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (key !== draggedKey) setDragOverKey(key); };
+  const handleDrop = (e: React.DragEvent, targetKey: ColKey) => {
+    e.preventDefault();
+    if (!draggedKey || draggedKey === targetKey) return;
     setColOrder(prev => {
       const next = [...prev];
-      const fromIdx = next.indexOf(draggedKey);
-      const toIdx = next.indexOf(targetKey);
-      next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, draggedKey);
+      const from = next.indexOf(draggedKey);
+      const to = next.indexOf(targetKey);
+      next.splice(from, 1);
+      next.splice(to, 0, draggedKey);
       return next;
     });
-    setDraggedKey(null);
-    setDragOverKey(null);
+    setDraggedKey(null); setDragOverKey(null);
+  };
+  const handleDragEnd = () => { setDraggedKey(null); setDragOverKey(null); };
+
+  const hiddenCount = ALL_COL_KEYS.length - visibleCols.length;
+
+  const renderCell = (e: InsightsUsageEvent, key: ColKey): React.ReactNode => {
+    if (key === 'eventType') return (
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: EVENT_COLORS[e.eventType] ?? '#64748b' }} />
+        <span className="text-slate-700 font-medium whitespace-nowrap">{INSIGHTS_EVENT_FRIENDLY[e.eventType] ?? e.eventType}</span>
+      </div>
+    );
+    if (key === 'timestamp') return <span className="text-slate-400 whitespace-nowrap">{fmtDate(e.timestamp)}</span>;
+    if (key === 'sessionId') return <span className="font-mono text-[11px] text-gray-400 whitespace-nowrap">{e.sessionId.slice(0, 8)}…</span>;
+    return <span className="whitespace-nowrap">{getCellValue(e, key)}</span>;
   };
 
   return (
     <>
-      <div className={`fixed inset-0 bg-white z-[51] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div
+        className={`fixed inset-0 bg-white flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ zIndex }}
+      >
         {/* Header */}
-        <div className="px-8 py-5 bg-white border-b border-gray-200 flex items-center gap-4 shrink-0 shadow-sm">
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-slate-600 transition-colors">
-            <ChevronLeftIcon size={20} />
-          </button>
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
-            <BarChart3 size={20} className="text-indigo-600" />
+        <div className="px-8 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors" title="Back">
+              <ChevronLeftIcon size={20} />
+            </button>
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${TAB_COLORS.Insights}1A` }}
+            >
+              <USAGE_ICONS.Insights size={20} style={{ color: TAB_COLORS.Insights }} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{title || 'Insights Events'}</h2>
+              <p className="text-xs text-gray-500">Insights usage events</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-slate-800 truncate">{title || 'Insights Events'}</h2>
-            <p className="text-xs text-gray-500">Insights usage events</p>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-slate-600 transition-colors ml-auto">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
             <X size={20} />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto bg-gray-50 px-8 py-6">
-          {/* Record count */}
-          <p className="text-[11px] text-gray-400 uppercase tracking-widest mb-3">
-            {filtered.length.toLocaleString()} record{filtered.length !== 1 ? 's' : ''}
-          </p>
+          <div className="mb-4">
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-widest">
+              {filtered.length.toLocaleString()} record{filtered.length !== 1 ? 's' : ''}
+            </p>
+          </div>
 
-          {/* Toolbar card (rounded-t) */}
-          <div className="bg-white rounded-t-xl border border-b-0 border-gray-200 shadow-sm px-5 py-3 flex items-center gap-3">
-            {/* Export */}
-            <ExportMenu>
-              <CSVExpButton data={csvData} />
-            </ExportMenu>
+          {/* Toolbar card */}
+          <div className="bg-white border border-gray-200 rounded-t-xl px-5 py-3 flex justify-between items-center gap-3">
+            {hiddenCount > 0 ? (
+              <div className="flex items-center gap-2 text-amber-600 animate-in fade-in duration-300">
+                <AlertIcon size={14} className="text-amber-500" />
+                <span className="text-[11px] font-semibold italic">Showing {visibleCols.length} of {ALL_COL_KEYS.length} columns.</span>
+              </div>
+            ) : <div />}
 
-            {/* Column picker */}
-            <div className="relative" ref={pickerRef}>
-              <button
-                onClick={() => setShowColPicker(p => !p)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <SettingsIcon size={13} />
-                Columns
-              </button>
-              {showColPicker && (
-                <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 w-56 p-2">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider px-2 pb-1">Drag to reorder</p>
-                  {colOrder.map(key => {
-                    const col = COL_BY_KEY.get(key)!;
-                    return (
-                      <div
-                        key={key}
-                        draggable
-                        onDragStart={() => handleDragStart(key)}
-                        onDragOver={e => handleDragOver(e, key)}
-                        onDrop={() => handleDrop(key)}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-grab hover:bg-gray-50 transition-colors ${dragOverKey === key ? 'bg-indigo-50' : ''}`}
-                      >
-                        <GripVertical size={13} className="text-gray-300" />
-                        <input
-                          type="checkbox"
-                          checked={visibleCols.includes(key)}
-                          onChange={e => setVisibleCols(prev =>
-                            e.target.checked ? [...prev, key] : prev.filter(k => k !== key)
-                          )}
-                          className="accent-indigo-600"
-                        />
-                        <span className="text-sm text-slate-600">{col.label}</span>
-                      </div>
-                    );
-                  })}
+            <div className="flex items-center gap-3">
+              <ExportMenu>
+                <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Data Exports</p>
                 </div>
-              )}
-            </div>
+                <CSVExpButton title="Events (.csv)" subtext="Download visible columns as seen" csvData={csvData} />
+              </ExportMenu>
 
-            {/* Search */}
-            <div className="relative w-64 ml-auto">
-              <FilterIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-              <input
-                type="text"
-                placeholder="Search events..."
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none"
-              />
+              <div className="relative" ref={pickerRef}>
+                <button
+                  onClick={() => setShowColPicker(p => !p)}
+                  className={`p-2 rounded-lg border transition-all ${showColPicker ? 'bg-teal-50 border-teal-400 text-teal-600' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                >
+                  <SettingsIcon size={18} />
+                </button>
+                {showColPicker && (
+                  <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-200 shadow-xl rounded-xl z-50 p-4 animate-in zoom-in-95 duration-100">
+                    <div className="flex justify-between items-center mb-1 px-1">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Columns</h3>
+                      <button
+                        onClick={() => setVisibleCols(visibleCols.length === ALL_COL_KEYS.length ? [] : [...ALL_COL_KEYS])}
+                        className="text-[10px] font-bold text-teal-600 uppercase hover:underline"
+                      >
+                        {visibleCols.length === ALL_COL_KEYS.length ? 'Deselect All' : 'Select All'}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-gray-400 px-1 mb-3">Drag to reorder</p>
+                    <div className="space-y-0.5 max-h-64 overflow-y-auto pr-1">
+                      {colOrder.map(key => {
+                        const col = COL_BY_KEY.get(key)!;
+                        return (
+                          <div
+                            key={key}
+                            draggable
+                            onDragStart={e => handleDragStart(e, key)}
+                            onDragOver={e => handleDragOver(e, key)}
+                            onDrop={e => handleDrop(e, key)}
+                            onDragEnd={handleDragEnd}
+                            className={`flex items-center gap-2 px-2 py-2 rounded-lg transition-colors select-none
+                              ${draggedKey === key ? 'opacity-40 bg-teal-50' : 'hover:bg-slate-50'}
+                              ${dragOverKey === key && draggedKey !== key ? 'border-t-2 border-teal-400' : 'border-t-2 border-transparent'}
+                            `}
+                          >
+                            <GripVertical size={14} className="text-gray-300 cursor-grab flex-shrink-0" />
+                            <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 flex-shrink-0"
+                                checked={visibleCols.includes(key)}
+                                onChange={() => setVisibleCols(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])}
+                              />
+                              <span className="text-sm text-slate-600 font-medium truncate">{col.label}</span>
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative w-64">
+                <FilterIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                <input
+                  type="text"
+                  placeholder="Search records..."
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1); }}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none transition-all placeholder:text-gray-400"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Table card (rounded-b) */}
-          <div className="bg-white rounded-b-xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Table card */}
+          <div className="bg-white border-x border-b border-gray-200 rounded-b-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 border-b border-gray-200 sticky top-0 z-10">
+                <thead className="bg-white border-b border-gray-200 sticky top-0 z-10">
                   <tr>
                     {orderedVisibleCols.map(col => (
                       <th
                         key={col.key}
-                        onClick={() => handleSort(col.key)}
-                        className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 whitespace-nowrap select-none"
+                        onClick={() => requestSort(col.key)}
+                        className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-slate-50 transition-colors select-none whitespace-nowrap"
                       >
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           {col.label}
-                          {sortConfig?.key === col.key && (
-                            sortConfig.dir === 'asc'
-                              ? <ChevronUp size={12} className="text-indigo-500" />
-                              : <ChevronDown size={12} className="text-indigo-500" />
-                          )}
+                          <div className="w-4 flex items-center">
+                            {sortConfig?.key === col.key && (
+                              sortConfig.dir === 'asc'
+                                ? <ChevronUp size={12} className="text-teal-500" />
+                                : <ChevronDown size={12} className="text-teal-500" />
+                            )}
+                          </div>
                         </div>
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap text-right">Detail</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {paged.map((e, i) => (
                     <tr key={i} className="hover:bg-slate-50 transition-colors">
                       {orderedVisibleCols.map(col => (
-                        <td key={col.key} className="px-4 py-2.5 text-sm text-slate-600 whitespace-nowrap">
-                          {col.key === 'timestamp'
-                            ? fmtDate(e.timestamp)
-                            : getCellValue(e, col.key)
-                          }
+                        <td
+                          key={col.key}
+                          onClick={() => handleCellClick(e, col.key)}
+                          className={`px-4 py-2.5 text-sm text-slate-600 ${col.key === 'eventType' ? 'cursor-pointer hover:bg-slate-100' : ''}`}
+                        >
+                          {renderCell(e, col.key)}
                         </td>
                       ))}
-                      <td className="px-4 py-2.5 text-right">
-                        <button
-                          onClick={() => { setSelectedEvent(e); setIsDetailOpen(true); }}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
-                          title="View detail"
-                        >
-                          <SettingsIcon size={14} />
-                        </button>
-                      </td>
                     </tr>
                   ))}
-                  {paged.length === 0 && (
-                    <tr>
-                      <td colSpan={orderedVisibleCols.length + 1} className="py-20 text-center">
-                        <div className="flex flex-col items-center text-gray-400">
-                          <MessageSquare size={32} className="mb-2 opacity-20" />
-                          <p className="text-sm italic">No events found{search ? ' matching your search' : ''}.</p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
+              {paged.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                  <MessageSquare size={36} className="mb-3 opacity-20" />
+                  <p className="text-sm font-medium">No events found{search ? ' matching your search' : ''}.</p>
+                </div>
+              )}
             </div>
-
             <ReportPaging
               currentPage={page}
               totalItems={filtered.length}
               itemsPerPage={perPage}
               onPageChange={setPage}
               onItemsPerPageChange={v => { setPerPage(v); setPage(1); }}
-              showAllOption={false}
+              showAllOption
             />
           </div>
         </div>

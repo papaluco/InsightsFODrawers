@@ -11,7 +11,13 @@ import type { ICSVReportData } from '../../Downloading/CSVGen/CSVContract';
 interface Props {
   data: MenuDistrictStatRow[];
   onRowClick?: (row: MenuDistrictStatRow) => void;
+  onDistrictClick?: (row: MenuDistrictStatRow) => void;
   onUsersClick?: (row: MenuDistrictStatRow) => void;
+  onSessionsClick?: (row: MenuDistrictStatRow) => void;
+  onPageViewsClick?: (row: MenuDistrictStatRow) => void;
+  onInteractionsClick?: (row: MenuDistrictStatRow) => void;
+  onMenuItemsClick?: (row: MenuDistrictStatRow) => void;
+  onSchoolPerfClick?: (row: MenuDistrictStatRow) => void;
 }
 
 type SortKey = keyof MenuDistrictStatRow;
@@ -64,7 +70,17 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
-const MenuDistrictsGrid: React.FC<Props> = ({ data, onRowClick, onUsersClick }) => {
+const MenuDistrictsGrid: React.FC<Props> = ({
+  data,
+  onRowClick,
+  onDistrictClick,
+  onUsersClick,
+  onSessionsClick,
+  onPageViewsClick,
+  onInteractionsClick,
+  onMenuItemsClick,
+  onSchoolPerfClick,
+}) => {
   const [expanded, setExpanded] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'sessions', dir: 'desc' });
@@ -96,10 +112,6 @@ const MenuDistrictsGrid: React.FC<Props> = ({ data, onRowClick, onUsersClick }) 
       : data;
 
     rows = [...rows].sort((a, b) => {
-      if (sort.key === 'status') {
-        const cmp = (b.hasNoActivity ? 1 : 0) - (a.hasNoActivity ? 1 : 0);
-        return sort.dir === 'asc' ? -cmp : cmp;
-      }
       const av = a[sort.key as keyof MenuDistrictStatRow];
       const bv = b[sort.key as keyof MenuDistrictStatRow];
       const cmp = typeof av === 'string' ? (av as string).localeCompare(bv as string) : (av as number) - (bv as number);
@@ -259,46 +271,76 @@ const MenuDistrictsGrid: React.FC<Props> = ({ data, onRowClick, onUsersClick }) 
 
               <tbody className="divide-y divide-gray-100">
                 {paged.map(row => {
-                  const rowClickable = !row.hasNoActivity && !!onRowClick;
+                  const cellHandler: Partial<Record<ColKey, (() => void) | undefined>> = {
+                    districtName:                 onDistrictClick    ? () => onDistrictClick(row)    : (onRowClick && !row.hasNoActivity ? () => onRowClick(row) : undefined),
+                    sessions:                     onSessionsClick    ? () => onSessionsClick(row)    : undefined,
+                    pageViews:                    onPageViewsClick   ? () => onPageViewsClick(row)   : undefined,
+                    interactions:                 onInteractionsClick? () => onInteractionsClick(row): undefined,
+                    menuItemsDrawerViews:          onMenuItemsClick   ? () => onMenuItemsClick(row)   : undefined,
+                    schoolPerformanceDrawerViews:  onSchoolPerfClick  ? () => onSchoolPerfClick(row)  : undefined,
+                  };
                   return (
-                    <tr
-                      key={row.districtId}
-                      className="transition-colors hover:bg-slate-50"
-                    >
-                      {orderedVisibleCols.map(col => (
-                        <td
-                          key={col.key}
-                          onClick={() => {
-                            if (col.key !== 'activeUsers' && col.key !== 'status' && rowClickable) onRowClick?.(row);
-                          }}
-                          className={`px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap ${col.key !== 'activeUsers' && col.key !== 'status' && rowClickable ? 'cursor-pointer hover:text-amber-600' : ''}`}
-                        >
-                          {col.key === 'districtName' && <span className="font-medium text-slate-700">{row.districtName}</span>}
-                          {col.key === 'platform' && (row.platform || '—')}
-                          {col.key === 'activeUsers' && (
-                            <button
-                              onClick={e => { e.stopPropagation(); onUsersClick?.(row); }}
-                              disabled={row.activeUsers === 0 || row.hasNoActivity}
-                              className="font-semibold text-teal-600 tabular-nums hover:underline hover:text-teal-700 disabled:text-slate-300 disabled:cursor-not-allowed"
-                            >
-                              {row.activeUsers}
-                            </button>
-                          )}
-                          {col.key === 'sessions' && <span className="tabular-nums">{row.sessions || '—'}</span>}
-                          {col.key === 'pageViews' && <span className="tabular-nums">{row.pageViews || '—'}</span>}
-                          {col.key === 'interactions' && <span className="tabular-nums">{row.interactions || '—'}</span>}
-                          {col.key === 'menuItemsDrawerViews' && <span className="tabular-nums">{row.menuItemsDrawerViews || '—'}</span>}
-                          {col.key === 'schoolPerformanceDrawerViews' && <span className="tabular-nums">{row.schoolPerformanceDrawerViews || '—'}</span>}
-                          {col.key === 'filterChanges' && <span className="tabular-nums">{row.filterChanges || '—'}</span>}
-                          {col.key === 'metricChanges' && <span className="tabular-nums">{row.metricChanges || '—'}</span>}
-                          {col.key === 'lastActivity' && (row.lastActivity ? fmtDate(row.lastActivity) : '—')}
-                          {col.key === 'status' && row.hasNoActivity && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-600 text-[11px] font-semibold rounded-full">
-                              <AlertTriangle size={10} /> Needs Attention
-                            </span>
-                          )}
-                        </td>
-                      ))}
+                    <tr key={row.districtId} className="transition-colors hover:bg-slate-50">
+                      {orderedVisibleCols.map(col => {
+                        const handler = cellHandler[col.key];
+                        const isClickable = !!handler;
+                        return (
+                          <td
+                            key={col.key}
+                            onClick={handler}
+                            className={`px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap ${isClickable ? 'cursor-pointer hover:text-amber-600' : ''}`}
+                          >
+                            {col.key === 'districtName' && (
+                              <span className={`font-medium ${onDistrictClick ? 'text-orange-600 hover:underline' : 'text-slate-700'}`}>
+                                {row.districtName}
+                              </span>
+                            )}
+                            {col.key === 'platform' && (row.platform || '—')}
+                            {col.key === 'activeUsers' && (
+                              <button
+                                onClick={e => { e.stopPropagation(); onUsersClick?.(row); }}
+                                disabled={row.activeUsers === 0 || row.hasNoActivity}
+                                className="font-semibold text-teal-600 tabular-nums hover:underline hover:text-teal-700 disabled:text-slate-300 disabled:cursor-not-allowed"
+                              >
+                                {row.activeUsers}
+                              </button>
+                            )}
+                            {col.key === 'sessions' && (
+                              <span className={`tabular-nums ${onSessionsClick ? 'text-emerald-600 hover:underline font-medium' : ''}`}>
+                                {row.sessions || '—'}
+                              </span>
+                            )}
+                            {col.key === 'pageViews' && (
+                              <span className={`tabular-nums ${onPageViewsClick ? 'text-indigo-600 hover:underline font-medium' : ''}`}>
+                                {row.pageViews || '—'}
+                              </span>
+                            )}
+                            {col.key === 'interactions' && (
+                              <span className={`tabular-nums ${onInteractionsClick ? 'text-teal-600 hover:underline font-medium' : ''}`}>
+                                {row.interactions || '—'}
+                              </span>
+                            )}
+                            {col.key === 'menuItemsDrawerViews' && (
+                              <span className={`tabular-nums ${onMenuItemsClick ? 'text-orange-500 hover:underline font-medium' : ''}`}>
+                                {row.menuItemsDrawerViews || '—'}
+                              </span>
+                            )}
+                            {col.key === 'schoolPerformanceDrawerViews' && (
+                              <span className={`tabular-nums ${onSchoolPerfClick ? 'text-green-600 hover:underline font-medium' : ''}`}>
+                                {row.schoolPerformanceDrawerViews || '—'}
+                              </span>
+                            )}
+                            {col.key === 'filterChanges' && <span className="tabular-nums">{row.filterChanges || '—'}</span>}
+                            {col.key === 'metricChanges' && <span className="tabular-nums">{row.metricChanges || '—'}</span>}
+                            {col.key === 'lastActivity' && (row.lastActivity ? fmtDate(row.lastActivity) : '—')}
+                            {col.key === 'status' && row.hasNoActivity && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-50 text-rose-600 text-[11px] font-semibold rounded-full">
+                                <AlertTriangle size={10} /> Needs Attention
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })}

@@ -11,6 +11,12 @@ import type { ICSVReportData } from '../../Downloading/CSVGen/CSVContract';
 interface Props {
   data: MenuUserStatRow[];
   onRowClick?: (row: MenuUserStatRow) => void;
+  onUserClick?: (row: MenuUserStatRow) => void;
+  onSessionsClick?: (row: MenuUserStatRow) => void;
+  onPageViewsClick?: (row: MenuUserStatRow) => void;
+  onInteractionsClick?: (row: MenuUserStatRow) => void;
+  onMenuItemsClick?: (row: MenuUserStatRow) => void;
+  onSchoolPerfClick?: (row: MenuUserStatRow) => void;
 }
 
 type SortKey = keyof MenuUserStatRow;
@@ -65,7 +71,16 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
-const MenuUsersGrid: React.FC<Props> = ({ data, onRowClick }) => {
+const MenuUsersGrid: React.FC<Props> = ({
+  data,
+  onRowClick,
+  onUserClick,
+  onSessionsClick,
+  onPageViewsClick,
+  onInteractionsClick,
+  onMenuItemsClick,
+  onSchoolPerfClick,
+}) => {
   const [expanded, setExpanded] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'sessions', dir: 'desc' });
@@ -257,31 +272,72 @@ const MenuUsersGrid: React.FC<Props> = ({ data, onRowClick }) => {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {paged.map(row => (
-                  <tr
-                    key={row.userId}
-                    onClick={() => onRowClick?.(row)}
-                    className={`transition-colors hover:bg-slate-50 ${onRowClick ? 'cursor-pointer' : ''}`}
-                  >
-                    {orderedVisibleCols.map(col => (
-                      <td key={col.key} className="px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap">
-                        {col.key === 'userName' && <span className="font-medium text-slate-700">{row.userName}</span>}
-                        {col.key === 'districtName' && row.districtName}
-                        {col.key === 'platform' && row.platform}
-                        {col.key === 'sessions' && <span className="font-semibold text-orange-600 tabular-nums">{row.sessions}</span>}
-                        {col.key === 'pageViews' && <span className="tabular-nums">{row.pageViews}</span>}
-                        {col.key === 'interactions' && <span className="tabular-nums">{row.interactions}</span>}
-                        {col.key === 'menuItemsDrawerViews' && <span className="tabular-nums">{row.menuItemsDrawerViews}</span>}
-                        {col.key === 'schoolPerformanceDrawerViews' && <span className="tabular-nums">{row.schoolPerformanceDrawerViews}</span>}
-                        {col.key === 'filterChanges' && <span className="tabular-nums">{row.filterChanges}</span>}
-                        {col.key === 'metricChanges' && <span className="tabular-nums">{row.metricChanges}</span>}
-                        {col.key === 'searches' && <span className="tabular-nums">{row.searches}</span>}
-                        {col.key === 'sortChanges' && <span className="tabular-nums">{row.sortChanges}</span>}
-                        {col.key === 'lastActive' && (row.lastActive ? fmtDate(row.lastActive) : '—')}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {paged.map(row => {
+                  const cellHandler: Partial<Record<ColKey, (() => void) | undefined>> = {
+                    userName:                     onUserClick        ? () => onUserClick(row)        : undefined,
+                    sessions:                     onSessionsClick    ? () => onSessionsClick(row)    : undefined,
+                    pageViews:                    onPageViewsClick   ? () => onPageViewsClick(row)   : undefined,
+                    interactions:                 onInteractionsClick? () => onInteractionsClick(row): undefined,
+                    menuItemsDrawerViews:          onMenuItemsClick   ? () => onMenuItemsClick(row)   : undefined,
+                    schoolPerformanceDrawerViews:  onSchoolPerfClick  ? () => onSchoolPerfClick(row)  : undefined,
+                  };
+                  return (
+                    <tr
+                      key={row.userId}
+                      className="transition-colors hover:bg-slate-50"
+                    >
+                      {orderedVisibleCols.map(col => {
+                        const handler = cellHandler[col.key] ?? (onRowClick ? () => onRowClick(row) : undefined);
+                        const isClickable = !!handler;
+                        return (
+                          <td
+                            key={col.key}
+                            onClick={handler}
+                            className={`px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap ${isClickable ? 'cursor-pointer hover:text-orange-600' : ''}`}
+                          >
+                            {col.key === 'userName' && (
+                              <span className={`font-medium ${onUserClick ? 'text-blue-600 hover:underline' : 'text-slate-700'}`}>
+                                {row.userName}
+                              </span>
+                            )}
+                            {col.key === 'districtName' && row.districtName}
+                            {col.key === 'platform' && row.platform}
+                            {col.key === 'sessions' && (
+                              <span className={`tabular-nums font-semibold ${onSessionsClick ? 'text-emerald-600 hover:underline' : 'text-orange-600'}`}>
+                                {row.sessions}
+                              </span>
+                            )}
+                            {col.key === 'pageViews' && (
+                              <span className={`tabular-nums ${onPageViewsClick ? 'text-indigo-600 hover:underline font-medium' : ''}`}>
+                                {row.pageViews}
+                              </span>
+                            )}
+                            {col.key === 'interactions' && (
+                              <span className={`tabular-nums ${onInteractionsClick ? 'text-teal-600 hover:underline font-medium' : ''}`}>
+                                {row.interactions}
+                              </span>
+                            )}
+                            {col.key === 'menuItemsDrawerViews' && (
+                              <span className={`tabular-nums ${onMenuItemsClick ? 'text-orange-500 hover:underline font-medium' : ''}`}>
+                                {row.menuItemsDrawerViews}
+                              </span>
+                            )}
+                            {col.key === 'schoolPerformanceDrawerViews' && (
+                              <span className={`tabular-nums ${onSchoolPerfClick ? 'text-green-600 hover:underline font-medium' : ''}`}>
+                                {row.schoolPerformanceDrawerViews}
+                              </span>
+                            )}
+                            {col.key === 'filterChanges' && <span className="tabular-nums">{row.filterChanges}</span>}
+                            {col.key === 'metricChanges' && <span className="tabular-nums">{row.metricChanges}</span>}
+                            {col.key === 'searches' && <span className="tabular-nums">{row.searches}</span>}
+                            {col.key === 'sortChanges' && <span className="tabular-nums">{row.sortChanges}</span>}
+                            {col.key === 'lastActive' && (row.lastActive ? fmtDate(row.lastActive) : '—')}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 
