@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import { DISTRICT_DISPLAY_NAMES } from '../../../data/mockFeedbackData';
 import { pct } from './feedbackHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';

@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import { DashboardFilters, DEFAULT_FILTERS, SOURCE_DISPLAY, getPromptName } from './feedbackHelpers';
 
 interface Props {

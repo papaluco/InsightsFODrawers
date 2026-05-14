@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import { DashboardFilters, applyFilters, getPromptName, getPromptTypeDisplay } from './feedbackHelpers';
 import FeedbackFilters from './FeedbackFilters';
 import FeedbackKPICards from './FeedbackKPICards';

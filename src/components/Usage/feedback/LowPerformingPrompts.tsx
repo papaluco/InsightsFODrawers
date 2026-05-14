@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, Star, ChevronRight } from 'lucide-react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import { getPromptName } from './feedbackHelpers';
 
 interface Props {

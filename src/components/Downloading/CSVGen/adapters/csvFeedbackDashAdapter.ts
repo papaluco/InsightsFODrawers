@@ -1,5 +1,5 @@
 import { ICSVReportData } from '../CSVContract';
-import { FeedbackRecord } from '../../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../../types/feedbackTypes';
 import { FEEDBACK_COLUMNS } from './csvFeedbackUsageAdapter';
 
 export const CSVFeedbackDashAdapter = (data: FeedbackRecord[]): ICSVReportData => {

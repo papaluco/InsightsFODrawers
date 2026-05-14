@@ -3,6 +3,7 @@ import { X, Target, Loader2, ChevronLeft } from 'lucide-react'; // Added Chevron
 import { SchoolMPLHData } from '../../../data/mockMPLHData';
 import { KPIAbout } from '../KPIAbout';
 import { SingleSchoolMPLHSummary } from './SingleSchoolMPLHSummary';
+import { ProductFeedback } from '../../Feedback/ProductFeedback';
 
 interface SingleSchoolMPLHDrawerProps {
   isOpen: boolean;
@@ -94,6 +95,12 @@ export const SingleSchoolMPLHDrawer: React.FC<SingleSchoolMPLHDrawerProps> = ({
               <p><span className="font-bold text-gray-800">Standard Factors:</span> Breakfast (0.67), Lunch (1.00), Snack (0.33), Adult Breakfast (0.67), Adult Lunch (1.00), Adult Snack (0.67), A La Carte ($4.93).</p>
             </div>
           } />
+          <ProductFeedback
+            feedbackType='Insights'
+            variant='drawer'
+            sourceEntryPoint='KpiDrawer'
+            analysisIdentifier='MPLH_SingleSchool'
+          />
         </div>
       </div>
     </>

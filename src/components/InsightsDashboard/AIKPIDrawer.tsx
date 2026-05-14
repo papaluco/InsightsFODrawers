@@ -3,7 +3,7 @@ import { X, ChevronLeft, CheckCircle2, AlertCircle, Lightbulb, Loader2, AlertTri
 import { SchoolieIcon, SparklesIcon } from '../Common/Icons';
 import { KPIKey, AIResponsePayload } from '../../types/SchoolieTypes';
 import { getKPIAnalysis } from '../../services/schoolieService';
-import { SchoolieFeedback } from '../Settings/AI/SchoolieFeedback';
+import { ProductFeedback } from '../Feedback/ProductFeedback';
 
 export interface AIKPIDrawerProps {
   isOpen: boolean;
@@ -236,16 +236,11 @@ export const AIKPIDrawer: React.FC<AIKPIDrawerProps> = ({
                 </p>
 
                 {/* Feedback */}
-                <SchoolieFeedback
-                  context={{
-                    sourceEntryPoint: 'KpiDrawer',
-                    kpiIdentifier: kpiKey,
-                    drawerType: siteName ? 'Site' : 'District',
-                    dateRange,
-                    responseJson: response.data,
-                    cacheStatus: response.fromCache ? 'Cached' : 'NewlyGenerated',
-                    contextJson: { dateRange, districtName, siteName, kpiName },
-                  }}
+                <ProductFeedback
+                  feedbackType='Schoolie'
+                  variant='drawer'
+                  sourceEntryPoint='KpiDrawer'
+                  analysisIdentifier='Schoolie'
                 />
               </div>
             </div>

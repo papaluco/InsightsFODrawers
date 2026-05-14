@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 
 type Grouping = 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
 

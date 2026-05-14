@@ -1,3 +1,5 @@
+export type FeedbackType = "Schoolie" | "Insights" | "Reports" | "MenuAnalysis";
+
 export type SchoolieFeedbackValue = "thumbs_up" | "thumbs_down";
 
 export type SchoolieSourceEntryPoint =
@@ -13,6 +15,7 @@ export interface SchoolieFeedbackPayload {
   platform: "SchoolCafe" | "PrimeroEdge";
   sourceEntryPoint: SchoolieSourceEntryPoint;
   feedbackValue: SchoolieFeedbackValue;
+  feedbackType: FeedbackType;
 
   promptType: string;
   promptVersion: number;
@@ -22,6 +25,7 @@ export interface SchoolieFeedbackPayload {
   responseJson?: unknown;
 
   kpiIdentifier?: string;
+  analysisIdentifier?: string;
   drawerType?: "District" | "Site";
   cacheStatus?: "Cached" | "NewlyGenerated";
 
@@ -37,7 +41,9 @@ export interface SchoolieFeedbackContext {
   districtId?: string;
   platform?: "SchoolCafe" | "PrimeroEdge";
   sourceEntryPoint: SchoolieSourceEntryPoint;
+  feedbackType?: FeedbackType;
   kpiIdentifier?: string;
+  analysisIdentifier?: string;
   drawerType?: "District" | "Site";
   dateRange?: string;
   promptType?: string;
@@ -56,8 +62,10 @@ export interface FeedbackRecord {
   userId: string;
   districtId: string;
   platform: "SchoolCafe" | "PrimeroEdge";
+  feedbackType: FeedbackType;
   sourceEntryPoint: SchoolieSourceEntryPoint;
   kpiIdentifier?: string;
+  analysisIdentifier?: string;
   drawerType?: "District" | "Site";
   promptType: string;
   promptVersion: number;
@@ -79,7 +87,9 @@ export interface FeedbackContextKey {
   userId: string;
   districtId: string;
   sourceEntryPoint: SchoolieSourceEntryPoint;
+  feedbackType?: FeedbackType;
   kpiIdentifier?: string;
+  analysisIdentifier?: string;
   dateRange?: string;
   promptVersion?: number;
 }

@@ -8,6 +8,7 @@ import { mockSchoolENPData } from '../../../data/mockENPSchoolData';
 import { KPISummary } from '../KPISummary';
 import { KPIAbout } from '../KPIAbout';
 import { ENPProgramGrid } from './ENPProgramGrid';
+import { ProductFeedback } from '../../Feedback/ProductFeedback';
 
 interface SingleSchoolENPDrawerProps {
   isOpen: boolean;
@@ -139,6 +140,12 @@ export function SingleSchoolENPDrawer({
               certified for Free or Reduced-price meals but choose not to eat the school meal on a given day.
             </p>
           } />
+          <ProductFeedback
+            feedbackType='Insights'
+            variant='drawer'
+            sourceEntryPoint='KpiDrawer'
+            analysisIdentifier='ENP_SingleSchool'
+          />
         </div>
       </div>
     </div>

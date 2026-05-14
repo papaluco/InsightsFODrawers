@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, useCallback, useRef, useEffect } from 'react';
 import { SchoolieDrawer } from '../components/InsightsDashboard/SchoolieDrawer';
-import type { SchoolieSourceEntryPoint } from '../types/schoolieFeedbackTypes';
+import { ProductFeedback } from '../components/Feedback/ProductFeedback';
+import type { SchoolieSourceEntryPoint } from '../types/feedbackTypes';
 import { trackInsightsEvent } from '../services/insightsUsageService';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
@@ -260,6 +261,15 @@ function InsightsPage() {
           onOpenAIENP={handleOpenENPWithAI}
           onOpenAIPNA={handleOpenPNAWithAI}
         />
+
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <ProductFeedback
+            feedbackType='Insights'
+            variant='dashboard'
+            sourceEntryPoint='Dashboard'
+            analysisIdentifier='InsightsDashboard'
+          />
+        </div>
       </div>
 
       {schoolieDrawer && (

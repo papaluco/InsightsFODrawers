@@ -1,5 +1,5 @@
 import { SchooliePrompt, SchoolieVersion, KPIKey, AIResponsePayload } from '../types/SchoolieTypes';
-import type { FeedbackRecord } from '../types/schoolieFeedbackTypes';
+import type { FeedbackRecord } from '../types/feedbackTypes';
 import { initialSchooliePrompts } from '../data/mockSchoolieData';
 import { mockSchoolieVersions } from '../data/mockSchoolieVersions';
 import { mockAIResponses } from '../data/mockAIResponses';

@@ -4,6 +4,7 @@ import { MPLHDetails } from './MPLHDetails';
 import { SchoolMPLHData } from '../../../data/mockMPLHData';
 import { SchoolieIcon } from '../../Common/Icons';
 import { AIKPIDrawer } from '../AIKPIDrawer';
+import { ProductFeedback } from '../../Feedback/ProductFeedback';
 
 // --- NEW IMPORTS FOR EXPORT ENGINE ---
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
@@ -209,6 +210,12 @@ useEffect(() => {
               onOpenSingleSchool={onOpenSingleSchool}
             />
           </div>
+          <ProductFeedback
+            feedbackType='Insights'
+            variant='drawer'
+            sourceEntryPoint='KpiDrawer'
+            analysisIdentifier='MPLH'
+          />
         </div>
       </div>
 

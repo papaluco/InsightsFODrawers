@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, ThumbsUp, ThumbsDown } from 'lucide-react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import { USER_DISPLAY_NAMES, DISTRICT_DISPLAY_NAMES } from '../../../data/mockFeedbackData';
 import { getPromptName, getPromptTypeDisplay, getReasonDisplay } from './feedbackHelpers';
 

@@ -4,6 +4,7 @@ import { mockPNAData } from '../../../data/mockPNAData';
 import { KPISummary } from '../KPISummary';
 import { KPIAbout } from '../KPIAbout';
 import { PNASchoolGrid } from './PNASchoolGrid';
+import { ProductFeedback } from '../../Feedback/ProductFeedback';
 
 interface SingleSchoolPNADrawerProps {
   isOpen: boolean;
@@ -131,6 +132,12 @@ export function SingleSchoolPNADrawer({
               but do not actually have a meal application or direct certification on file.
             </p>
           } />
+          <ProductFeedback
+            feedbackType='Insights'
+            variant='drawer'
+            sourceEntryPoint='KpiDrawer'
+            analysisIdentifier='PNA_SingleSchool'
+          />
         </div>
       </div>
     </div>

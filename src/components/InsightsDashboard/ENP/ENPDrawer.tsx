@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { ENPDetails } from './ENPDetails';
 import { SchoolieIcon } from '../../Common/Icons';
 import { AIKPIDrawer } from '../AIKPIDrawer';
+import { ProductFeedback } from '../../Feedback/ProductFeedback';
 import { trackInsightsEvent } from '../../../services/insightsUsageService';
 
 interface ENPDrawerProps {
@@ -102,6 +103,12 @@ export function ENPDrawer({
               benchmarkENP={benchmarkENP}
               onOpenSingleSchool={onOpenSingleSchool}
               onClose={onClose}
+            />
+            <ProductFeedback
+              feedbackType='Insights'
+              variant='drawer'
+              sourceEntryPoint='KpiDrawer'
+              analysisIdentifier='ENP'
             />
           </div>
         </div>

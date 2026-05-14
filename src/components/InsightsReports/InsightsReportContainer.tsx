@@ -3,6 +3,7 @@ import { UnifiedReport, ReportSource, ReportHistoryItem } from '../../types/Repo
 import { getReports, getReportHistory, toggleStarReport } from '../../services/insightsReportService';
 import { trackReportEvent } from '../../services/reportUsageService';
 import ReportListTable from './ReportListTable';
+import { ProductFeedback } from '../Feedback/ProductFeedback';
 import StarredReportsGrid from './StarredReportsGrid';
 import ReportSidebar from './ReportSidebar';
 import ReportFilters from './ReportFilters';
@@ -317,6 +318,15 @@ const InsightsReportsContainer: React.FC = () => {
         </aside>
       </div>
       
+      <div className="mt-8 pt-8 border-t border-gray-200">
+        <ProductFeedback
+          feedbackType='Reports'
+          variant='dashboard'
+          sourceEntryPoint='Dashboard'
+          analysisIdentifier='ReportsDashboard'
+        />
+      </div>
+
       <React.Suspense fallback={null}>
         {/* RECENT REPORTS DRAWER */}
         {historyDrawer.isOpen && (

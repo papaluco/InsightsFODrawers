@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ThumbsUp, ThumbsDown, MessageSquare, GripVertical } from 'lucide-react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import {
   FilterIcon,
   SettingsIcon,

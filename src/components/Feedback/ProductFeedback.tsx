@@ -1,31 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { ThumbsUp, ThumbsDown, Loader2, CheckCircle } from 'lucide-react';
-import {
-  SchoolieFeedbackContext,
+import type {
+  FeedbackType,
   SchoolieFeedbackPayload,
   SchoolieFeedbackValue,
   FeedbackContextKey,
-} from '../../../types/schoolieFeedbackTypes';
-import { SCHOOLIE_FEEDBACK_REASONS } from '../../../constants/schoolieFeedbackConstants';
+  SchoolieSourceEntryPoint,
+} from '../../types/feedbackTypes';
 import {
   submitFeedback,
   updateFeedback,
   getExistingFeedback,
-} from '../../../services/schoolieFeedbackService';
+} from '../../services/feedbackService';
+import { FEEDBACK_REASONS } from './feedbackConstants';
 
-interface SchoolieFeedbackProps {
-  context: SchoolieFeedbackContext;
+interface ProductFeedbackProps {
+  feedbackType: FeedbackType;
+  sourceEntryPoint: string;
+  analysisIdentifier: string;
+  variant: 'drawer' | 'dashboard';
 }
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'error';
 
-export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) => {
+export const ProductFeedback: React.FC<ProductFeedbackProps> = ({
+  feedbackType,
+  sourceEntryPoint,
+  analysisIdentifier,
+  variant,
+}) => {
   const [feedbackValue, setFeedbackValue] = useState<SchoolieFeedbackValue | null>(null);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [comment, setComment] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [existingFeedbackId, setExistingFeedbackId] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const reasons = FEEDBACK_REASONS[feedbackType];
 
   useEffect(() => {
     if (submitState !== 'success') return;
@@ -34,17 +45,16 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
     return () => clearTimeout(timer);
   }, [submitState]);
 
-  // Check for pre-existing feedback on mount so returning users see their prior selection.
   useEffect(() => {
     const checkExisting = async () => {
       try {
         const key: FeedbackContextKey = {
-          userId: context.userId ?? 'demo-user',
-          districtId: context.districtId ?? 'demo-district',
-          sourceEntryPoint: context.sourceEntryPoint,
-          kpiIdentifier: context.kpiIdentifier,
-          dateRange: context.dateRange,
-          promptVersion: context.promptVersion ?? 1,
+          userId: 'demo-user',
+          districtId: 'demo-district',
+          sourceEntryPoint: sourceEntryPoint as SchoolieSourceEntryPoint,
+          feedbackType,
+          analysisIdentifier,
+          promptVersion: 1,
         };
         const existing = await getExistingFeedback(key);
         if (existing) {
@@ -55,7 +65,7 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
           setSubmitState('success');
         }
       } catch {
-        // Silently ignore — don't block the UI if the check fails
+        // Don't block the UI if the check fails
       }
     };
     checkExisting();
@@ -64,40 +74,33 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
 
   function buildPayload(
     value: SchoolieFeedbackValue,
-    reasons: string[],
+    reasonCodes: string[],
     userComment: string
   ): SchoolieFeedbackPayload {
     return {
-      userId: context.userId ?? 'demo-user',
-      districtId: context.districtId ?? 'demo-district',
-      platform: context.platform ?? 'SchoolCafe',
-      sourceEntryPoint: context.sourceEntryPoint,
+      userId: 'demo-user',
+      districtId: 'demo-district',
+      platform: 'SchoolCafe',
+      sourceEntryPoint: sourceEntryPoint as SchoolieSourceEntryPoint,
+      feedbackType,
       feedbackValue: value,
-      promptType: context.promptType ?? 'kpi_analysis',
-      promptVersion: context.promptVersion ?? 1,
-      promptText: context.promptText ?? '',
-      responseText: context.responseText,
-      responseJson: context.responseJson,
-      kpiIdentifier: context.kpiIdentifier,
-      drawerType: context.drawerType,
-      cacheStatus: context.cacheStatus,
-      reasonCodes: reasons.length > 0 ? reasons : undefined,
+      analysisIdentifier,
+      promptType: 'product_feedback',
+      promptVersion: 1,
+      promptText: '',
+      reasonCodes: reasonCodes.length > 0 ? reasonCodes : undefined,
       comment: userComment.trim() || undefined,
-      contextJson: {
-        dateRange: context.dateRange,
-        ...context.contextJson,
-      },
     };
   }
 
   async function doSubmit(
     value: SchoolieFeedbackValue,
-    reasons: string[],
+    reasonCodes: string[],
     userComment: string
   ) {
     setSubmitState('submitting');
     try {
-      const payload = buildPayload(value, reasons, userComment);
+      const payload = buildPayload(value, reasonCodes, userComment);
       if (existingFeedbackId) {
         const updated = await updateFeedback(existingFeedbackId, payload);
         setExistingFeedbackId(updated.feedbackId);
@@ -121,7 +124,6 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
   const handleThumbsDown = () => {
     if (feedbackValue === 'thumbs_down' && submitState === 'success') return;
     setFeedbackValue('thumbs_down');
-    // Reset to idle so reason panel appears
     if (submitState === 'success') setSubmitState('idle');
   };
 
@@ -131,24 +133,17 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
     );
   };
 
-  const handleSubmitThumbsDown = () => {
-    doSubmit('thumbs_down', selectedReasons, comment);
-  };
-
   const isSubmitting = submitState === 'submitting';
   const isSuccess = submitState === 'success';
   const showReasonPanel = feedbackValue === 'thumbs_down' && !isSuccess;
   const otherSelected = selectedReasons.includes('other');
 
-  return (
-    <div className="mt-6 pt-5 border-t border-gray-100">
-
-      {/* Thumbs row */}
+  const content = (
+    <>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <span className="text-sm text-gray-400">Was this analysis helpful?</span>
+        <span className="text-sm text-gray-400">Was this helpful?</span>
 
         <div className="flex items-center space-x-2">
-          {/* Thumbs Up */}
           <button
             onClick={handleThumbsUp}
             disabled={isSubmitting}
@@ -159,13 +154,10 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
                 : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
             }`}
           >
-            <ThumbsUp
-              className={`w-4 h-4 ${feedbackValue === 'thumbs_up' ? 'fill-green-500 text-green-500' : ''}`}
-            />
+            <ThumbsUp className={`w-4 h-4 ${feedbackValue === 'thumbs_up' ? 'fill-green-500 text-green-500' : ''}`} />
             <span>Helpful</span>
           </button>
 
-          {/* Thumbs Down */}
           <button
             onClick={handleThumbsDown}
             disabled={isSubmitting}
@@ -176,15 +168,12 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
                 : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
             }`}
           >
-            <ThumbsDown
-              className={`w-4 h-4 ${feedbackValue === 'thumbs_down' ? 'fill-red-400 text-red-400' : ''}`}
-            />
+            <ThumbsDown className={`w-4 h-4 ${feedbackValue === 'thumbs_down' ? 'fill-red-400 text-red-400' : ''}`} />
             <span>Not helpful</span>
           </button>
         </div>
       </div>
 
-      {/* Submission confirmation — fades away after 5 s */}
       {showConfirmation && (
         <div className="mt-3 flex items-center space-x-2 text-sm text-gray-400 animate-in fade-in duration-300">
           <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
@@ -192,14 +181,12 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
         </div>
       )}
 
-      {/* Save error */}
       {submitState === 'error' && (
         <p className="mt-2 text-xs text-red-500 animate-in fade-in duration-200">
           Couldn't save your feedback — please try again.
         </p>
       )}
 
-      {/* Thumbs down: reason panel */}
       {showReasonPanel && (
         <div className="mt-4 animate-in fade-in duration-200">
           <p className="text-xs font-medium text-gray-500 mb-2">
@@ -207,9 +194,8 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
             <span className="font-normal text-gray-400">(optional)</span>
           </p>
 
-          {/* Reason chips */}
           <div className="flex flex-wrap gap-2 mb-3">
-            {SCHOOLIE_FEEDBACK_REASONS.map(reason => (
+            {reasons.map(reason => (
               <button
                 key={reason.code}
                 onClick={() => toggleReason(reason.code)}
@@ -225,7 +211,6 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
             ))}
           </div>
 
-          {/* Comment box — shown when "Other" is selected */}
           {otherSelected && (
             <textarea
               value={comment}
@@ -237,9 +222,8 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
             />
           )}
 
-          {/* Submit button */}
           <button
-            onClick={handleSubmitThumbsDown}
+            onClick={() => doSubmit('thumbs_down', selectedReasons, comment)}
             disabled={isSubmitting}
             className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -254,6 +238,20 @@ export const SchoolieFeedback: React.FC<SchoolieFeedbackProps> = ({ context }) =
           </button>
         </div>
       )}
+    </>
+  );
+
+  if (variant === 'dashboard') {
+    return (
+      <div className="max-w-[480px] mx-auto py-2">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 pt-5 border-t border-gray-100">
+      {content}
     </div>
   );
 };

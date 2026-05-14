@@ -3,6 +3,7 @@ import { X, Target, Loader2 } from 'lucide-react';
 import { PNADetails } from './PNADetails';
 import { SchoolieIcon } from '../../Common/Icons';
 import { AIKPIDrawer } from '../AIKPIDrawer';
+import { ProductFeedback } from '../../Feedback/ProductFeedback';
 import { trackInsightsEvent } from '../../../services/insightsUsageService';
 
 interface PNADrawerProps {
@@ -117,6 +118,12 @@ export function PNADrawer({
             actualPNA={actualPNA}
             targetPNA={targetPNA}
             onOpenSingleSchool={onOpenSingleSchool}
+          />
+          <ProductFeedback
+            feedbackType='Insights'
+            variant='drawer'
+            sourceEntryPoint='KpiDrawer'
+            analysisIdentifier='PNA'
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import FeedbackPieChart, { PieDataItem } from './FeedbackPieChart';
 import { getPromptName } from './feedbackHelpers';
 

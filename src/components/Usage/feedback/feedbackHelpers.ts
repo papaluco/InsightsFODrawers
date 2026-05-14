@@ -1,4 +1,4 @@
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 
 export interface DashboardFilters {
   promptType: string;

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, Send, AlertTriangle } from 'lucide-react';
 import { SchoolieIcon } from '../../Common/Icons';
-import { FeedbackRecord } from '../../../types/schoolieFeedbackTypes';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import { DashboardFilters } from './feedbackHelpers';
 import { getFeedbackChatResponse } from '../../../services/schoolieService';
 

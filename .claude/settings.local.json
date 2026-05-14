@@ -1,6 +1,12 @@
 {
+  "autoApprove": true,
+  "dangerouslySkipPermissions": false,
   "permissions": {
     "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Bash(npx *)",
+      "PowerShell(*)",
       "PowerShell(cd \"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\"; Get-ChildItem -Path \"src\" -Recurse -Directory | Select-Object -ExpandProperty FullName | ForEach-Object { $_ -replace [regex]::Escape\\(\"c:\\\\Users\\\\Johnathon\\\\OneDrive\\\\Documents\\\\GitHub\\\\InsightsFODrawers\\\\\"\\), '' } | Where-Object { $_ -match '^src' } | Sort-Object | Select-Object -First 20)",
       "Bash(xargs grep *)",
       "Bash(Get-ChildItem -Directory)",
@@ -27,5 +33,29 @@
   "enabledMcpjsonServers": [
     "supabase"
   ],
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tsc --noEmit"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tsc --noEmit && npx eslint src/"
+          }
+        ]
+      }
+    ]
+  }
 }
