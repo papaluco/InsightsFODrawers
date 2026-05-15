@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef, lazy, Suspense } from 'react';
 import {
   ReportUsageEvent,
   ReportUsageFilters,
@@ -20,15 +20,19 @@ import { EVENT_COLORS } from '../../Usage/common/usageHelpers';
 import { getUsageEventFriendlyName } from '../../../constants/usageEventTypes';
 import ReportsUsageFilters from './ReportsUsageFilters';
 import ReportsKPICards from './ReportsKPICards';
-import ReportsPopularityChart from './ReportsPopularityChart';
-import ReportsPieChart from './ReportsPieChart';
-import ReportsModuleChart from './ReportsModuleChart';
-import ReportsEntryPointChart from './ReportsEntryPointChart';
-import ReportsGrid from './ReportsGrid';
-import ReportsUserGrid from './ReportsUserGrid';
-import ReportsDistrictGrid from './ReportsDistrictGrid';
-import ReportEventListDrawer from './ReportEventListDrawer';
-import ReportsUserDetailPage from './ReportsUserDetailPage';
+
+// Lazy load the Tab Content
+const ReportsPopularityChart = lazy(() => import('./ReportsPopularityChart'));
+const ReportsPieChart = lazy(() => import('./ReportsPieChart'));
+const ReportsModuleChart = lazy(() => import('./ReportsModuleChart'));
+const ReportsEntryPointChart = lazy(() => import('./ReportsEntryPointChart'));
+const ReportsGrid = lazy(() => import('./ReportsGrid'));
+const ReportsUserGrid = lazy(() => import('./ReportsUserGrid'));
+const ReportsDistrictGrid = lazy(() => import('./ReportsDistrictGrid'));
+const ReportsUserDetailPage = lazy(() => import('./ReportsUserDetailPage'));
+
+// Lazy load the Drawer
+const ReportEventListDrawer = lazy(() => import('./ReportEventListDrawer'));
 
 type Tab = 'overview' | 'reports' | 'users' | 'districts';
 
@@ -195,6 +199,7 @@ const ReportsUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
         </div>
       </div>
 
+<Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse text-gray-400">Loading Report Insights...</div>}>
       {/* Overview tab */}
       {tab === 'overview' && (
         <div className="space-y-5">
@@ -263,13 +268,17 @@ const ReportsUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
           <ReportsDistrictGrid data={districtStats} />
         </div>
       )}
+</Suspense>
 
-      <ReportEventListDrawer
-        events={drill?.events ?? []}
-        title={drill?.title ?? ''}
-        isOpen={drill !== null}
-        onClose={() => setDrill(null)}
-      />
+
+      <Suspense fallback={null}>
+  <ReportEventListDrawer
+    events={drill?.events ?? []}
+    title={drill?.title ?? ''}
+    isOpen={drill !== null}
+    onClose={() => setDrill(null)}
+  />
+</Suspense>
     </div>
   );
 };

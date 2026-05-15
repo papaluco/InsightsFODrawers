@@ -1,12 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { SchoolieUsageFilters } from '../../../types/schoolieUsageTypes';
 import { getSchoolieUsageSummary } from '../../../services/schoolieUsageService';
 import { TAB_COLORS } from '../common/usageHelpers';
-import SchoolieOverviewTab from './SchoolieOverviewTab';
-import SchoolieAdoptionTab from './SchoolieAdoptionTab';
-import SchoolieEngagementTab from './SchoolieEngagementTab';
-import ScholieSatisfactionTab from './ScholieSatisfactionTab';
-import SchoolieOperationalHealthTab from './SchoolieOperationalHealthTab';
+
+const SchoolieOverviewTab = lazy(() => import('./SchoolieOverviewTab'));
+const SchoolieEngagementTab = lazy(() => import('./SchoolieEngagementTab'));
+const SchoolieAdoptionTab = lazy(() => import('./ScholieSatisfactionTab'));
+const ScholieSatisfactionTab = lazy(() => import('./ScholieSatisfactionTab'));
+const SchoolieOperationalHealthTab = lazy(() => import('./SchoolieOperationalHealthTab'));
 
 type Tab = 'overview' | 'adoption' | 'engagement' | 'satisfaction' | 'operational' | string;
 
@@ -71,12 +72,14 @@ const SchoolieUsageDashboard: React.FC<Props> = ({ filters, onDataUpdate, onTabC
         </div>
       </div>
 
-      {/* Tab content */}
-      {tab === 'overview' && <SchoolieOverviewTab filters={filters} onTabChange={setTab} />}
-      {tab === 'adoption' && <SchoolieAdoptionTab filters={filters} onTabChange={setTab} />}
-      {tab === 'engagement' && <SchoolieEngagementTab filters={filters} onTabChange={setTab} />}
-      {tab === 'satisfaction' && <ScholieSatisfactionTab filters={filters} onTabChange={setTab} />}
-      {tab === 'operational' && <SchoolieOperationalHealthTab filters={filters} onTabChange={setTab} />}
+      <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse text-purple-400">Loading Tab...</div>}>
+        {/* Tab content */}
+        {tab === 'overview' && <SchoolieOverviewTab filters={filters} onTabChange={setTab} />}
+        {tab === 'adoption' && <SchoolieAdoptionTab filters={filters} onTabChange={setTab} />}
+        {tab === 'engagement' && <SchoolieEngagementTab filters={filters} onTabChange={setTab} />}
+        {tab === 'satisfaction' && <ScholieSatisfactionTab filters={filters} onTabChange={setTab} />}
+        {tab === 'operational' && <SchoolieOperationalHealthTab filters={filters} onTabChange={setTab} />}
+      </Suspense>
     </div>
   );
 };

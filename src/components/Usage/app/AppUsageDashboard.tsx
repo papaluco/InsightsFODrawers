@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 
 import {
   AppUsageEvent,
@@ -17,27 +17,22 @@ import {
   getAppSessionStats,
 } from '../../../services/appUsageService';
 import { applyAppFilters } from './appUsageHelpers';
-import { PAGE_COLORS, ENTRY_POINT_COLORS, ENTRY_POINT_LABELS, CHART_COLORS } from '../common/usageHelpers';
+import { ENTRY_POINT_LABELS } from '../common/usageHelpers';
 import AppUsageFiltersBar from './AppUsageFilters';
-import AppUsageOverviewKPICards from './AppUsageOverviewKPICards';
-import AppUsageOverviewChart from './AppUsageOverviewChart';
-import AppSessionFreqChart from './AppSessionFreqChart';
-import AppUserKPICards from './AppUserKPICards';
-import AppUserGrid from './AppUserGrid';
-import AppDistrictKPICards from './AppDistrictKPICards';
-import AppDistrictGrid from './AppDistrictGrid';
-import AppSessionKPICards from './AppSessionKPICards';
-import AppSessionGrid from './AppSessionGrid';
-import AppEventListDrawer from './AppEventListDrawer';
-import AppSessionDetailDrawer from './AppSessionDetailDrawer';
-import AppTimingPanel from './AppTimingPanel';
-import AppFunnelPanel from './AppFunnelPanel';
-import ReportsPieChart from '../reports/ReportsPieChart';
-import AppUserListDrawer from './AppUserListDrawer';
-import AppDistrictListDrawer from './AppDistrictListDrawer';
-import AppSessionListDrawer from './AppSessionListDrawer';
-import AppUserDetailDrawer from './AppUserDetailDrawer';
-import AppDistrictDetailDrawer from './AppDistrictDetailDrawer';
+
+const AppOverviewTab = lazy(() => import('./AppOverviewTab'));
+const AppUsersTab = lazy(() => import('./AppUsersTab'));
+const AppDistrictsTab = lazy(() => import('./AppDistrictsTab'));
+const AppSessionsTab = lazy(() => import('./AppSessionsTab'));
+const AppEventListDrawer = lazy(() => import('./AppEventListDrawer'));
+const AppSessionDetailDrawer = lazy(() => import('./AppSessionDetailDrawer'));
+const AppUserListDrawer = lazy(() => import('./AppUserListDrawer'));
+const AppDistrictListDrawer = lazy(() => import('./AppDistrictListDrawer'));
+const AppSessionListDrawer = lazy(() => import('./AppSessionListDrawer'));
+const AppUserDetailDrawer = lazy(() => import('./AppUserDetailDrawer'));
+const AppDistrictDetailDrawer = lazy(() => import('./AppDistrictDetailDrawer'));
+const AppTimingPanel = lazy(() => import('./AppTimingPanel'));
+const AppFunnelPanel = lazy(() => import('./AppFunnelPanel'));
 
 type Tab = 'overview' | 'users' | 'districts' | 'sessions' | 'timing' | 'funnel';
 
@@ -119,8 +114,6 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
       .sort((a, b) => b.value - a.value);
   }, [filteredEvents]);
 
-  const pageUsageColors = pageUsageData.map(d => PAGE_COLORS[d.name] ?? CHART_COLORS[0]);
-
   const entryPointData = useMemo(() => {
     const counts = new Map<string, number>();
     for (const e of filteredEvents) {
@@ -132,24 +125,6 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
   }, [filteredEvents]);
-
-  const entryPointColors = entryPointData.map(d => {
-    const key = Object.entries(ENTRY_POINT_LABELS).find(([, v]) => v === d.name)?.[0];
-    return key ? (ENTRY_POINT_COLORS[key] ?? CHART_COLORS[0]) : CHART_COLORS[0];
-  });
-
-  const platformData = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const e of filteredEvents) {
-      const platform = e.platform || 'Unknown';
-      counts.set(platform, (counts.get(platform) ?? 0) + 1);
-    }
-    return [...counts.entries()]
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
-  }, [filteredEvents]);
-
-  const platformColors = platformData.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
   // --- Drawer stack helpers ---
 
@@ -190,23 +165,6 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
     pushDrawer('district-detail');
   };
   const closeDistrictDetail = () => { setIsDistrictDetailOpen(false); popDrawer('district-detail'); };
-
-  // --- Drill helpers ---
-
-  const drillByPage = (pageName: string) =>
-    openEventList({ events: filteredEvents.filter(e => e.page === pageName), title: `Events — ${pageName}` });
-
-  const drillByEntryPoint = (label: string) => {
-    const key = Object.entries(ENTRY_POINT_LABELS).find(([, v]) => v === label)?.[0];
-    if (!key) return;
-    openEventList({ events: filteredEvents.filter(e => e.context.entryPoint === key), title: `Entry Point — ${label}` });
-  };
-
-  const drillByPlatform = (platformName: string) =>
-    openEventList({ events: filteredEvents.filter(e => e.platform === platformName), title: `Events — Platform: ${platformName}` });
-
-  const drillByUser = (user: AppUserStatRow) =>
-    openEventList({ events: filteredEvents.filter(e => e.userId === user.userId), title: `Events — ${user.userName}` });
 
   const drillToUsers = (title: string, users: AppUserStatRow[]) => setUserDrill({ title, users });
   const drillToDistricts = (title: string, districts: AppDistrictStatRow[]) => setDistrictDrill({ title, districts });
@@ -271,153 +229,104 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
         </div>
       </div>
 
-      {/* Overview tab */}
-      {tab === 'overview' && (
-        <div className="space-y-5">
-          {summary && (
-            <AppUsageOverviewKPICards
-              summary={summary}
-              onActiveUsersClick={() => drillToUsers('Active Users', userStats)}
-              onActiveDistrictsClick={() => drillToDistricts('Active Districts', districtStats.filter(d => !d.hasNoActivity))}
-              onSessionsClick={() => drillToSessions('Sessions', sessionStats)}
-              onNewUsersClick={() => drillToUsers('New Users', userStats)}
-            />
-          )}
-          <AppUsageOverviewChart events={filteredEvents} />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <ReportsPieChart
-              data={pageUsageData}
-              title="Page Usage Breakdown"
-              colors={pageUsageColors}
-              onSegmentClick={drillByPage}
-              emptyMessage="No page view data available"
-            />
-            <ReportsPieChart
-              data={entryPointData}
-              title="Entry Point Breakdown"
-              colors={entryPointColors}
-              onSegmentClick={drillByEntryPoint}
-              emptyMessage="No entry point data available"
-            />
-            <ReportsPieChart
-              data={platformData}
-              title="Platform Breakdown"
-              colors={platformColors}
-              onSegmentClick={drillByPlatform}
-              emptyMessage="No platform data available"
-            />
-          </div>
-          <AppSessionFreqChart events={filteredEvents} />
-        </div>
-      )}
-
-      {/* Users tab */}
-      {tab === 'users' && (
-        <div className="space-y-5">
-          <AppUserKPICards
-            data={userStats}
-            onActiveUsersClick={() => drillToUsers('Active Users', userStats)}
-            onNewUsersClick={() => drillToUsers('New Users', userStats.filter(u => u.isPowerUser === false && u.sessions <= 2))}
-            onReturningUsersClick={() => drillToUsers('Returning Users', userStats.filter(u => u.sessions > 2))}
-            onPowerUsersClick={() => drillToUsers('Power Users', userStats.filter(u => u.isPowerUser))}
-            onAvgSessionsClick={() => drillToSessions('User Sessions', sessionStats)}
+     {/* Tab Content Section */}
+      <Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse text-gray-400">Loading Tab Content...</div>}>
+        {/* Overview tab */}
+        {tab === 'overview' && (
+          <AppOverviewTab
+            summary={summary}
+            filteredEvents={filteredEvents}
+            userStats={userStats}
+            districtStats={districtStats}
+            sessionStats={sessionStats}
+            pageUsageData={pageUsageData}
+            entryPointData={entryPointData}
+            onDrillToUsers={drillToUsers}
+            onDrillToDistricts={drillToDistricts}
+            onDrillToSessions={drillToSessions}
+            onOpenEventList={(events, title) => openEventList({ events, title })}
           />
-          <AppUserGrid
-            data={userStats}
+        )}
+
+        {/* Users tab */}
+        {tab === 'users' && (
+          <AppUsersTab
+            userStats={userStats}
+            sessionStats={sessionStats}
+            districtStats={districtStats}
+            filteredEvents={filteredEvents}
+            onDrillToUsers={drillToUsers}
+            onDrillToSessions={drillToSessions}
+            onOpenUserDetail={openUserDetail}
+            onOpenDistrictDetail={openDistrictDetail}
+            onOpenEventList={(events, title) => openEventList({ events, title })}
+          />
+        )}
+
+        {/* Districts tab */}
+        {tab === 'districts' && (
+          <AppDistrictsTab
+            districtStats={districtStats}
+            userStats={userStats}
+            sessionStats={sessionStats}
+            onDrillToDistricts={drillToDistricts}
+            onDrillToUsers={drillToUsers}
+            onDrillToSessions={drillToSessions}
+            onOpenDistrictDetail={openDistrictDetail}
+          />
+        )}
+
+        {/* Sessions tab */}
+        {tab === 'sessions' && (
+          <AppSessionsTab
+            sessionStats={sessionStats}
+            userStats={userStats}
+            districtStats={districtStats}
+            filteredEvents={filteredEvents}
+            onDrillToSessions={drillToSessions}
+            onOpenSessionDetail={openSessionDetail}
+            onOpenUserDetail={openUserDetail}
+            onOpenDistrictDetail={openDistrictDetail}
+            onOpenEventList={(events, title) => openEventList({ events, title })}
+          />
+        )}
+
+        {/* Timing tab */}
+        {tab === 'timing' && (
+          <AppTimingPanel
+            districtStats={districtStats}
+            filteredEvents={filteredEvents}
+            sessionStats={sessionStats}
+            users={userStats}
+            onSessionClick={openSessionDetail}
+            onUsersClick={(title, users) => drillToUsers(title, users)}
+            onEventsClick={(title, events) => openEventList({ title, events })}
+          />
+        )}
+
+        {/* Funnel tab */}
+        {tab === 'funnel' && (
+          <AppFunnelPanel
+            filters={filters}
+            filteredEvents={filteredEvents}
+            users={userStats}
+            sessions={sessionStats}
             onUserClick={openUserDetail}
-            onSessionsClick={user =>
-              drillToSessions(
-                `Sessions — ${user.userName}`,
-                sessionStats.filter(s => s.userId === user.userId)
-              )
-            }
-            onDistrictClick={user => {
-              const district = districtStats.find(d => d.districtId === user.districtId);
-              if (district) openDistrictDetail(district);
-            }}
-            onRowClick={drillByUser}
+            onSessionClick={openSessionDetail}
           />
-        </div>
-      )}
+        )}
+      </Suspense>
 
-      {/* Districts tab */}
-      {tab === 'districts' && (
-        <div className="space-y-5">
-          <AppDistrictKPICards
-            data={districtStats}
-            onActiveDistrictsClick={() => drillToDistricts('Active Districts', districtStats.filter(d => !d.hasNoActivity))}
-            onNoActivityClick={() => drillToDistricts('Districts with No Activity', districtStats.filter(d => d.hasNoActivity))}
-            onAvgUsersClick={() => drillToUsers('Users by District', userStats)}
-            onAvgSessionsClick={() => drillToSessions('District Sessions', sessionStats)}
-          />
-          <AppDistrictGrid
-            data={districtStats}
-            onRowClick={openDistrictDetail}
-            onUsersClick={district =>
-              drillToUsers(
-                `Users — ${district.districtName}`,
-                userStats.filter(u => u.districtId === district.districtId)
-              )
-            }
-            onSessionsClick={district =>
-              drillToSessions(
-                `Sessions — ${district.districtName}`,
-                sessionStats.filter(s => s.districtId === district.districtId)
-              )
-            }
-          />
-        </div>
-      )}
-
-      {/* Sessions tab */}
-      {tab === 'sessions' && (
-        <div className="space-y-5">
-          <AppSessionKPICards
-            data={sessionStats}
-            onTotalSessionsClick={() => drillToSessions('Total Sessions', sessionStats)}
-            onSessionsPerUserClick={() => drillToSessions('Sessions by User', sessionStats)}
-            onAppClosedClick={() => drillToSessions('Sessions with App Closed', sessionStats.filter(s => s.hasAppClosed))}
-            onNoAppCloseClick={() => drillToSessions('Sessions without App Close', sessionStats.filter(s => !s.hasAppClosed))}
-          />
-          <AppSessionGrid
-            data={sessionStats}
-            onRowClick={openSessionDetail}
-            onEventsClick={session =>
-              openEventList({
-                events: filteredEvents.filter(e => e.sessionId === session.sessionId),
-                title: `Events — ${session.sessionId}`,
-              })
-            }
-            onUserClick={session => {
-              const user = userStats.find(u => u.userId === session.userId);
-              if (user) openUserDetail(user);
-            }}
-            onDistrictClick={session => {
-              const district = districtStats.find(d => d.districtId === session.districtId);
-              if (district) openDistrictDetail(district);
-            }}
-          />
-        </div>
-      )}
-
-      {/* Timing tab */}
-      {tab === 'timing' && (
-        <AppTimingPanel
-          districtStats={districtStats}
-          filteredEvents={filteredEvents}
-          sessionStats={sessionStats}
-          users={userStats}
-          onSessionClick={openSessionDetail}
-          onUsersClick={(title, users) => drillToUsers(title, users)}
-          onEventsClick={(title, events) => openEventList({ title, events })}
-        />
-      )}
-
-      {/* Funnel tab */}
-      {tab === 'funnel' && (
-        <AppFunnelPanel
-          filters={filters}
-          filteredEvents={filteredEvents}
+      <Suspense fallback={null}>  
+     {/* Event list drawer */}
+      {drill !== null && (
+        <AppEventListDrawer
+          events={drill?.events ?? []}
+          title={drill?.title ?? ''}
+          isOpen={drill !== null}
+          zIndex={getZ('event-list')}
+          isTopmost={topDrawer === 'event-list'}
+          onClose={closeEventList}
           users={userStats}
           sessions={sessionStats}
           onUserClick={openUserDetail}
@@ -425,136 +334,135 @@ const AppUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
         />
       )}
 
-      {/* Event list drawer */}
-      <AppEventListDrawer
-        events={drill?.events ?? []}
-        title={drill?.title ?? ''}
-        isOpen={drill !== null}
-        zIndex={getZ('event-list')}
-        isTopmost={topDrawer === 'event-list'}
-        onClose={closeEventList}
-        users={userStats}
-        sessions={sessionStats}
-        onUserClick={openUserDetail}
-        onSessionClick={openSessionDetail}
-      />
-
       {/* Session list drawer */}
-      <AppSessionListDrawer
-        sessions={sessionDrill?.sessions ?? []}
-        title={sessionDrill?.title ?? ''}
-        isOpen={sessionDrill !== null}
-        onClose={() => setSessionDrill(null)}
-        isChildDrawerOpen={isSessionDetailOpen || isUserDetailOpen || isDistrictDetailOpen}
-        onSessionClick={openSessionDetail}
-        onEventsClick={session =>
-          openEventList({
-            events: filteredEvents.filter(e => e.sessionId === session.sessionId),
-            title: `Events — ${session.sessionId}`,
-          })
-        }
-        onUserClick={session => {
-          const user = userStats.find(u => u.userId === session.userId);
-          if (user) openUserDetail(user);
-        }}
-        onDistrictClick={session => {
-          const district = districtStats.find(d => d.districtId === session.districtId);
-          if (district) openDistrictDetail(district);
-        }}
-      />
+      {sessionDrill !== null && (
+        <AppSessionListDrawer
+          sessions={sessionDrill?.sessions ?? []}
+          title={sessionDrill?.title ?? ''}
+          isOpen={sessionDrill !== null}
+          onClose={() => setSessionDrill(null)}
+          isChildDrawerOpen={isSessionDetailOpen || isUserDetailOpen || isDistrictDetailOpen}
+          onSessionClick={openSessionDetail}
+          onEventsClick={session =>
+            openEventList({
+              events: filteredEvents.filter(e => e.sessionId === session.sessionId),
+              title: `Events — ${session.sessionId}`,
+            })
+          }
+          onUserClick={session => {
+            const user = userStats.find(u => u.userId === session.userId);
+            if (user) openUserDetail(user);
+          }}
+          onDistrictClick={session => {
+            const district = districtStats.find(d => d.districtId === session.districtId);
+            if (district) openDistrictDetail(district);
+          }}
+        />
+      )}
 
       {/* Session detail drawer */}
-      <AppSessionDetailDrawer
-        session={selectedSession}
-        isOpen={isSessionDetailOpen}
-        zIndex={getZ('session-detail')}
-        isTopmost={topDrawer === 'session-detail'}
-        onClose={closeSessionDetail}
-      />
+      {isSessionDetailOpen && (
+        <AppSessionDetailDrawer
+          session={selectedSession}
+          isOpen={isSessionDetailOpen}
+          zIndex={getZ('session-detail')}
+          isTopmost={topDrawer === 'session-detail'}
+          onClose={closeSessionDetail}
+        />
+      )}
 
       {/* User list drawer */}
-      <AppUserListDrawer
-        users={userDrill?.users ?? []}
-        title={userDrill?.title ?? ''}
-        isOpen={userDrill !== null}
-        onClose={() => setUserDrill(null)}
-        isChildDrawerOpen={isUserDetailOpen || isSessionDetailOpen}
-        onUserClick={openUserDetail}
-        onSessionsClick={user => {
-          setUserDrill(null);
-          drillToSessions(
-            `Sessions — ${user.userName}`,
-            sessionStats.filter(s => s.userId === user.userId)
-          );
-        }}
-        onEventsClick={user => {
-          setUserDrill(null);
-          openEventList({
-            events: filteredEvents.filter(e => e.userId === user.userId),
-            title: `Events — ${user.userName}`,
-          });
-        }}
-      />
+      {userDrill !== null && (
+        <AppUserListDrawer
+          users={userDrill?.users ?? []}
+          title={userDrill?.title ?? ''}
+          isOpen={userDrill !== null}
+          onClose={() => setUserDrill(null)}
+          isChildDrawerOpen={isUserDetailOpen || isSessionDetailOpen}
+          onUserClick={openUserDetail}
+          onSessionsClick={user => {
+            setUserDrill(null);
+            drillToSessions(
+              `Sessions — ${user.userName}`,
+              sessionStats.filter(s => s.userId === user.userId)
+            );
+          }}
+          onEventsClick={user => {
+            setUserDrill(null);
+            openEventList({
+              events: filteredEvents.filter(e => e.userId === user.userId),
+              title: `Events — ${user.userName}`,
+            });
+          }}
+        />
+      )}
 
       {/* District list drawer */}
-      <AppDistrictListDrawer
-        districts={districtDrill?.districts ?? []}
-        title={districtDrill?.title ?? ''}
-        isOpen={districtDrill !== null}
-        onClose={() => setDistrictDrill(null)}
-        isChildDrawerOpen={isDistrictDetailOpen}
-        onDistrictClick={openDistrictDetail}
-        onUsersClick={district => {
-          setDistrictDrill(null);
-          drillToUsers(
-            `Users — ${district.districtName}`,
-            userStats.filter(u => u.districtId === district.districtId)
-          );
-        }}
-        onSessionsClick={district => {
-          setDistrictDrill(null);
-          drillToSessions(
-            `Sessions — ${district.districtName}`,
-            sessionStats.filter(s => s.districtId === district.districtId)
-          );
-        }}
-      />
+      {districtDrill !== null && (
+        <AppDistrictListDrawer
+          districts={districtDrill?.districts ?? []}
+          title={districtDrill?.title ?? ''}
+          isOpen={districtDrill !== null}
+          onClose={() => setDistrictDrill(null)}
+          isChildDrawerOpen={isDistrictDetailOpen}
+          onDistrictClick={openDistrictDetail}
+          onUsersClick={district => {
+            setDistrictDrill(null);
+            drillToUsers(
+              `Users — ${district.districtName}`,
+              userStats.filter(u => u.districtId === district.districtId)
+            );
+          }}
+          onSessionsClick={district => {
+            setDistrictDrill(null);
+            drillToSessions(
+              `Sessions — ${district.districtName}`,
+              sessionStats.filter(s => s.districtId === district.districtId)
+            );
+          }}
+        />
+      )}
 
       {/* User detail drawer */}
-      <AppUserDetailDrawer
-        user={selectedUser}
-        sessions={sessionStats}
-        isOpen={isUserDetailOpen}
-        zIndex={getZ('user-detail')}
-        isTopmost={topDrawer === 'user-detail'}
-        onClose={closeUserDetail}
-        onSessionClick={openSessionDetail}
-        onSessionEventsClick={session =>
-          openEventList({
-            events: filteredEvents.filter(e => e.sessionId === session.sessionId),
-            title: `Events — ${session.sessionId}`,
-          })
-        }
-        onSessionUserClick={session => {
-          const user = userStats.find(u => u.userId === session.userId);
-          if (user) openUserDetail(user);
-        }}
-        onSessionDistrictClick={session => {
-          const district = districtStats.find(d => d.districtId === session.districtId);
-          if (district) openDistrictDetail(district);
-        }}
-      />
+      {isUserDetailOpen && (
+        <AppUserDetailDrawer
+          user={selectedUser}
+          sessions={sessionStats}
+          isOpen={isUserDetailOpen}
+          zIndex={getZ('user-detail')}
+          isTopmost={topDrawer === 'user-detail'}
+          onClose={closeUserDetail}
+          onSessionClick={openSessionDetail}
+          onSessionEventsClick={session =>
+            openEventList({
+              events: filteredEvents.filter(e => e.sessionId === session.sessionId),
+              title: `Events — ${session.sessionId}`,
+            })
+          }
+          onSessionUserClick={session => {
+            const user = userStats.find(u => u.userId === session.userId);
+            if (user) openUserDetail(user);
+          }}
+          onSessionDistrictClick={session => {
+            const district = districtStats.find(d => d.districtId === session.districtId);
+            if (district) openDistrictDetail(district);
+          }}
+        />
+      )}
 
       {/* District detail drawer */}
-      <AppDistrictDetailDrawer
-        district={selectedDistrict}
-        sessions={sessionStats}
-        isOpen={isDistrictDetailOpen}
-        zIndex={getZ('district-detail')}
-        isTopmost={topDrawer === 'district-detail'}
-        onClose={closeDistrictDetail}
-        onSessionClick={openSessionDetail}
-      />
+      {isDistrictDetailOpen && (
+        <AppDistrictDetailDrawer
+          district={selectedDistrict}
+          sessions={sessionStats}
+          isOpen={isDistrictDetailOpen}
+          zIndex={getZ('district-detail')}
+          isTopmost={topDrawer === 'district-detail'}
+          onClose={closeDistrictDetail}
+          onSessionClick={openSessionDetail}
+        />
+      )}
+      </Suspense>
     </div>
   );
 };

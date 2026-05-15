@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, lazy, Suspense } from 'react';
 import { ChevronLeft, ChevronRight, Clock, Calendar, SlidersHorizontal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceArea } from 'recharts';
 import { AppUsageEvent, AppDistrictStatRow, AppSessionStatRow, AppUserStatRow } from '../../../types/appUsageTypes';
 import { getTimeOfDay } from '../../../utils/timeOfDay';
-import AppSessionListDrawer from './AppSessionListDrawer';
+const AppSessionListDrawer = lazy(() => import('./AppSessionListDrawer'));
 
 
 interface Props {
@@ -568,27 +568,27 @@ const dowData = useMemo(() => {
                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Page Views</div>
                         <div className="text-2xl font-bold text-slate-800 tabular-nums">
                           <button
-  onClick={() => {
-    const [year, month] = currentMonthStr.split('-').map(Number);
-    const firstDayMs = Date.UTC(year, month - 1, 1);
-    const lastDayMs = Date.UTC(year, month, 0);
+                            onClick={() => {
+                              const [year, month] = currentMonthStr.split('-').map(Number);
+                              const firstDayMs = Date.UTC(year, month - 1, 1);
+                              const lastDayMs = Date.UTC(year, month, 0);
 
-    const events = filteredEvents.filter(e => {
-      if (e.eventType !== 'PAGE_VIEWED') return false;
+                              const events = filteredEvents.filter(e => {
+                                if (e.eventType !== 'PAGE_VIEWED') return false;
 
-      const tz = timeBasis === 'CustomerLocalTime' ? districtTzMap[e.districtId] : undefined;
-      const date = getLocalDate(e.timestamp, tz);
-      const ms = Date.parse(`${date}T00:00:00Z`);
+                                const tz = timeBasis === 'CustomerLocalTime' ? districtTzMap[e.districtId] : undefined;
+                                const date = getLocalDate(e.timestamp, tz);
+                                const ms = Date.parse(`${date}T00:00:00Z`);
 
-      return ms >= firstDayMs && ms <= lastDayMs;
-    });
+                                return ms >= firstDayMs && ms <= lastDayMs;
+                              });
 
-    onEventsClick(`${formatMonthLabel(currentMonthStr)} Page Views`, events);
-  }}
-  className="text-2xl font-bold text-slate-800 tabular-nums hover:text-teal-600 hover:underline cursor-pointer"
->
-  {monthSummary.totalPageViews.toLocaleString()}
-</button>
+                              onEventsClick(`${formatMonthLabel(currentMonthStr)} Page Views`, events);
+                            }}
+                            className="text-2xl font-bold text-slate-800 tabular-nums hover:text-teal-600 hover:underline cursor-pointer"
+                          >
+                            {monthSummary.totalPageViews.toLocaleString()}
+                          </button>
                         </div>
                       </div>
 
@@ -596,25 +596,25 @@ const dowData = useMemo(() => {
                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Users</div>
                         <div className="text-2xl font-bold text-slate-800 tabular-nums">
                           <button
-  onClick={() => {
-    const userIds = new Set<string>();
+                            onClick={() => {
+                              const userIds = new Set<string>();
 
-    const [year, month] = currentMonthStr.split('-').map(Number);
-    const firstDayMs = Date.UTC(year, month - 1, 1);
-    const lastDayMs = Date.UTC(year, month, 0);
+                              const [year, month] = currentMonthStr.split('-').map(Number);
+                              const firstDayMs = Date.UTC(year, month - 1, 1);
+                              const lastDayMs = Date.UTC(year, month, 0);
 
-    for (let ms = firstDayMs; ms <= lastDayMs; ms += 86400000) {
-      const dateStr = new Date(ms).toISOString().slice(0, 10);
-      const d = dayDataMap.get(dateStr);
-      d?.users.forEach(id => userIds.add(id));
-    }
+                              for (let ms = firstDayMs; ms <= lastDayMs; ms += 86400000) {
+                                const dateStr = new Date(ms).toISOString().slice(0, 10);
+                                const d = dayDataMap.get(dateStr);
+                                d?.users.forEach(id => userIds.add(id));
+                              }
 
-    onUsersClick(`${formatMonthLabel(currentMonthStr)} Active Users`, getUsersForIds(userIds));
-  }}
-  className="text-2xl font-bold text-slate-800 tabular-nums hover:text-teal-600 hover:underline cursor-pointer"
->
-  {monthSummary.activeUsers.toLocaleString()}
-</button>
+                              onUsersClick(`${formatMonthLabel(currentMonthStr)} Active Users`, getUsersForIds(userIds));
+                            }}
+                            className="text-2xl font-bold text-slate-800 tabular-nums hover:text-teal-600 hover:underline cursor-pointer"
+                          >
+                            {monthSummary.activeUsers.toLocaleString()}
+                          </button>
                         </div>
                       </div>
 
@@ -955,13 +955,17 @@ const dowData = useMemo(() => {
         )}
       </div>
       
-      <AppSessionListDrawer
-        sessions={sessionDrill?.sessions ?? []}
-        title={sessionDrill?.title ?? 'Sessions'}
-        isOpen={sessionDrill !== null}
-        onClose={() => setSessionDrill(null)}
-        onSessionClick={onSessionClick}
-      />
+      <Suspense fallback={null}>
+        {sessionDrill !== null && (
+          <AppSessionListDrawer
+            sessions={sessionDrill?.sessions ?? []}
+            title={sessionDrill?.title ?? 'Sessions'}
+            isOpen={sessionDrill !== null}
+            onClose={() => setSessionDrill(null)}
+            onSessionClick={onSessionClick}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

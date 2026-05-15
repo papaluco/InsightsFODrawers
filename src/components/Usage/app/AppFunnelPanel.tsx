@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { getAppFunnelData } from '../../../services/appUsageService';
 import { APP_FUNNELS } from './appUsageHelpers';
-import AppEventListDrawer from './AppEventListDrawer';
+
 import {
   AppUsageFilters,
   AppFunnelStepResult,
@@ -11,6 +11,8 @@ import {
   AppSessionStatRow,
 } from '../../../types/appUsageTypes';
 import { getTopicTailwind } from '../common/usageHelpers';
+
+const AppEventListDrawer = lazy(() => import('./AppEventListDrawer'));
 
 
 interface Props {
@@ -269,16 +271,20 @@ const renderCategory = (
       </div>
     </div>
 
-    <AppEventListDrawer
-        events={drill?.events ?? []}
-        title={drill?.title ?? ''}
-        isOpen={drill !== null}
-        onClose={() => setDrill(null)}
-        users={users}
-        sessions={sessions}
-        onUserClick={onUserClick}
-        onSessionClick={onSessionClick}
-      />
+    <Suspense fallback={null}>
+        {drill !== null && (
+          <AppEventListDrawer
+            events={drill?.events ?? []}
+            title={drill?.title ?? ''}
+            isOpen={drill !== null}
+            onClose={() => setDrill(null)}
+            users={users}
+            sessions={sessions}
+            onUserClick={onUserClick}
+            onSessionClick={onSessionClick}
+          />
+        )}
+      </Suspense>
   </>
 );
 };

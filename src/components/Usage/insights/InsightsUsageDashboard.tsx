@@ -18,27 +18,29 @@ import {
 import { applyInsightsFilters, isInsightsInteraction, computeFunnelSteps, INSIGHT_FUNNELS } from './insightsUsageHelpers';
 import InsightsUsageFiltersBar from './InsightsUsageFilters';
 import InsightsKPICards from './InsightsKPICards';
-import InsightsFunnelChart from './InsightsFunnelChart';
-import InsightsInteractionChart from './InsightsInteractionChart';
-import InsightsCoOccurrenceMatrix from './InsightsCoOccurrenceMatrix';
-import InsightsKPIUsageChart from './InsightsKPIUsageChart';
-import InsightsSessionFreqChart from './InsightsSessionFreqChart';
 import InsightsKPIGrid from './InsightsKPIGrid';
 import InsightsUserGrid from './InsightsUserGrid';
 import InsightsUserKPICards from './InsightsUserKPICards';
-import InsightsUserEngagementChart from './InsightsUserEngagementChart';
-import InsightsUserActivityTrend from './InsightsUserActivityTrend';
 import InsightsDistrictKPICards from './InsightsDistrictKPICards';
-import InsightsDistrictEngagementChart from './InsightsDistrictEngagementChart';
-import InsightsDistrictSessionFreqChart from './InsightsDistrictSessionFreqChart';
-import InsightsDistrictActivityTrend from './InsightsDistrictActivityTrend';
 import InsightsDistrictGrid from './InsightsDistrictGrid';
 import InsightsKPITabCards from './InsightsKPITabCards';
-import InsightsKPICoOccurrenceMatrix from './InsightsKPICoOccurrenceMatrix';
 import InsightsKPIAbout from './InsightsKPIAbout';
-import InsightsOverviewActivityTrend from './InsightsOverviewActivityTrend';
-import InsightsUserDetailDrawer from './InsightsUserDetailDrawer';
+
+
 const InsightsEventListDrawer = lazy(() => import('./InsightsEventListDrawer'));
+const InsightsUserDetailDrawer = lazy(() => import('./InsightsUserDetailDrawer'));
+const InsightsFunnelChart = lazy(() => import('./InsightsFunnelChart'));
+const InsightsInteractionChart = lazy(() => import('./InsightsInteractionChart'));
+const InsightsCoOccurrenceMatrix = lazy(() => import('./InsightsCoOccurrenceMatrix'));
+const InsightsOverviewActivityTrend = lazy(() => import('./InsightsOverviewActivityTrend'));
+const InsightsKPIUsageChart = lazy(() => import('./InsightsKPIUsageChart'));
+const InsightsKPICoOccurrenceMatrix = lazy(() => import('./InsightsKPICoOccurrenceMatrix'));
+const InsightsUserEngagementChart = lazy(() => import('./InsightsUserEngagementChart'));
+const InsightsSessionFreqChart = lazy(() => import('./InsightsSessionFreqChart'));
+const InsightsUserActivityTrend = lazy(() => import('./InsightsUserActivityTrend'));
+const InsightsDistrictEngagementChart = lazy(() => import('./InsightsDistrictEngagementChart'));
+const InsightsDistrictSessionFreqChart = lazy(() => import('./InsightsDistrictSessionFreqChart'));
+const InsightsDistrictActivityTrend = lazy(() => import('./InsightsDistrictActivityTrend'));
 
 type Tab = 'overview' | 'kpis' | 'users' | 'districts';
 
@@ -174,84 +176,88 @@ const InsightsUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
         </div>
       </div>
 
-      {/* Overview */}
-      {tab === 'overview' && (
-        <div className="space-y-5">
-          {summary && (
-            <InsightsKPICards
-              summary={summary}
-              onDrill={drillByEventType}
-              onDrillInteractions={drillInteractions}
-              onTabSwitch={setTab}
-            />
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InsightsFunnelChart events={filteredEvents} />
-            <InsightsInteractionChart events={filteredEvents} onBarClick={drillByEventType} />
-          </div>
-          <InsightsCoOccurrenceMatrix events={filteredEvents} />
-          <InsightsOverviewActivityTrend events={filteredEvents} districtTimezones={districtTimezones} />
-        </div>
-      )}
-
-      {/* KPIs */}
-      {tab === 'kpis' && (
-        <div className="space-y-5">
-          <InsightsKPITabCards data={kpiStats} events={filteredEvents} />
-          <InsightsKPIUsageChart data={kpiStats} />
-          <InsightsKPIGrid data={kpiStats} />
-          <InsightsKPICoOccurrenceMatrix events={filteredEvents} />
-          
-          <InsightsKPIAbout />
-        </div>
-      )}
-
-      {/* Users */}
-      {tab === 'users' && (
-        selectedUser ? (
-          <InsightsUserDetailDrawer
-            user={selectedUser}
-            allEvents={allEvents}
-            onClose={() => setSelectedUser(null)}
-          />
-        ) : (
+      {/* Wrap Tab Content in Suspense with a loading state */}
+      <Suspense fallback={<div className="h-96 w-full animate-pulse bg-gray-50 rounded-2xl" />}>
+        {/* Overview */}
+        {tab === 'overview' && (
           <div className="space-y-5">
-            <InsightsUserKPICards data={userStats} events={filteredEvents} />
+            {summary && (
+              <InsightsKPICards
+                summary={summary}
+                onDrill={drillByEventType}
+                onDrillInteractions={drillInteractions}
+                onTabSwitch={setTab}
+              />
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <InsightsUserEngagementChart data={userStats} />
-              <InsightsSessionFreqChart events={filteredEvents} />
+              <InsightsFunnelChart events={filteredEvents} />
+              <InsightsInteractionChart events={filteredEvents} onBarClick={drillByEventType} />
             </div>
-            <InsightsUserGrid
-              data={userStats}
-              onRowClick={row => setSelectedUser(row)}
+            <InsightsCoOccurrenceMatrix events={filteredEvents} />
+            <InsightsOverviewActivityTrend events={filteredEvents} districtTimezones={districtTimezones} />
+          </div>
+        )}
+
+        {/* KPIs */}
+        {tab === 'kpis' && (
+          <div className="space-y-5">
+            <InsightsKPITabCards data={kpiStats} events={filteredEvents} />
+            <InsightsKPIUsageChart data={kpiStats} />
+            <InsightsKPIGrid data={kpiStats} />
+            <InsightsKPICoOccurrenceMatrix events={filteredEvents} />
+            <InsightsKPIAbout />
+          </div>
+        )}
+
+        {/* Users */}
+        {tab === 'users' && (
+          selectedUser ? (
+            <InsightsUserDetailDrawer
+              user={selectedUser}
+              allEvents={allEvents}
+              onClose={() => setSelectedUser(null)}
             />
-            <InsightsUserActivityTrend data={userStats} events={filteredEvents} districtTimezones={districtTimezones} />
-          </div>
-        )
-      )}
+          ) : (
+            <div className="space-y-5">
+              <InsightsUserKPICards data={userStats} events={filteredEvents} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <InsightsUserEngagementChart data={userStats} />
+                <InsightsSessionFreqChart events={filteredEvents} />
+              </div>
+              <InsightsUserGrid
+                data={userStats}
+                onRowClick={row => setSelectedUser(row)}
+              />
+              <InsightsUserActivityTrend data={userStats} events={filteredEvents} districtTimezones={districtTimezones} />
+            </div>
+          )
+        )}
 
-      {/* Districts */}
-      {tab === 'districts' && (
-        <div className="space-y-5">
-          <InsightsDistrictKPICards data={districtStats} totalDistricts={totalDistrictCount} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InsightsDistrictEngagementChart data={districtStats} />
-            <InsightsDistrictSessionFreqChart data={districtStats} />
+        {/* Districts */}
+        {tab === 'districts' && (
+          <div className="space-y-5">
+            <InsightsDistrictKPICards data={districtStats} totalDistricts={totalDistrictCount} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <InsightsDistrictEngagementChart data={districtStats} />
+              <InsightsDistrictSessionFreqChart data={districtStats} />
+            </div>
+            <InsightsDistrictGrid data={districtStats} />
+            <InsightsDistrictActivityTrend data={districtStats} events={filteredEvents} totalDistricts={totalDistrictCount} />
           </div>
-          <InsightsDistrictGrid data={districtStats} />
-          <InsightsDistrictActivityTrend data={districtStats} events={filteredEvents} totalDistricts={totalDistrictCount} />
-        </div>
-      )}
-
-      <Suspense fallback={null}>
-        <InsightsEventListDrawer
-          events={drill?.events ?? []}
-          title={drill?.title ?? ''}
-          isOpen={drill !== null}
-          onClose={() => setDrill(null)}
-        />
+        )}
       </Suspense>
 
+      {/* Drawers wrapped in Suspense with null fallback for invisible loading */}
+      <Suspense fallback={null}>
+        {drill !== null && (
+          <InsightsEventListDrawer
+            events={drill?.events ?? []}
+            title={drill?.title ?? ''}
+            isOpen={drill !== null}
+            onClose={() => setDrill(null)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

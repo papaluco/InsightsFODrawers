@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 
 import {
   MenuUsageEvent,
@@ -31,13 +31,15 @@ import MenuMetricUsageChart from './MenuMetricUsageChart';
 import MenuFilterUsageChart from './MenuFilterUsageChart';
 import MenuUsersGrid from './MenuUsersGrid';
 import MenuDistrictsGrid from './MenuDistrictsGrid';
-import MenuEventListDrawer from './MenuEventListDrawer';
-import MenuUserDetailDrawer from './MenuUserDetailDrawer';
-import MenuUserListDrawer from './MenuUserListDrawer';
-import MenuDistrictDetailDrawer from './MenuDistrictDetailDrawer';
-import MenuDistrictListDrawer from './MenuDistrictListDrawer';
-import MenuSessionListDrawer from './MenuSessionListDrawer';
-import MenuSessionDetailDrawer from './MenuSessionDetailDrawer';
+
+// Lazy load the Drawer Stack
+const MenuUserListDrawer = lazy(() => import('./MenuUserListDrawer'));
+const MenuDistrictListDrawer = lazy(() => import('./MenuDistrictListDrawer'));
+const MenuSessionListDrawer = lazy(() => import('./MenuSessionListDrawer'));
+const MenuUserDetailDrawer = lazy(() => import('./MenuUserDetailDrawer'));
+const MenuDistrictDetailDrawer = lazy(() => import('./MenuDistrictDetailDrawer'));
+const MenuSessionDetailDrawer = lazy(() => import('./MenuSessionDetailDrawer'));
+const MenuEventListDrawer = lazy(() => import('./MenuEventListDrawer'));
 
 type Tab = 'overview' | 'menuItems' | 'schoolPerf' | 'users' | 'districts';
 
@@ -304,6 +306,7 @@ const MenuUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
   </div>
 </div>
 
+<Suspense fallback={<div className="h-64 flex items-center justify-center animate-pulse text-gray-400">Loading Menu Insights...</div>}>
       {/* Overview tab */}
       {tab === 'overview' && (
         <div className="space-y-5">
@@ -400,7 +403,9 @@ const MenuUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
           onRowClick={drillByDistrict}
         />
       )}
+      </Suspense>
 
+<Suspense fallback={null}>
       {/* ── User List Drawer ─────────────────────────────────────────────── */}
       {userListDrill && (
         <MenuUserListDrawer
@@ -501,6 +506,7 @@ const MenuUsageDashboard: React.FC<Props> = ({ onDataUpdate }) => {
           onSessionClick={sessionId => { pushDrawer('session-detail'); setSelectedSessionId(sessionId); }}
         />
       )}
+      </Suspense>
 
       {/* Suppress unused-variable warning: anyDetailOpen drives isChildDrawerOpen on list drawers */}
       {anyDetailOpen && null}
