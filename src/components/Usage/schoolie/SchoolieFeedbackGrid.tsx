@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { ChevronUp, ChevronDown, MessageSquare, GripVertical, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { SchoolieUsageEvent, SCHOOLIE_USER_NAMES, SCHOOLIE_DISTRICT_NAMES } from '../../../data/mockSchoolieUsageData';
+import { ChevronUp, ChevronDown, MessageSquare, GripVertical, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
+import { SCHOOLIE_USER_NAMES, SCHOOLIE_DISTRICT_NAMES } from '../../../data/mockSchoolieUsageData';
 import { fmtDateTime, TOPIC_COLORS, USAGE_ICONS } from '../common/usageHelpers';
+import { SOURCE_DISPLAY } from '../feedback/feedbackHelpers';
 import { ReportPaging } from '../../InsightsReports/ReportPaging';
 import { FilterIcon, SettingsIcon, AlertIcon } from '../../Common/Icons';
 import { ExportMenu } from '../../Downloading/ExportMenu/ExportMenu';
@@ -9,70 +11,53 @@ import { CSVExpButton } from '../../Downloading/CSVGen/CSVExpButton';
 import type { ICSVReportData } from '../../Downloading/CSVGen/CSVContract';
 
 interface Props {
-  events: SchoolieUsageEvent[];
+  records: FeedbackRecord[];
   title?: string;
-  showSlowFilter?: boolean;
   onUserClick?: (userId: string) => void;
   onDistrictClick?: (districtId: string) => void;
-  onEventTypeClick?: (eventType: string) => void;
-  onAnalysisClick?: (analysisIdentifier: string) => void;
-  onEventDetailClick?: (event: SchoolieUsageEvent) => void;
+  onSurfaceClick?: (surface: string) => void;
+  onAnalysisClick?: (analysis: string) => void;
+  onFeedbackDetailClick?: (record: FeedbackRecord) => void;
 }
 
 type ColKey =
-  | 'timestamp'
+  | 'feedbackId'
+  | 'createdAt'
   | 'userName'
   | 'districtName'
-  | 'eventType'
-  | 'analysisIdentifier'
   | 'sourceEntryPoint'
-  | 'responseTimeMs'
-  | 'status';
+  | 'analysis'
+  | 'feedbackValue'
+  | 'reasonCodes';
 
 interface ColDef { key: ColKey; label: string; defaultVisible: boolean; sortable: boolean; }
 
 const COLUMNS: ColDef[] = [
-  { key: 'timestamp',          label: 'Date',       defaultVisible: true, sortable: true  },
-  { key: 'userName',           label: 'User',       defaultVisible: true, sortable: true  },
-  { key: 'districtName',       label: 'District',   defaultVisible: true, sortable: true  },
-  { key: 'eventType',          label: 'Event',      defaultVisible: true, sortable: true  },
-  { key: 'analysisIdentifier', label: 'Analysis',   defaultVisible: true, sortable: true  },
-  { key: 'sourceEntryPoint',   label: 'Surface',    defaultVisible: true, sortable: true  },
-  { key: 'responseTimeMs',     label: 'Resp. Time', defaultVisible: true, sortable: true  },
-  { key: 'status',             label: 'Status',     defaultVisible: true, sortable: false },
+  { key: 'feedbackId',       label: 'Feedback ID', defaultVisible: true,  sortable: true  },
+  { key: 'createdAt',        label: 'Date',         defaultVisible: true,  sortable: true  },
+  { key: 'userName',         label: 'User',         defaultVisible: true,  sortable: true  },
+  { key: 'districtName',     label: 'District',     defaultVisible: true,  sortable: true  },
+  { key: 'sourceEntryPoint', label: 'Surface',      defaultVisible: true,  sortable: true  },
+  { key: 'analysis',         label: 'Analysis',     defaultVisible: true,  sortable: true  },
+  { key: 'feedbackValue',    label: 'Value',        defaultVisible: true,  sortable: true  },
+  { key: 'reasonCodes',      label: 'Reasons',      defaultVisible: true,  sortable: false },
 ];
 
 const ALL_COL_KEYS = COLUMNS.map(c => c.key);
 const COL_BY_KEY = new Map(COLUMNS.map(c => [c.key, c]));
 const DEFAULT_VISIBLE = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
 
-const EVENT_TYPE_COLORS: Record<string, string> = {
-  KPI_SCHOOLIE_OPENED:       TOPIC_COLORS.AI,
-  DASHBOARD_SCHOOLIE_OPENED: TOPIC_COLORS.AI,
-  AI_REQUEST_STARTED:        TOPIC_COLORS.Workspace,
-  AI_RESPONSE_SUCCESS:       TOPIC_COLORS.Sessions,
-  AI_RESPONSE_ERROR:         TOPIC_COLORS.Errors,
-};
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  KPI_SCHOOLIE_OPENED:       'KPI Schoolie Opened',
-  DASHBOARD_SCHOOLIE_OPENED: 'Dashboard Schoolie Opened',
-  AI_REQUEST_STARTED:        'AI Request Started',
-  AI_RESPONSE_SUCCESS:       'AI Response — Success',
-  AI_RESPONSE_ERROR:         'AI Response — Error',
-};
-
-function getCsvText(event: SchoolieUsageEvent, key: ColKey): string {
+function getCsvText(record: FeedbackRecord, key: ColKey): string {
   switch (key) {
-    case 'timestamp':          return fmtDateTime(event.timestamp);
-    case 'userName':           return SCHOOLIE_USER_NAMES[event.userId] ?? event.userId;
-    case 'districtName':       return SCHOOLIE_DISTRICT_NAMES[event.districtId] ?? event.districtId;
-    case 'eventType':          return EVENT_TYPE_LABELS[event.eventType] ?? event.eventType;
-    case 'analysisIdentifier': return event.analysisIdentifier;
-    case 'sourceEntryPoint':   return event.sourceEntryPoint;
-    case 'responseTimeMs':     return event.responseTimeMs != null ? `${event.responseTimeMs}ms` : '—';
-    case 'status':             return event.status ?? '—';
-    default:                   return '';
+    case 'feedbackId':       return record.feedbackId;
+    case 'createdAt':        return fmtDateTime(record.createdAt);
+    case 'userName':         return SCHOOLIE_USER_NAMES[record.userId] ?? record.userId;
+    case 'districtName':     return SCHOOLIE_DISTRICT_NAMES[record.districtId] ?? record.districtId;
+    case 'sourceEntryPoint': return SOURCE_DISPLAY[record.sourceEntryPoint] ?? record.sourceEntryPoint;
+    case 'analysis':         return record.kpiIdentifier ?? record.analysisIdentifier ?? '—';
+    case 'feedbackValue':    return record.feedbackValue === 'thumbs_up' ? 'Positive' : 'Negative';
+    case 'reasonCodes':      return record.reasonCodes?.join(', ') ?? '—';
+    default:                 return '';
   }
 }
 
@@ -84,25 +69,23 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
-const SchoolieEventGrid: React.FC<Props> = ({
-  events,
-  title = 'Events',
-  showSlowFilter = false,
+const SchoolieFeedbackGrid: React.FC<Props> = ({
+  records,
+  title = 'Feedback',
   onUserClick,
   onDistrictClick,
-  onEventTypeClick,
+  onSurfaceClick,
   onAnalysisClick,
-  onEventDetailClick,
+  onFeedbackDetailClick,
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'timestamp', dir: 'desc' });
+  const [sort, setSort] = useState<{ key: ColKey; dir: 'asc' | 'desc' }>({ key: 'createdAt', dir: 'desc' });
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [visibleCols, setVisibleCols] = useState<ColKey[]>(DEFAULT_VISIBLE);
   const [colOrder, setColOrder] = useState<ColKey[]>(ALL_COL_KEYS);
   const [showColPicker, setShowColPicker] = useState(false);
-  const [showSlowest, setShowSlowest] = useState(false);
   const [draggedKey, setDraggedKey] = useState<ColKey | null>(null);
   const [dragOverKey, setDragOverKey] = useState<ColKey | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -121,33 +104,24 @@ const SchoolieEventGrid: React.FC<Props> = ({
   );
 
   const filtered = useMemo(() => {
-    if (showSlowest) {
-      return events
-        .filter(e => e.responseTimeMs != null)
-        .sort((a, b) => (b.responseTimeMs ?? 0) - (a.responseTimeMs ?? 0))
-        .slice(0, 10);
-    }
-    let rows = events;
+    let rows = records;
     if (search) {
       const q = search.toLowerCase();
-      rows = rows.filter(e =>
-        (SCHOOLIE_USER_NAMES[e.userId] ?? e.userId).toLowerCase().includes(q) ||
-        (SCHOOLIE_DISTRICT_NAMES[e.districtId] ?? e.districtId).toLowerCase().includes(q) ||
-        (EVENT_TYPE_LABELS[e.eventType] ?? e.eventType).toLowerCase().includes(q) ||
-        e.analysisIdentifier.toLowerCase().includes(q)
+      rows = rows.filter(r =>
+        (SCHOOLIE_USER_NAMES[r.userId] ?? r.userId).toLowerCase().includes(q) ||
+        (SCHOOLIE_DISTRICT_NAMES[r.districtId] ?? r.districtId).toLowerCase().includes(q) ||
+        (SOURCE_DISPLAY[r.sourceEntryPoint] ?? r.sourceEntryPoint).toLowerCase().includes(q) ||
+        (r.kpiIdentifier ?? r.analysisIdentifier ?? '').toLowerCase().includes(q) ||
+        r.feedbackId.toLowerCase().includes(q) ||
+        (r.reasonCodes?.join(' ') ?? '').toLowerCase().includes(q)
       );
     }
     rows = [...rows].sort((a, b) => {
-      let cmp = 0;
-      if (sort.key === 'responseTimeMs') {
-        cmp = (a.responseTimeMs ?? -1) - (b.responseTimeMs ?? -1);
-      } else {
-        cmp = getCsvText(a, sort.key).localeCompare(getCsvText(b, sort.key));
-      }
+      const cmp = getCsvText(a, sort.key).localeCompare(getCsvText(b, sort.key));
       return sort.dir === 'asc' ? cmp : -cmp;
     });
     return rows;
-  }, [events, search, sort, showSlowest]);
+  }, [records, search, sort]);
 
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
@@ -157,9 +131,9 @@ const SchoolieEventGrid: React.FC<Props> = ({
   };
 
   const csvData = useMemo((): ICSVReportData => ({
-    fileName: `schoolie_events_${new Date().toISOString().slice(0, 10)}`,
+    fileName: `schoolie_feedback_${new Date().toISOString().slice(0, 10)}`,
     headers: orderedVisibleCols.map(c => c.label),
-    rows: filtered.map(event => orderedVisibleCols.map(c => getCsvText(event, c.key))),
+    rows: filtered.map(r => orderedVisibleCols.map(c => getCsvText(r, c.key))),
   }), [filtered, orderedVisibleCols]);
 
   const handleDragStart = (e: React.DragEvent, key: ColKey) => { setDraggedKey(key); e.dataTransfer.effectAllowed = 'move'; };
@@ -185,31 +159,16 @@ const SchoolieEventGrid: React.FC<Props> = ({
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3.5">
         <button onClick={() => setExpanded(e => !e)} className="flex items-center gap-2.5 hover:opacity-80">
-          <USAGE_ICONS.Events size={16} style={{ color: TOPIC_COLORS.Events }} />
+          <USAGE_ICONS.SchoolieFeedback size={16} style={{ color: TOPIC_COLORS.Feedback }} />
           <span className="text-sm font-semibold text-slate-700">{title}</span>
-          <span className="text-[11px] text-gray-400">{events.length} events</span>
+          <span className="text-[11px] text-gray-400">{records.length} records</span>
         </button>
         <div className="flex items-center gap-3">
-
-          {showSlowFilter && (
-            <button
-              onClick={() => { setShowSlowest(p => !p); setPage(1); }}
-              title="Show top 10 slowest requests"
-              className={`flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg border text-sm font-semibold transition-all ${
-                showSlowest
-                  ? 'bg-amber-50 border-amber-400 text-amber-600'
-                  : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              <Clock size={13} /> Slowest
-            </button>
-          )}
-
           <ExportMenu>
             <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Data Exports</p>
             </div>
-            <CSVExpButton title="Events (.csv)" subtext="Download visible columns as seen" csvData={csvData} />
+            <CSVExpButton title="Feedback (.csv)" subtext="Download visible columns as seen" csvData={csvData} />
           </ExportMenu>
 
           <div className="relative" ref={pickerRef}>
@@ -265,13 +224,11 @@ const SchoolieEventGrid: React.FC<Props> = ({
             )}
           </div>
 
-
-
           <div className="relative w-56">
             <FilterIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
             <input
               type="text"
-              placeholder="Search events..."
+              placeholder="Search feedback..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }}
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none"
@@ -312,79 +269,61 @@ const SchoolieEventGrid: React.FC<Props> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {paged.map((event, idx) => (
-                  <tr key={`${event.sessionId}-${event.eventType}-${idx}`} className="transition-colors hover:bg-slate-50">
+                {paged.map((record, idx) => (
+                  <tr key={`${record.feedbackId}-${idx}`} className="transition-colors hover:bg-slate-50">
                     {orderedVisibleCols.map(col => {
-                      const isTimestampClick    = col.key === 'timestamp'          && !!onEventDetailClick;
-                      const isUserClick         = col.key === 'userName'           && !!onUserClick;
-                      const isDistrictClick     = col.key === 'districtName'       && !!onDistrictClick;
-                      const isEventTypeClick    = col.key === 'eventType'          && !!onEventTypeClick;
-                      const isAnalysisClick     = col.key === 'analysisIdentifier' && !!onAnalysisClick;
-                      const isClickable = isTimestampClick || isUserClick || isDistrictClick || isEventTypeClick || isAnalysisClick;
+                      const isFeedbackIdClick  = col.key === 'feedbackId'       && !!onFeedbackDetailClick;
+                      const isUserClick        = col.key === 'userName'         && !!onUserClick;
+                      const isDistrictClick    = col.key === 'districtName'     && !!onDistrictClick;
+                      const isSurfaceClick     = col.key === 'sourceEntryPoint' && !!onSurfaceClick;
+                      const isAnalysisClick    = col.key === 'analysis'         && !!onAnalysisClick;
+                      const isClickable = isFeedbackIdClick || isUserClick || isDistrictClick || isSurfaceClick || isAnalysisClick;
 
                       return (
                         <td
                           key={col.key}
                           onClick={() => {
-                            if (isTimestampClick) onEventDetailClick?.(event);
-                            if (isUserClick)      onUserClick?.(event.userId);
-                            if (isDistrictClick)  onDistrictClick?.(event.districtId);
-                            if (isEventTypeClick) onEventTypeClick?.(event.eventType);
-                            if (isAnalysisClick)  onAnalysisClick?.(event.analysisIdentifier);
+                            if (isFeedbackIdClick) onFeedbackDetailClick?.(record);
+                            if (isUserClick)       onUserClick?.(record.userId);
+                            if (isDistrictClick)   onDistrictClick?.(record.districtId);
+                            if (isSurfaceClick)    onSurfaceClick?.(record.sourceEntryPoint);
+                            if (isAnalysisClick)   onAnalysisClick?.(record.kpiIdentifier ?? record.analysisIdentifier ?? '');
                           }}
                           className={`px-4 py-2.5 text-sm whitespace-nowrap ${isClickable ? 'cursor-pointer hover:text-teal-600 hover:bg-slate-100' : ''}`}
                         >
-                          {col.key === 'timestamp' && (
-                            <span className="text-slate-400">{fmtDateTime(event.timestamp)}</span>
+                          {col.key === 'feedbackId' && (
+                            <span className="font-mono text-xs text-slate-400">{record.feedbackId}</span>
+                          )}
+                          {col.key === 'createdAt' && (
+                            <span className="text-slate-400">{fmtDateTime(record.createdAt)}</span>
                           )}
                           {col.key === 'userName' && (
                             <span className="font-medium text-slate-700">
-                              {SCHOOLIE_USER_NAMES[event.userId] ?? event.userId}
+                              {SCHOOLIE_USER_NAMES[record.userId] ?? record.userId}
                             </span>
                           )}
                           {col.key === 'districtName' && (
                             <span className="text-slate-500">
-                              {SCHOOLIE_DISTRICT_NAMES[event.districtId] ?? event.districtId}
+                              {SCHOOLIE_DISTRICT_NAMES[record.districtId] ?? record.districtId}
                             </span>
-                          )}
-                          {col.key === 'eventType' && (
-                            <span className="inline-flex items-center gap-1.5">
-                              <span
-                                className="w-2 h-2 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: EVENT_TYPE_COLORS[event.eventType] ?? '#94a3b8' }}
-                              />
-                              <span className="text-slate-600">
-                                {EVENT_TYPE_LABELS[event.eventType] ?? event.eventType}
-                              </span>
-                            </span>
-                          )}
-                          {col.key === 'analysisIdentifier' && (
-                            <span className="text-slate-500">{event.analysisIdentifier}</span>
                           )}
                           {col.key === 'sourceEntryPoint' && (
-                            <span className="text-slate-500">{event.sourceEntryPoint}</span>
+                            <span className="text-slate-500">
+                              {SOURCE_DISPLAY[record.sourceEntryPoint] ?? record.sourceEntryPoint}
+                            </span>
                           )}
-                          {col.key === 'responseTimeMs' && (
-                            event.responseTimeMs != null
-                              ? (
-                                <span className={`tabular-nums font-medium ${
-                                  event.responseTimeMs > 10000
-                                    ? 'text-red-600'
-                                    : event.responseTimeMs > 4000
-                                    ? 'text-amber-600'
-                                    : 'text-slate-500'
-                                }`}>
-                                  {event.responseTimeMs.toLocaleString()}ms
-                                </span>
-                              )
-                              : <span className="text-gray-300">—</span>
+                          {col.key === 'analysis' && (
+                            <span className="text-slate-500">
+                              {record.kpiIdentifier ?? record.analysisIdentifier ?? '—'}
+                            </span>
                           )}
-                          {col.key === 'status' && (
-                            event.status === 'success'
-                              ? <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-semibold rounded-full"><CheckCircle size={10} /> Success</span>
-                              : event.status === 'error'
-                              ? <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 text-[11px] font-semibold rounded-full"><XCircle size={10} /> Error</span>
-                              : <span className="text-gray-300">—</span>
+                          {col.key === 'feedbackValue' && (
+                            record.feedbackValue === 'thumbs_up'
+                              ? <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-semibold rounded-full"><ThumbsUp size={9} /> Positive</span>
+                              : <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 text-[11px] font-semibold rounded-full"><ThumbsDown size={9} /> Negative</span>
+                          )}
+                          {col.key === 'reasonCodes' && (
+                            <span className="text-slate-400 text-xs">{record.reasonCodes?.join(', ') ?? '—'}</span>
                           )}
                         </td>
                       );
@@ -396,7 +335,7 @@ const SchoolieEventGrid: React.FC<Props> = ({
             {paged.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                 <MessageSquare size={32} className="mb-2 opacity-20" />
-                <p className="text-sm">No events found{search ? ' matching your search' : ''}.</p>
+                <p className="text-sm">No feedback found{search ? ' matching your search' : ''}.</p>
               </div>
             )}
           </div>
@@ -414,4 +353,4 @@ const SchoolieEventGrid: React.FC<Props> = ({
   );
 };
 
-export default SchoolieEventGrid;
+export default SchoolieFeedbackGrid;

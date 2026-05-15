@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, Cell,
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
+import ReportsPieChart from '../reports/ReportsPieChart';
 import { ThumbsUp, ThumbsDown, Clock, AlertCircle, Zap, Users } from 'lucide-react';
 import {
   SchoolieUsageFilters,
@@ -20,7 +21,9 @@ import {
   getSchoolieUserStats,
   getSchoolieDistrictStats,
   getSchoolieSessionStats,
+  getSchoolieFeedbackRecords,
 } from '../../../services/schoolieUsageService';
+import { FeedbackRecord } from '../../../types/feedbackTypes';
 import {
   TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDate,
 } from '../common/usageHelpers';
@@ -31,6 +34,7 @@ import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
 import SchoolieEventListDrawer from './SchoolieEventListDrawer';
 import SchoolieEventGrid from './SchoolieEventGrid';
 import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
+import SchoolieFeedbackListDrawer from './SchoolieFeedbackListDrawer';
 
 interface Props {
   filters: SchoolieUsageFilters;
@@ -86,6 +90,7 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
   const [summary, setSummary] = useState<SchoolieUsageSummary | null>(null);
   const [satisfactionStats, setSatisfactionStats] = useState<ScholieSatisfactionStats | null>(null);
   const [rawEvents, setRawEvents] = useState<SchoolieUsageEvent[]>([]);
+  const [feedbackRecords, setFeedbackRecords] = useState<FeedbackRecord[]>([]);
   const [users, setUsers] = useState<SchoolieUserStatRow[]>([]);
   const [districts, setDistricts] = useState<SchoolieDistrictStatRow[]>([]);
   const [sessions, setSessions] = useState<SchoolieSessionStatRow[]>([]);
@@ -94,7 +99,6 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
   const [kpiExpanded, setKpiExpanded] = useState(true);
   const [reqTrendExpanded, setReqTrendExpanded] = useState(true);
   const [userTrendExpanded, setUserTrendExpanded] = useState(true);
-  const [surfaceExpanded, setSurfaceExpanded] = useState(true);
   const [topDistrictsExpanded, setTopDistrictsExpanded] = useState(true);
   const [feedbackExpanded, setFeedbackExpanded] = useState(true);
   const [selectedUser, setSelectedUser] = useState<SchoolieUserStatRow | null>(null);
@@ -109,6 +113,15 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
   const [isDistrictDetailOpen, setIsDistrictDetailOpen] = useState(false);
   const [eventListTarget, setEventListTarget] = useState<EventListTarget | null>(null);
   const [isEventListOpen, setIsEventListOpen] = useState(false);
+  const [feedbackListRecords, setFeedbackListRecords] = useState<FeedbackRecord[]>([]);
+  const [feedbackListTitle, setFeedbackListTitle] = useState('');
+  const [isFeedbackListOpen, setIsFeedbackListOpen] = useState(false);
+
+  const openFeedbackList = (records: FeedbackRecord[], title: string) => {
+    setFeedbackListRecords(records);
+    setFeedbackListTitle(title);
+    setIsFeedbackListOpen(true);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -116,13 +129,15 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
       getSchoolieUsageSummary(filters),
       getSatisfactionStats(filters),
       getSchoolieRawEvents(filters),
+      getSchoolieFeedbackRecords(),
       getSchoolieUserStats(filters),
       getSchoolieDistrictStats(filters),
       getSchoolieSessionStats(filters),
-    ]).then(([sum, sat, evts, usr, dist, sess]) => {
+    ]).then(([sum, sat, evts, recs, usr, dist, sess]) => {
       setSummary(sum);
       setSatisfactionStats(sat);
       setRawEvents(evts);
+      setFeedbackRecords(recs);
       setUsers(usr);
       setDistricts(dist);
       setSessions(sess);
@@ -204,7 +219,7 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
                 <ClickableCard onClick={() => openEventList(requestEvents, 'AI Requests')}>
                   <FeedbackKPICard label="Total Requests" value={summary.totalRequests.toLocaleString()} icon={<Zap size={20} />} colorClass={TOPIC_TAILWIND.AI} />
                 </ClickableCard>
-                <ClickableCard onClick={() => onTabChange('satisfaction')}>
+                <ClickableCard onClick={() => openFeedbackList(feedbackRecords.filter(r => r.feedbackValue === 'thumbs_up'), 'Positive Feedback')}>
                   <FeedbackKPICard
                     label="Positive Feedback"
                     value={satisfactionStats ? `${Math.round(satisfactionStats.satisfactionRate * 100)}%` : '—'}
@@ -323,42 +338,15 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
 
       {/* Usage by Surface · Top Districts · Feedback Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4">
-            <button onClick={() => setSurfaceExpanded(e => !e)} className="text-left flex-1 flex items-center gap-3">
-              <USAGE_ICONS.Drawers size={16} style={{ color: TOPIC_COLORS.Drawers }} />
-              <span className="text-sm font-semibold text-gray-900">Usage by Surface</span>
-            </button>
-            <button onClick={() => setSurfaceExpanded(e => !e)}><CollapseChevron expanded={surfaceExpanded} /></button>
-          </div>
-          {surfaceExpanded && (
-            <div className="border-t border-gray-100 px-5 pb-5 pt-2">
-              {loading ? <Spinner /> : surfaceData.length === 0 ? (
-                <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">No surface data</div>
-              ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={surfaceData}
-                      dataKey="requests"
-                      nameKey="label"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={75}
-                    >
-                      {surfaceData.map(entry => (
-                        <Cell key={entry.rawName} fill={SURFACE_COLORS[entry.rawName] ?? TOPIC_COLORS.AI} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          )}
-        </div>
+        <ReportsPieChart
+          data={surfaceData.map(d => ({ name: d.label, value: d.requests }))}
+          title="Usage by Surface"
+          colors={surfaceData.map(d => SURFACE_COLORS[d.rawName] ?? TOPIC_COLORS.AI)}
+          emptyMessage="No surface data"
+          subText="Top 5"
+          icon={USAGE_ICONS.Events} // Note: Passed in curly braces as a component reference
+          primaryColor={TOPIC_COLORS.AI} // Explicitly setting the icon color here
+        />
 
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5">
@@ -510,6 +498,22 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
         onClose={() => setIsEventListOpen(false)}
         zIndex={52}
         isTopmost={isEventListOpen && !isDistrictDetailOpen && !isUserDetailOpen}
+      />
+      <SchoolieFeedbackListDrawer
+        records={feedbackListRecords}
+        title={feedbackListTitle}
+        isOpen={isFeedbackListOpen}
+        onClose={() => setIsFeedbackListOpen(false)}
+        zIndex={52}
+        isTopmost={isFeedbackListOpen && !isDistrictDetailOpen && !isUserDetailOpen}
+        onUserClick={userId => {
+          const user = users.find(u => u.userId === userId);
+          if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
+        }}
+        onDistrictClick={districtId => {
+          const district = districts.find(d => d.districtId === districtId);
+          if (district) { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }
+        }}
       />
       <SchoolieUserDetailDrawer
         user={selectedUser}

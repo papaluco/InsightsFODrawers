@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Label, ResponsiveContainer } from 'recharts';
-import { CHART_COLORS, pct } from '../../Usage/common/usageHelpers';
+import { CHART_COLORS, pct, TOPIC_COLORS } from '../../Usage/common/usageHelpers';
 
 export interface ReportPieItem {
   name: string;
@@ -13,6 +13,10 @@ interface Props {
   colors?: string[];
   onSegmentClick?: (name: string) => void;
   emptyMessage?: string;
+  // New Optional Props
+  subText?: string;
+  icon?: React.ElementType; 
+  primaryColor?: string; // New optional prop for specific branding
 }
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
@@ -34,7 +38,16 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
   );
 };
 
-const ReportsPieChart: React.FC<Props> = ({ data, title, colors = CHART_COLORS, onSegmentClick, emptyMessage }) => {
+const ReportsPieChart: React.FC<Props> = ({ 
+  data, 
+  title, 
+  colors = CHART_COLORS, 
+  onSegmentClick, 
+  emptyMessage,
+  subText,
+  icon: Icon, // Rename to capital for JSX usage
+  primaryColor
+}) => {
   const [expanded, setExpanded] = useState(true);
 
   const total = data.reduce((s, d) => s + d.value, 0);
@@ -46,9 +59,20 @@ const ReportsPieChart: React.FC<Props> = ({ data, title, colors = CHART_COLORS, 
         <button
           type="button"
           onClick={() => setExpanded(e => !e)}
-          className="min-w-0 flex-1 text-left focus:outline-none"
+          className="min-w-0 flex-1 flex items-center gap-2.5 text-left focus:outline-none"
         >
-          <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
+          {/* Render Icon if provided */}
+          {Icon && (
+            <Icon 
+              size={16} 
+              style={{ color: primaryColor ?? TOPIC_COLORS.Events }} 
+            />
+          )}
+          
+          <span className="text-sm font-semibold text-gray-900">{title}</span>
+          
+          {/* Render Subtext if provided */}
+          {subText && <span className="text-[11px] text-gray-400">{subText}</span>}
         </button>
         <button type="button" onClick={() => setExpanded(e => !e)} className="ml-4">
           <CollapseChevron expanded={expanded} />
@@ -56,106 +80,100 @@ const ReportsPieChart: React.FC<Props> = ({ data, title, colors = CHART_COLORS, 
       </div>
 
       {expanded && (
-  <div className="border-t border-gray-100 px-5 pb-5 pt-4">
-    {isEmpty ? (
-      <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">
-        {emptyMessage ?? 'No data available'}
-      </div>
-    ) : (
-      /* Center the whole group to keep chart and legend close together */
-      <div className="flex justify-center items-center py-2">
-        <div className="flex items-center gap-10"> 
-          
-          {/* 1. Donut Chart */}
-          <div style={{ width: 148, height: 148, flexShrink: 0 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={64}
-                  dataKey="value"
-                  startAngle={90}
-                  endAngle={-270}
-                  onClick={
-                    onSegmentClick
-                      ? (entry) => {
-                          if (typeof entry.name === 'string') {
-                            onSegmentClick(entry.name);
-                          }
+        <div className="border-t border-gray-100 px-5 pb-5 pt-4">
+          {isEmpty ? (
+            <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">
+              {emptyMessage ?? 'No data available'}
+            </div>
+          ) : (
+            <div className="flex justify-center items-center py-2">
+              <div className="flex items-center gap-10"> 
+                
+                <div style={{ width: 148, height: 148, flexShrink: 0 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={64}
+                        dataKey="value"
+                        startAngle={90}
+                        endAngle={-270}
+                        onClick={
+                          onSegmentClick
+                            ? (entry) => {
+                                if (typeof entry.name === 'string') {
+                                  onSegmentClick(entry.name);
+                                }
+                              }
+                            : undefined
                         }
-                      : undefined
-                  }
-                  className={onSegmentClick ? 'cursor-pointer' : ''}
-                  strokeWidth={2}
-                  stroke="#fff"
-                >
-                  <Label
-                    content={(props) => {
-                      const vb = props.viewBox as { cx: number; cy: number };
-                      return (
-                        <g>
-                          <text x={vb.cx} y={vb.cy - 7} textAnchor="middle" fill="#111827" fontSize="20" fontWeight="700">
-                            {total.toLocaleString()}
-                          </text>
-                          <text x={vb.cx} y={vb.cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">
-                            Total
-                          </text>
-                        </g>
-                      );
-                    }}
-                    position="center"
-                  />
-                  {data.map((_, i) => (
-                    <Cell key={i} fill={colors[i % colors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* 2. Side Legend - Fixed width keeps it from flying to the right edge */}
-          <div className="w-64 space-y-1">
-            {data.map((item, i) => (
-              <button
-                key={item.name}
-                onClick={() => onSegmentClick?.(item.name)}
-                className={`w-full flex items-center py-1.5 px-2 rounded-lg transition-colors text-left ${
-                  onSegmentClick ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'
-                }`}
-              >
-                {/* Color Indicator */}
-                <div 
-                  className="w-2.5 h-2.5 rounded-sm flex-shrink-0 mr-3" 
-                  style={{ backgroundColor: colors[i % colors.length] }} 
-                />
-                
-                {/* Name - flex-1 pushes the numbers to the end of the 64px width */}
-                <span className="text-xs text-gray-600 truncate flex-1 font-medium">
-                  {item.name}
-                </span>
-                
-                {/* Value Container - Fixed widths here keep columns straight */}
-                <div className="flex items-center gap-4 ml-4">
-                  <span className="text-sm font-bold text-gray-800 tabular-nums text-right w-12">
-                    {item.value.toLocaleString()}
-                  </span>
-                  <span className="text-xs text-gray-400 text-right w-10">
-                    {pct(item.value, total)}
-                  </span>
+                        className={onSegmentClick ? 'cursor-pointer' : ''}
+                        strokeWidth={2}
+                        stroke="#fff"
+                      >
+                        <Label
+                          content={(props) => {
+                            const vb = props.viewBox as { cx: number; cy: number };
+                            return (
+                              <g>
+                                <text x={vb.cx} y={vb.cy - 7} textAnchor="middle" fill="#111827" fontSize="20" fontWeight="700">
+                                  {total.toLocaleString()}
+                                </text>
+                                <text x={vb.cx} y={vb.cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">
+                                  Total
+                                </text>
+                              </g>
+                            );
+                          }}
+                          position="center"
+                        />
+                        {data.map((_, i) => (
+                          <Cell key={i} fill={colors[i % colors.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              </button>
-            ))}
-          </div>
 
+                <div className="w-64 space-y-1">
+                  {data.map((item, i) => (
+                    <button
+                      key={item.name}
+                      onClick={() => onSegmentClick?.(item.name)}
+                      className={`w-full flex items-center py-1.5 px-2 rounded-lg transition-colors text-left ${
+                        onSegmentClick ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'
+                      }`}
+                    >
+                      <div 
+                        className="w-2.5 h-2.5 rounded-sm flex-shrink-0 mr-3" 
+                        style={{ backgroundColor: colors[i % colors.length] }} 
+                      />
+                      
+                      <span className="text-xs text-gray-600 truncate flex-1 font-medium">
+                        {item.name}
+                      </span>
+                      
+                      <div className="flex items-center gap-4 ml-4">
+                        <span className="text-sm font-bold text-gray-800 tabular-nums text-right w-12">
+                          {item.value.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-gray-400 text-right w-10">
+                          {pct(item.value, total)}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    )}
-  </div>
-)}
+      )}
     </div>
   );
 };

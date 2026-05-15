@@ -17,6 +17,7 @@ import {
   Search,
   Shield,
   SlidersHorizontal,
+  Target,
   TrendingUp,
   Users,
   UtensilsCrossed,
@@ -34,6 +35,7 @@ export const TOPIC_COLORS = {
 
   AI: '#8b5cf6',              // Violet
   Schoolie: '#8b5cf6',        // Same as AI
+  Feedback: '#f43f5e',        // Rose
 
   Users: '#3b82f6',           // Blue
   Districts: '#f97316',       // Orange
@@ -74,6 +76,7 @@ export const TOPIC_TAILWIND = {
   Usage: 'bg-sky-50 text-sky-600',
   AppHealth: 'bg-emerald-50 text-emerald-600',
   Settings: 'bg-slate-50 text-slate-600',
+  Feedback: 'bg-rose-50 text-rose-600',
 
   AI: 'bg-violet-50 text-violet-600',
   Schoolie: 'bg-violet-50 text-violet-600',
@@ -136,8 +139,8 @@ export const PAGE_COLORS: Record<string, string> = {
 
   'Schoolie AI': TOPIC_COLORS.AI,
   SchoolieAI: TOPIC_COLORS.AI,
-  'Schoolie Feedback': TOPIC_COLORS.AI,
-  SchoolieFeedback: TOPIC_COLORS.AI,
+  'Schoolie Feedback': TOPIC_COLORS.Feedback,
+  SchoolieFeedback: TOPIC_COLORS.Feedback,
 
   'AI Configuration': TOPIC_COLORS.AI,
   AIConfiguration: TOPIC_COLORS.AI,
@@ -180,8 +183,9 @@ export const TAB_COLORS: Record<string, string> = {
   App: TOPIC_COLORS.Workspace,
   'Schoolie AI': TOPIC_COLORS.AI,
   SchoolieAI: TOPIC_COLORS.AI,
-  'Schoolie Feedback': TOPIC_COLORS.AI,
-  SchoolieFeedback: TOPIC_COLORS.AI,
+  'Schoolie Feedback': TOPIC_COLORS.Feedback,
+  SchoolieFeedback: TOPIC_COLORS.Feedback,
+  Feedback: TOPIC_COLORS.Feedback,
 
   'Menu Items': TOPIC_COLORS.MenuAnalysis,
   SchoolPerformance: TOPIC_COLORS.Performance,
@@ -216,7 +220,8 @@ export const TAB_TAILWIND: Record<string, string> = {
   // 'Schoolie AI': TOPIC_TAILWIND.AI,
   SchoolieAI: TOPIC_TAILWIND.AI,
   // 'Schoolie Feedback': TOPIC_TAILWIND.AI,
-  SchoolieFeedback: TOPIC_TAILWIND.AI,
+  SchoolieFeedback: TOPIC_TAILWIND.Feedback,
+  Feedback: TOPIC_TAILWIND.Feedback,
 
   // 'Menu Items': TOPIC_TAILWIND.MenuAnalysis,
   MenuItems: TOPIC_TAILWIND.MenuAnalysis,
@@ -503,7 +508,7 @@ export const USAGE_ICONS = {
   Trends: TrendingUp,
   Frequency: RefreshCw,
   Chart: BarChart2,
-  KPI: Gauge,
+  KPI: Target,
 
   // Menu-specific concepts
   MenuItems: UtensilsCrossed,

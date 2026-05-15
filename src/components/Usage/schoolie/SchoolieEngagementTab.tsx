@@ -97,6 +97,7 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
   const [analysisExpanded, setAnalysisExpanded] = useState(true);
   const [dayTimeExpanded, setDayTimeExpanded] = useState(true);
   const [topUsersExpanded, setTopUsersExpanded] = useState(true);
+  const [topDistrictsExpanded, setTopDistrictsExpanded] = useState(true);
   const [reqGrouping, setReqGrouping] = useState<Grouping>('daily');
   const [dayTimeMode, setDayTimeMode] = useState<DayTimeMode>('hour');
 
@@ -223,6 +224,7 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <button onClick={() => setKpiExpanded(e => !e)} className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors">
           <span className="text-sm font-semibold text-slate-700">Engagement Overview</span>
+          
           <CollapseChevron expanded={kpiExpanded} />
         </button>
         {kpiExpanded && (
@@ -357,28 +359,28 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
                     <BarChart data={analysisStats} layout="vertical" margin={{ top: 4, right: 16, left: 80, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
-                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
-                      <Bar 
-  dataKey="requests" 
-  name="Requests" 
-  radius={[0, 4, 4, 0]} 
-  cursor="pointer"
-  onClick={(data: any) => {
-    if (data && data.name) {
-      openEventList(
-        rawEvents.filter(e => e.analysisIdentifier === data.name), 
-        `Events — ${data.name}`
-      );
-    }
-  }}
->
-  {analysisStats.map((entry, i) => (
-    <Cell key={entry.name} fill={ANALYSIS_COLORS[i % ANALYSIS_COLORS.length]} />
-  ))}
-</Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
+                        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                        <Bar
+                          dataKey="requests"
+                          name="Requests"
+                          radius={[0, 4, 4, 0]}
+                          cursor="pointer"
+                          onClick={(data: any) => {
+                            if (data && data.name) {
+                              openEventList(
+                                rawEvents.filter(e => e.analysisIdentifier === data.name),
+                                `Events — ${data.name}`
+                              );
+                            }
+                          }}
+                        >
+                          {analysisStats.map((entry, i) => (
+                            <Cell key={entry.name} fill={ANALYSIS_COLORS[i % ANALYSIS_COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                 </div>
                 <div className="border-t lg:border-t-0 lg:border-l border-gray-100">
                   <table className="w-full">
@@ -444,56 +446,112 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
         )}
       </div>
 
-      {/* Top Users */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <button onClick={() => setTopUsersExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
-            <USAGE_ICONS.Users size={16} style={{ color: TAB_COLORS.Users }} />
-            <span className="text-sm font-semibold text-slate-700">Top Users</span>
-          </button>
-          <button onClick={() => setTopUsersExpanded(e => !e)}><CollapseChevron expanded={topUsersExpanded} /></button>
-        </div>
-        {topUsersExpanded && (
-          <div className="border-t border-gray-100">
-            {loading ? <Spinner /> : users.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No user data</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-50 border-b border-gray-100">
-                    <tr>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">User</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Requests</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Sessions</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Top Surface</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Last Active</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {users.slice(0, 10).map(u => {
-                      const topSurfaceEntry = [...(userSessionData.surfaceMap.get(u.userId) ?? new Map()).entries()].sort((a, b) => b[1] - a[1])[0];
-                      return (
-                        <tr key={u.userId} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2.5">
-                            <button onClick={() => { setSelectedUser(u); setIsUserDetailOpen(true); }}
-                              className="text-sm font-medium text-slate-700 hover:text-violet-600 cursor-pointer text-left">
-                              {u.userName}
-                            </button>
-                            <p className="text-xs text-gray-400">{u.districtName}</p>
-                          </td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{u.totalRequests.toLocaleString()}</td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{userSessionData.sessionMap.get(u.userId) ?? 0}</td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500">{topSurfaceEntry?.[0] ?? '—'}</td>
-                          <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDate(u.lastActive)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+      {/* Top Users + Top Districts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Top Users */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <button onClick={() => setTopUsersExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
+              <USAGE_ICONS.Users size={16} style={{ color: TAB_COLORS.Users }} />
+              <span className="text-sm font-semibold text-slate-700">Top Users</span>
+              <span className="text-[11px] text-gray-400">Top 5</span>
+            </button>
+            <button onClick={() => setTopUsersExpanded(e => !e)}><CollapseChevron expanded={topUsersExpanded} /></button>
           </div>
-        )}
+          {topUsersExpanded && (
+            <div className="border-t border-gray-100">
+              {loading ? <Spinner /> : users.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">No user data</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">User</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Requests</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Sessions</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Top Surface</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Last Active</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {users.slice(0, 10).map(u => {
+                        const topSurfaceEntry = [...(userSessionData.surfaceMap.get(u.userId) ?? new Map()).entries()].sort((a, b) => b[1] - a[1])[0];
+                        return (
+                          <tr key={u.userId} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-2.5">
+                              <div className="flex items-baseline gap-2">
+                                <button
+                                  onClick={() => { setSelectedUser(u); setIsUserDetailOpen(true); }}
+                                  className="text-sm font-medium text-slate-700 hover:text-violet-600 cursor-pointer text-left whitespace-nowrap">
+                                  {u.userName}
+                                </button>
+                                <span className="text-xs text-gray-400 truncate"> ({u.districtName}) </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{u.totalRequests.toLocaleString()}</td>
+                            <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{userSessionData.sessionMap.get(u.userId) ?? 0}</td>
+                            <td className="px-4 py-2.5 text-sm text-slate-500">{topSurfaceEntry?.[0] ?? '—'}</td>
+                            <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDate(u.lastActive)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Top Districts */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <button onClick={() => setTopDistrictsExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
+              <USAGE_ICONS.District size={16} style={{ color: TAB_COLORS.Districts }} />
+              <span className="text-sm font-semibold text-slate-700">Top Districts</span>
+              <span className="text-[11px] text-gray-400">Top 5</span>
+            </button>
+            <button onClick={() => setTopDistrictsExpanded(e => !e)}><CollapseChevron expanded={topDistrictsExpanded} /></button>
+          </div>
+          {topDistrictsExpanded && (
+            <div className="border-t border-gray-100">
+              {loading ? <Spinner /> : districts.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">No district data</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">District</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Requests</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Success</th>
+                        <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Last Active</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {[...districts].sort((a, b) => b.totalRequests - a.totalRequests).slice(0, 5).map(d => (
+                        <tr key={d.districtId} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-2.5">
+                            <button onClick={() => { setSelectedDistrict(d); setIsDistrictDetailOpen(true); }}
+                              className="text-sm font-medium text-slate-700 hover:text-violet-600 cursor-pointer text-left">
+                              {d.districtName}
+                            </button>
+                          </td>
+                          <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{d.totalRequests.toLocaleString()}</td>
+                          <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{Math.round(d.successRate * 100)}%</td>
+                          <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{d.lastActivity ? fmtDate(d.lastActivity) : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
       </div>
 
       <SchoolieEventGrid

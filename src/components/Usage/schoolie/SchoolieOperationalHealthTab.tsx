@@ -26,6 +26,8 @@ import {
 import {
   TOPIC_COLORS, TOPIC_TAILWIND, USAGE_ICONS,
 } from '../common/usageHelpers';
+import { FilterIcon } from '../../Common/Icons';
+import { AIConfigDrawer } from '../../Settings/AI/AIConfigDrawer';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
 import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
@@ -98,6 +100,9 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
   const [errorTypesExpanded, setErrorTypesExpanded] = useState(true);
   const [healthBySurfaceExpanded, setHealthBySurfaceExpanded] = useState(true);
   const [promptModelExpanded, setPromptModelExpanded] = useState(true);
+  const [promptModelShowLatest, setPromptModelShowLatest] = useState(false);
+  const [promptModelSearch, setPromptModelSearch] = useState('');
+  const [isAIConfigDrawerOpen, setIsAIConfigDrawerOpen] = useState(false);
 
   const [grouping, setGrouping] = useState<Grouping>('daily');
 
@@ -197,30 +202,67 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
   }, [rawEvents]);
 
   const promptModelData = useMemo(() => {
-    const map = new Map<string, { requests: number; errors: number; times: number[] }>();
+    const map = new Map<string, {
+      modelVersion: string;
+      promptVersion: number;
+      analysisIdentifier: string;
+      sourceEntryPoint: string;
+      requests: number;
+      successes: number;
+      errors: number;
+      times: number[];
+    }>();
     rawEvents.forEach(e => {
       if (e.eventType !== 'AI_REQUEST_STARTED' && e.eventType !== 'AI_RESPONSE_SUCCESS' && e.eventType !== 'AI_RESPONSE_ERROR') return;
-      const key = `Prompt v${e.promptVersion} / ${e.modelVersion}`;
-      if (!map.has(key)) map.set(key, { requests: 0, errors: 0, times: [] });
+      const key = `${e.modelVersion}|${e.promptVersion}|${e.analysisIdentifier}|${e.sourceEntryPoint}`;
+      if (!map.has(key)) map.set(key, {
+        modelVersion: e.modelVersion,
+        promptVersion: e.promptVersion,
+        analysisIdentifier: e.analysisIdentifier,
+        sourceEntryPoint: e.sourceEntryPoint,
+        requests: 0,
+        successes: 0,
+        errors: 0,
+        times: [],
+      });
       const b = map.get(key)!;
       if (e.eventType === 'AI_REQUEST_STARTED') b.requests++;
+      if (e.eventType === 'AI_RESPONSE_SUCCESS') b.successes++;
       if (e.eventType === 'AI_RESPONSE_ERROR') b.errors++;
       if (e.responseTimeMs != null) b.times.push(e.responseTimeMs);
     });
-    return [...map.entries()].map(([key, b]) => ({
-      key,
+    return [...map.values()].map(b => ({
+      modelVersion: b.modelVersion,
+      promptVersion: b.promptVersion,
+      analysisIdentifier: b.analysisIdentifier,
+      sourceEntryPoint: b.sourceEntryPoint,
       requests: b.requests,
+      successRate: b.requests > 0 ? b.successes / b.requests : 0,
       failureRate: b.requests > 0 ? b.errors / b.requests : 0,
       avgResponseTimeMs: b.times.length > 0 ? Math.round(b.times.reduce((s, t) => s + t, 0) / b.times.length) : 0,
     })).sort((a, b) => b.requests - a.requests);
   }, [rawEvents]);
 
-  const slowestRequests = useMemo(() =>
-    rawEvents
-      .filter(e => (e.eventType === 'AI_RESPONSE_SUCCESS' || e.eventType === 'AI_RESPONSE_ERROR') && e.responseTimeMs != null)
-      .sort((a, b) => (b.responseTimeMs ?? 0) - (a.responseTimeMs ?? 0))
-      .slice(0, 10),
-    [rawEvents]);
+  const filteredPromptModelData = useMemo(() => {
+    let data = promptModelData;
+    if (promptModelShowLatest) {
+      const maxVersionByModel = new Map<string, number>();
+      data.forEach(d => {
+        const cur = maxVersionByModel.get(d.modelVersion) ?? -1;
+        if (d.promptVersion > cur) maxVersionByModel.set(d.modelVersion, d.promptVersion);
+      });
+      data = data.filter(d => d.promptVersion === (maxVersionByModel.get(d.modelVersion) ?? -1));
+    }
+    if (promptModelSearch) {
+      const q = promptModelSearch.toLowerCase();
+      data = data.filter(d =>
+        d.modelVersion.toLowerCase().includes(q) ||
+        d.analysisIdentifier.toLowerCase().includes(q) ||
+        d.sourceEntryPoint.toLowerCase().includes(q)
+      );
+    }
+    return data;
+  }, [promptModelData, promptModelShowLatest, promptModelSearch]);
 
   const Spinner = () => (
     <div className="flex justify-center py-8">
@@ -492,48 +534,98 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
         )}
       </div>
 
-      <SchoolieEventGrid
-        events={slowestRequests}
-        title="Slowest Requests"
-        onUserClick={userId => {
-          const user = users.find(u => u.userId === userId);
-          if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
-        }}
-        onDistrictClick={districtId => {
-          const district = districts.find(d => d.districtId === districtId);
-          if (district) { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }
-        }}
-        onEventTypeClick={eventType => openEventList(rawEvents.filter(e => e.eventType === eventType), eventType)}
-        onAnalysisClick={analysis => openEventList(rawEvents.filter(e => e.analysisIdentifier === analysis), analysis)}
-      />
+
+
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5">
-            <button onClick={() => setPromptModelExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
-              <USAGE_ICONS.KPI size={16} style={{ color: TOPIC_COLORS.AI }} />
-              <span className="text-sm font-semibold text-slate-700">Prompt &amp; Model Versions</span>
+        <div className="flex items-center justify-between px-5 py-3.5">
+
+<button onClick={() => setPromptModelExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
+
+  <USAGE_ICONS.KPI size={16} style={{ color: TOPIC_COLORS.AI }} />
+  <span className="text-sm font-semibold text-slate-700">Prompt & Model Versions</span>
+</button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPromptModelShowLatest(p => !p)}
+              title="Show only latest prompt version per model"
+              className={`flex items-center gap-1.5 px-1.5 py-1.5 rounded-lg border text-sm font-semibold transition-all ${
+                promptModelShowLatest
+                  ? 'bg-amber-50 border-amber-400 text-amber-600'
+                  : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              <Zap size={13} /> Latest
             </button>
+            <div className="relative w-48">
+              <FilterIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+              <input
+                type="text"
+                placeholder="Search versions..."
+                value={promptModelSearch}
+                onChange={e => { setPromptModelSearch(e.target.value); }}
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none"
+              />
+            </div>
             <button onClick={() => setPromptModelExpanded(e => !e)}><CollapseChevron expanded={promptModelExpanded} /></button>
           </div>
-          {promptModelExpanded && (
-            <div className="border-t border-gray-100">
-              {loading ? <Spinner /> : promptModelData.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">No version data</p>
-              ) : (
+        </div>
+        {promptModelExpanded && (
+          <div className="border-t border-gray-100">
+            {loading ? <Spinner /> : filteredPromptModelData.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">No version data</p>
+            ) : (
+              <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-slate-50 border-b border-gray-100">
                     <tr>
+                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Model</th>
                       <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Version</th>
+                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Analysis</th>
+                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Surface</th>
                       <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Requests</th>
+                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Success</th>
                       <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Failure</th>
                       <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Avg RT</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {promptModelData.map(d => (
-                      <tr key={d.key} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-4 py-2.5 text-sm font-medium text-slate-700 whitespace-nowrap">{d.key}</td>
-                        <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right">{d.requests.toLocaleString()}</td>
+                    {filteredPromptModelData.map(d => (
+                      <tr
+                        key={`${d.modelVersion}|${d.promptVersion}|${d.analysisIdentifier}|${d.sourceEntryPoint}`}
+                        className="hover:bg-slate-50 transition-colors"
+                      >
+                        <td className="px-4 py-2.5 text-sm whitespace-nowrap">
+                          {/* TODO: wire to AI Configuration drawer — open filtered to this model if drawer supports it */}
+                          <button
+                            onClick={() => setIsAIConfigDrawerOpen(true)}
+                            className="font-medium text-violet-600 hover:underline"
+                          >
+                            {d.modelVersion}
+                          </button>
+                        </td>
+                        <td className="px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap">v{d.promptVersion}</td>
+                        <td className="px-4 py-2.5 text-sm text-slate-500">{d.analysisIdentifier}</td>
+                        <td className="px-4 py-2.5 text-sm text-slate-500">{d.sourceEntryPoint}</td>
+                        <td
+                          className="px-4 py-2.5 text-sm text-slate-500 tabular-nums text-right cursor-pointer hover:text-teal-600 hover:bg-slate-100"
+                          onClick={() => openEventList(
+                            rawEvents.filter(e =>
+                              e.modelVersion === d.modelVersion &&
+                              e.promptVersion === d.promptVersion &&
+                              e.analysisIdentifier === d.analysisIdentifier &&
+                              e.sourceEntryPoint === d.sourceEntryPoint
+                            ),
+                            `Events — ${d.modelVersion} v${d.promptVersion}`
+                          )}
+                        >
+                          {d.requests.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2.5 text-right">
+                          <span className="text-sm font-semibold tabular-nums text-emerald-600">
+                            {Math.round(d.successRate * 100)}%
+                          </span>
+                        </td>
                         <td className="px-4 py-2.5 text-right">
                           <span className={`text-sm font-semibold tabular-nums ${d.failureRate < 0.05 ? 'text-emerald-600' : d.failureRate < 0.10 ? 'text-amber-600' : 'text-red-600'}`}>
                             {Math.round(d.failureRate * 100)}%
@@ -544,14 +636,16 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
                     ))}
                   </tbody>
                 </table>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <SchoolieEventGrid
         events={rawEvents}
         title="Recent Events"
+        showSlowFilter
         onUserClick={userId => {
           const user = users.find(u => u.userId === userId);
           if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
@@ -587,6 +681,10 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
         onClose={() => setIsDistrictDetailOpen(false)}
         zIndex={60}
         isTopmost={isDistrictDetailOpen}
+      />
+      <AIConfigDrawer
+        isOpen={isAIConfigDrawerOpen}
+        onClose={() => setIsAIConfigDrawerOpen(false)}
       />
     </div>
   );
