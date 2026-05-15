@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
+  Tooltip, Legend, ResponsiveContainer, Cell,
 } from 'recharts';
 import { Users, Zap, Clock } from 'lucide-react';
 import {
@@ -12,7 +12,7 @@ import {
   SchoolieSessionStatRow,
   SchoolieEventStatRow,
 } from '../../../types/schoolieUsageTypes';
-import { SchoolieUsageEvent, SCHOOLIE_USER_NAMES, SCHOOLIE_DISTRICT_NAMES } from '../../../data/mockSchoolieUsageData';
+import { SchoolieUsageEvent } from '../../../data/mockSchoolieUsageData';
 import {
   getSchoolieUsageSummary,
   getSchoolieRawEvents,
@@ -22,13 +22,14 @@ import {
   getSchoolieEventStats,
 } from '../../../services/schoolieUsageService';
 import {
-  TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDateTime, fmtDate,
+  TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDate,
 } from '../common/usageHelpers';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
 import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
 import SchoolieEventListDrawer from './SchoolieEventListDrawer';
 import SchoolieSessionListDrawer from './SchoolieSessionListDrawer';
+import SchoolieEventGrid from './SchoolieEventGrid';
 
 interface Props {
   filters: SchoolieUsageFilters;
@@ -96,8 +97,6 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
   const [analysisExpanded, setAnalysisExpanded] = useState(true);
   const [dayTimeExpanded, setDayTimeExpanded] = useState(true);
   const [topUsersExpanded, setTopUsersExpanded] = useState(true);
-  const [eventGridExpanded, setEventGridExpanded] = useState(true);
-
   const [reqGrouping, setReqGrouping] = useState<Grouping>('daily');
   const [dayTimeMode, setDayTimeMode] = useState<DayTimeMode>('hour');
 
@@ -211,8 +210,6 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
     return { sessionMap, surfaceMap };
   }, [sessions]);
 
-  const recentEvents = rawEvents.slice(0, 20);
-
   const Spinner = () => (
     <div className="flex justify-center py-8">
       <div className="animate-spin rounded-full h-6 w-6 border-2 border-violet-500 border-t-transparent" />
@@ -220,7 +217,7 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
   );
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="space-y-5">
 
       {/* KPI Cards */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -282,6 +279,7 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line type="monotone" dataKey="requests" name="Requests" stroke={TOPIC_COLORS.AI} strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -324,10 +322,11 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
                     </div>
                   </div>
                   {sessionTrendData.length > 1 && (
-                    <ResponsiveContainer width="100%" height={80}>
+                    <ResponsiveContainer width="100%" height={120}>
                       <LineChart data={sessionTrendData} margin={{ top: 2, right: 4, left: -32, bottom: 0 }}>
-                        <Line type="monotone" dataKey="sessions" stroke={TOPIC_COLORS.Sessions} strokeWidth={2} dot={false} />
-                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} labelFormatter={() => ''} formatter={(v: number) => [v, 'Sessions']} />
+                        <Line type="monotone" dataKey="sessions" name="Sessions" stroke={TOPIC_COLORS.Sessions} strokeWidth={2} dot={false} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} labelFormatter={() => ''} formatter={(v: any) => [v, 'Sessions']} />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   )}
@@ -360,12 +359,24 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
                       <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
-                      <Bar dataKey="requests" name="Requests" radius={[0, 4, 4, 0]} cursor="pointer"
-                        onClick={(data: { name: string }) => openEventList(rawEvents.filter(e => e.analysisIdentifier === data.name), `Events — ${data.name}`)}>
-                        {analysisStats.map((entry, i) => (
-                          <Cell key={entry.name} fill={ANALYSIS_COLORS[i % ANALYSIS_COLORS.length]} />
-                        ))}
-                      </Bar>
+                      <Bar 
+  dataKey="requests" 
+  name="Requests" 
+  radius={[0, 4, 4, 0]} 
+  cursor="pointer"
+  onClick={(data: any) => {
+    if (data && data.name) {
+      openEventList(
+        rawEvents.filter(e => e.analysisIdentifier === data.name), 
+        `Events — ${data.name}`
+      );
+    }
+  }}
+>
+  {analysisStats.map((entry, i) => (
+    <Cell key={entry.name} fill={ANALYSIS_COLORS[i % ANALYSIS_COLORS.length]} />
+  ))}
+</Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -485,72 +496,20 @@ const SchoolieEngagementTab: React.FC<Props> = ({ filters }) => {
         )}
       </div>
 
-      {/* Event Activity Grid */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <button onClick={() => setEventGridExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
-            <USAGE_ICONS.Events size={16} style={{ color: TAB_COLORS.Events }} />
-            <span className="text-sm font-semibold text-slate-700">Recent Activity</span>
-            {!loading && recentEvents.length > 0 && <span className="text-[11px] text-gray-400">Last {recentEvents.length}</span>}
-          </button>
-          <div className="flex items-center gap-2">
-            <button onClick={() => openEventList(rawEvents, 'All Events')} className="text-xs text-violet-600 hover:underline font-medium cursor-pointer">View all</button>
-            <button onClick={() => setEventGridExpanded(e => !e)}><CollapseChevron expanded={eventGridExpanded} /></button>
-          </div>
-        </div>
-        {eventGridExpanded && (
-          <div className="border-t border-gray-100">
-            {loading ? <Spinner /> : recentEvents.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No events</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-50 border-b border-gray-100">
-                    <tr>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Time</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">User</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">District</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Analysis</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Response</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {recentEvents.map((e, i) => {
-                      const user = users.find(u => u.userId === e.userId);
-                      const district = districts.find(d => d.districtId === e.districtId);
-                      return (
-                        <tr key={`${e.sessionId}-${i}`} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDateTime(e.timestamp)}</td>
-                          <td className="px-4 py-2.5 text-sm whitespace-nowrap">
-                            {user ? (
-                              <button onClick={() => { setSelectedUser(user); setIsUserDetailOpen(true); }}
-                                className="font-medium text-slate-700 hover:text-violet-600 cursor-pointer">
-                                {user.userName}
-                              </button>
-                            ) : <span className="text-slate-500">{SCHOOLIE_USER_NAMES[e.userId] ?? e.userId}</span>}
-                          </td>
-                          <td className="px-4 py-2.5 text-sm whitespace-nowrap">
-                            {district ? (
-                              <button onClick={() => { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }}
-                                className="text-slate-500 hover:text-violet-600 cursor-pointer">
-                                {district.districtName}
-                              </button>
-                            ) : <span className="text-slate-500">{SCHOOLIE_DISTRICT_NAMES[e.districtId] ?? e.districtId}</span>}
-                          </td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500">{e.analysisIdentifier}</td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500 text-right tabular-nums">
-                            {e.responseTimeMs != null ? `${e.responseTimeMs.toLocaleString()}ms` : '—'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <SchoolieEventGrid
+        events={rawEvents}
+        title="Event Activity"
+        onUserClick={userId => {
+          const user = users.find(u => u.userId === userId);
+          if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
+        }}
+        onDistrictClick={districtId => {
+          const district = districts.find(d => d.districtId === districtId);
+          if (district) { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }
+        }}
+        onEventTypeClick={eventType => openEventList(rawEvents.filter(e => e.eventType === eventType), eventType)}
+        onAnalysisClick={analysis => openEventList(rawEvents.filter(e => e.analysisIdentifier === analysis), analysis)}
+      />
 
       <SchoolieEventListDrawer
         events={eventListTarget?.events ?? []}

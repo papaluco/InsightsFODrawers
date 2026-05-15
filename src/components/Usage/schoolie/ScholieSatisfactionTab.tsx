@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
+  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 import { ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
 import {
@@ -27,7 +27,7 @@ import {
 } from '../../../services/schoolieUsageService';
 import { FeedbackRecord } from '../../../types/feedbackTypes';
 import {
-  TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDate, fmtDateTime,
+  TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDateTime,
 } from '../common/usageHelpers';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
@@ -154,7 +154,7 @@ const ScholieSatisfactionTab: React.FC<Props> = ({ filters }) => {
     : 0;
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="space-y-5">
 
       {/* KPI Cards */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -209,6 +209,7 @@ const ScholieSatisfactionTab: React.FC<Props> = ({ filters }) => {
                     <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                     <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Line type="monotone" dataKey="thumbsUp" name="Positive" stroke={TOPIC_COLORS.Sessions} strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="thumbsDown" name="Negative" stroke={TOPIC_COLORS.Errors} strokeWidth={2} dot={false} />
                   </LineChart>
@@ -284,7 +285,7 @@ const ScholieSatisfactionTab: React.FC<Props> = ({ filters }) => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} unit="%" domain={[0, 100]} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} formatter={(v: number) => `${v}%`} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} formatter={(v: any) => `${v}%`} />
                   <Bar dataKey="positive" name="Positive %" stackId="s" fill={TOPIC_COLORS.Sessions} />
                   <Bar dataKey="negative" name="Negative %" stackId="s" fill={TOPIC_COLORS.Errors} radius={[0, 4, 4, 0]} />
                 </BarChart>

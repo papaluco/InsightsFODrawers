@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
+  LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, Cell,
 } from 'recharts';
 import { ThumbsUp, ThumbsDown, Clock, AlertCircle, Zap, Users } from 'lucide-react';
 import {
@@ -12,7 +12,7 @@ import {
   SchoolieSessionStatRow,
   ScholieSatisfactionStats,
 } from '../../../types/schoolieUsageTypes';
-import { SchoolieUsageEvent, SCHOOLIE_USER_NAMES } from '../../../data/mockSchoolieUsageData';
+import { SchoolieUsageEvent } from '../../../data/mockSchoolieUsageData';
 import {
   getSchoolieUsageSummary,
   getSatisfactionStats,
@@ -22,13 +22,15 @@ import {
   getSchoolieSessionStats,
 } from '../../../services/schoolieUsageService';
 import {
-  TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDateTime, fmtDate,
+  TOPIC_COLORS, TOPIC_TAILWIND, TAB_COLORS, USAGE_ICONS, fmtDate,
 } from '../common/usageHelpers';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 import SchoolieUserListDrawer from './SchoolieUserListDrawer';
 import SchoolieDistrictListDrawer from './SchoolieDistrictListDrawer';
 import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
 import SchoolieEventListDrawer from './SchoolieEventListDrawer';
+import SchoolieEventGrid from './SchoolieEventGrid';
+import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
 
 interface Props {
   filters: SchoolieUsageFilters;
@@ -78,22 +80,6 @@ const SURFACE_COLORS: Record<string, string> = {
   UsageScreen: TOPIC_COLORS.Usage,
 };
 
-const EVENT_TYPE_COLORS: Record<string, string> = {
-  KPI_SCHOOLIE_OPENED:       TOPIC_COLORS.AI,
-  DASHBOARD_SCHOOLIE_OPENED: TOPIC_COLORS.AI,
-  AI_REQUEST_STARTED:        TOPIC_COLORS.Workspace,
-  AI_RESPONSE_SUCCESS:       TOPIC_COLORS.Sessions,
-  AI_RESPONSE_ERROR:         TOPIC_COLORS.Errors,
-};
-
-const EVENT_TYPE_SHORT: Record<string, string> = {
-  KPI_SCHOOLIE_OPENED:       'KPI Opened',
-  DASHBOARD_SCHOOLIE_OPENED: 'Dashboard Opened',
-  AI_REQUEST_STARTED:        'Request Started',
-  AI_RESPONSE_SUCCESS:       'Response Success',
-  AI_RESPONSE_ERROR:         'Response Error',
-};
-
 type EventListTarget = { events: SchoolieUsageEvent[]; title: string };
 
 const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
@@ -111,7 +97,8 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
   const [surfaceExpanded, setSurfaceExpanded] = useState(true);
   const [topDistrictsExpanded, setTopDistrictsExpanded] = useState(true);
   const [feedbackExpanded, setFeedbackExpanded] = useState(true);
-  const [recentExpanded, setRecentExpanded] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<SchoolieUserStatRow | null>(null);
+  const [isUserDetailOpen, setIsUserDetailOpen] = useState(false);
 
   const [reqGrouping, setReqGrouping] = useState<Grouping>('daily');
   const [userGrouping, setUserGrouping] = useState<Grouping>('daily');
@@ -186,7 +173,6 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
   }, [summary]);
 
   const topDistricts = districts.slice(0, 5);
-  const recentEvents = rawEvents.slice(0, 10);
 
   const Spinner = () => (
     <div className="flex justify-center py-8">
@@ -195,7 +181,7 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
   );
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="space-y-5">
 
       {/* KPI Cards */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -273,6 +259,7 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line type="monotone" dataKey="requests" name="Requests"  stroke={TOPIC_COLORS.AI}      strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="successes" name="Successes" stroke={TOPIC_COLORS.Sessions} strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="errors"   name="Errors"    stroke={TOPIC_COLORS.Errors}   strokeWidth={2} dot={false} />
@@ -318,6 +305,7 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line type="monotone" dataKey="users" name="Active Users" stroke={TOPIC_COLORS.Users} strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -333,41 +321,45 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
         </div>
       </div>
 
-      {/* Usage by Surface */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4">
-          <button onClick={() => setSurfaceExpanded(e => !e)} className="text-left flex-1 flex items-center gap-3">
-            <USAGE_ICONS.Drawers size={16} style={{ color: TOPIC_COLORS.Drawers }} />
-            <span className="text-sm font-semibold text-gray-900">Usage by Surface</span>
-          </button>
-          <button onClick={() => setSurfaceExpanded(e => !e)}><CollapseChevron expanded={surfaceExpanded} /></button>
-        </div>
-        {surfaceExpanded && (
-          <div className="border-t border-gray-100 px-5 pb-5 pt-2">
-            {loading ? <Spinner /> : surfaceData.length === 0 ? (
-              <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">No surface data</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={surfaceData} margin={{ top: 4, right: 16, left: -8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                  <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
-                  <Bar dataKey="requests" name="Requests" radius={[4, 4, 0, 0]} cursor="pointer"
-                    onClick={(data: { rawName: string; label: string }) => openEventList(rawEvents.filter(e => e.sourceEntryPoint === data.rawName), `Events — ${data.label}`)}>
-                    {surfaceData.map(entry => (
-                      <Cell key={entry.rawName} fill={SURFACE_COLORS[entry.rawName] ?? TOPIC_COLORS.AI} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+      {/* Usage by Surface · Top Districts · Feedback Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4">
+            <button onClick={() => setSurfaceExpanded(e => !e)} className="text-left flex-1 flex items-center gap-3">
+              <USAGE_ICONS.Drawers size={16} style={{ color: TOPIC_COLORS.Drawers }} />
+              <span className="text-sm font-semibold text-gray-900">Usage by Surface</span>
+            </button>
+            <button onClick={() => setSurfaceExpanded(e => !e)}><CollapseChevron expanded={surfaceExpanded} /></button>
           </div>
-        )}
-      </div>
+          {surfaceExpanded && (
+            <div className="border-t border-gray-100 px-5 pb-5 pt-2">
+              {loading ? <Spinner /> : surfaceData.length === 0 ? (
+                <div className="flex items-center justify-center h-36 text-sm text-gray-400 italic">No surface data</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={surfaceData}
+                      dataKey="requests"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={75}
+                    >
+                      {surfaceData.map(entry => (
+                        <Cell key={entry.rawName} fill={SURFACE_COLORS[entry.rawName] ?? TOPIC_COLORS.AI} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          )}
+        </div>
 
-      {/* Top Districts + Feedback Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5">
             <button onClick={() => setTopDistrictsExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
@@ -474,55 +466,20 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <button onClick={() => setRecentExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
-            <USAGE_ICONS.Events size={16} style={{ color: TAB_COLORS.Events }} />
-            <span className="text-sm font-semibold text-slate-700">Recent Activity</span>
-            {!loading && recentEvents.length > 0 && <span className="text-[11px] text-gray-400">Last {recentEvents.length} events</span>}
-          </button>
-          <div className="flex items-center gap-2">
-            <button onClick={() => openEventList(rawEvents, 'All Events')} className="text-xs text-violet-600 hover:underline font-medium cursor-pointer">View all</button>
-            <button onClick={() => setRecentExpanded(e => !e)}><CollapseChevron expanded={recentExpanded} /></button>
-          </div>
-        </div>
-        {recentExpanded && (
-          <div className="border-t border-gray-100">
-            {loading ? <Spinner /> : recentEvents.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No recent activity</p>
-            ) : (
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-left">Time</th>
-                    <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-left">User</th>
-                    <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-left">Event</th>
-                    <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-left">Analysis</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {recentEvents.map((e, i) => (
-                    <tr key={`${e.sessionId}-${i}`}
-                      className="hover:bg-slate-50 transition-colors cursor-pointer"
-                      onClick={() => openEventList(rawEvents, 'All Events')}>
-                      <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDateTime(e.timestamp)}</td>
-                      <td className="px-4 py-2.5 text-sm font-medium text-slate-700 whitespace-nowrap">{SCHOOLIE_USER_NAMES[e.userId] ?? e.userId}</td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: EVENT_TYPE_COLORS[e.eventType] ?? TOPIC_COLORS.Events }} />
-                          <span className="text-xs text-slate-600 whitespace-nowrap">{EVENT_TYPE_SHORT[e.eventType] ?? e.eventType}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500">{e.analysisIdentifier}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-      </div>
+      <SchoolieEventGrid
+        events={rawEvents}
+        title="Recent Activity"
+        onUserClick={userId => {
+          const user = users.find(u => u.userId === userId);
+          if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
+        }}
+        onDistrictClick={districtId => {
+          const district = districts.find(d => d.districtId === districtId);
+          if (district) { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }
+        }}
+        onEventTypeClick={eventType => openEventList(rawEvents.filter(e => e.eventType === eventType), eventType)}
+        onAnalysisClick={analysis => openEventList(rawEvents.filter(e => e.analysisIdentifier === analysis), analysis)}
+      />
 
       <SchoolieUserListDrawer
         users={users}
@@ -552,7 +509,15 @@ const SchoolieOverviewTab: React.FC<Props> = ({ filters, onTabChange }) => {
         isOpen={isEventListOpen}
         onClose={() => setIsEventListOpen(false)}
         zIndex={52}
-        isTopmost={isEventListOpen && !isDistrictDetailOpen}
+        isTopmost={isEventListOpen && !isDistrictDetailOpen && !isUserDetailOpen}
+      />
+      <SchoolieUserDetailDrawer
+        user={selectedUser}
+        sessions={sessions}
+        isOpen={isUserDetailOpen}
+        onClose={() => setIsUserDetailOpen(false)}
+        zIndex={60}
+        isTopmost={isUserDetailOpen}
       />
     </div>
   );

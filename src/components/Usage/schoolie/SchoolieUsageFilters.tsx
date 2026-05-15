@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { SlidersHorizontal, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { MultiSelectDropdown, SelectOption } from '../../Common/MultiSelectDropdown';
 import {
   SchoolieUsageFilters,
   DEFAULT_SCHOOLIE_FILTERS,
@@ -46,8 +47,9 @@ const SchoolieUsageFiltersBar: React.FC<Props> = ({ filters, onChange }) => {
     return ids.map(id => ({ value: id, label: SCHOOLIE_USER_NAMES[id] ?? id }));
   }, [filters.districtId]);
 
-  const analysisOptions = useMemo(() => {
-    return [...new Set(mockSchoolieUsageEvents.map(e => e.analysisIdentifier))].sort();
+  const analysisOptions = useMemo((): SelectOption[] => {
+    return [...new Set(mockSchoolieUsageEvents.map(e => e.analysisIdentifier))].sort()
+      .map(a => ({ value: a, label: a }));
   }, []);
 
   return (
@@ -102,69 +104,63 @@ const SchoolieUsageFiltersBar: React.FC<Props> = ({ filters, onChange }) => {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">District</label>
-            <select
-              value={filters.districtId ?? ''}
-              onChange={e => onChange({ ...filters, districtId: e.target.value || undefined, userId: undefined })}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none"
-            >
-              <option value="">All Districts</option>
-              {districtOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
+            <MultiSelectDropdown
+              label="District"
+              options={districtOptions}
+              selected={filters.districtId ? [filters.districtId] : []}
+              onChange={values => onChange({ ...filters, districtId: values[0] ?? undefined, userId: undefined })}
+              placeholder="Search districts..."
+            />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">User</label>
-            <select
-              value={filters.userId ?? ''}
-              onChange={e => onChange({ ...filters, userId: e.target.value || undefined })}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none"
-            >
-              <option value="">All Users</option>
-              {userOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
+            <MultiSelectDropdown
+              label="User"
+              options={userOptions}
+              selected={filters.userId ? [filters.userId] : []}
+              onChange={values => onChange({ ...filters, userId: values[0] ?? undefined })}
+              placeholder="Search users..."
+            />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Source Surface</label>
-            <select
-              value={filters.sourceEntryPoint ?? ''}
-              onChange={e => onChange({ ...filters, sourceEntryPoint: (e.target.value || undefined) as SchoolieSourceEntryPoint | undefined })}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none"
-            >
-              <option value="">All Surfaces</option>
-              <option value="KpiDrawer">KPI Drawer</option>
-              <option value="Dashboard">Dashboard</option>
-              <option value="UsageScreen">Usage Screen</option>
-            </select>
+            <MultiSelectDropdown
+              label="Source Surface"
+              options={[
+                { value: 'KpiDrawer', label: 'KPI Drawer' },
+                { value: 'Dashboard', label: 'Dashboard' },
+                { value: 'UsageScreen', label: 'Usage Screen' },
+              ]}
+              selected={filters.sourceEntryPoint ? [filters.sourceEntryPoint] : []}
+              onChange={values => onChange({ ...filters, sourceEntryPoint: (values[0] ?? undefined) as SchoolieSourceEntryPoint | undefined })}
+              placeholder="Search surfaces..."
+            />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Analysis</label>
-            <select
-              value={filters.analysisIdentifier ?? ''}
-              onChange={e => onChange({ ...filters, analysisIdentifier: (e.target.value || undefined) as SchoolieAnalysisIdentifier | undefined })}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none"
-            >
-              <option value="">All Analyses</option>
-              {analysisOptions.map(a => <option key={a} value={a}>{a}</option>)}
-            </select>
+            <MultiSelectDropdown
+              label="Analysis"
+              options={analysisOptions}
+              selected={filters.analysisIdentifier ? [filters.analysisIdentifier] : []}
+              onChange={values => onChange({ ...filters, analysisIdentifier: (values[0] ?? undefined) as SchoolieAnalysisIdentifier | undefined })}
+              placeholder="Search analyses..."
+            />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Event Type</label>
-            <select
-              value={filters.eventType ?? ''}
-              onChange={e => onChange({ ...filters, eventType: (e.target.value || undefined) as SchoolieEventType | undefined })}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-violet-200 focus:border-violet-400 outline-none"
-            >
-              <option value="">All Events</option>
-              <option value="KPI_SCHOOLIE_OPENED">KPI Schoolie Opened</option>
-              <option value="DASHBOARD_SCHOOLIE_OPENED">Dashboard Schoolie Opened</option>
-              <option value="AI_REQUEST_STARTED">AI Request Started</option>
-              <option value="AI_RESPONSE_SUCCESS">AI Response Success</option>
-              <option value="AI_RESPONSE_ERROR">AI Response Error</option>
-            </select>
+            <MultiSelectDropdown
+              label="Event Type"
+              options={[
+                { value: 'KPI_SCHOOLIE_OPENED', label: 'KPI Schoolie Opened' },
+                { value: 'DASHBOARD_SCHOOLIE_OPENED', label: 'Dashboard Schoolie Opened' },
+                { value: 'AI_REQUEST_STARTED', label: 'AI Request Started' },
+                { value: 'AI_RESPONSE_SUCCESS', label: 'AI Response Success' },
+                { value: 'AI_RESPONSE_ERROR', label: 'AI Response Error' },
+              ]}
+              selected={filters.eventType ? [filters.eventType] : []}
+              onChange={values => onChange({ ...filters, eventType: (values[0] ?? undefined) as SchoolieEventType | undefined })}
+              placeholder="Search event types..."
+            />
           </div>
         </div>
       )}

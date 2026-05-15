@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine,
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { AlertCircle, Clock, Zap, CheckCircle, XCircle } from 'lucide-react';
 import {
@@ -13,7 +13,7 @@ import {
   SchoolieEventStatRow,
   SchoolieOperationalStats,
 } from '../../../types/schoolieUsageTypes';
-import { SchoolieUsageEvent, SCHOOLIE_USER_NAMES, SCHOOLIE_DISTRICT_NAMES } from '../../../data/mockSchoolieUsageData';
+import { SchoolieUsageEvent } from '../../../data/mockSchoolieUsageData';
 import {
   getSchoolieUsageSummary,
   getSchoolieRawEvents,
@@ -24,12 +24,13 @@ import {
   getSchoolieOperationalStats,
 } from '../../../services/schoolieUsageService';
 import {
-  TOPIC_COLORS, TOPIC_TAILWIND, USAGE_ICONS, fmtDateTime, fmtDate,
+  TOPIC_COLORS, TOPIC_TAILWIND, USAGE_ICONS,
 } from '../common/usageHelpers';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
 import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
 import SchoolieEventListDrawer from './SchoolieEventListDrawer';
+import SchoolieEventGrid from './SchoolieEventGrid';
 
 interface Props {
   filters: SchoolieUsageFilters;
@@ -96,9 +97,7 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
   const [failureExpanded, setFailureExpanded] = useState(true);
   const [errorTypesExpanded, setErrorTypesExpanded] = useState(true);
   const [healthBySurfaceExpanded, setHealthBySurfaceExpanded] = useState(true);
-  const [slowestExpanded, setSlowestExpanded] = useState(true);
   const [promptModelExpanded, setPromptModelExpanded] = useState(true);
-  const [eventGridExpanded, setEventGridExpanded] = useState(true);
 
   const [grouping, setGrouping] = useState<Grouping>('daily');
 
@@ -223,8 +222,6 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
       .slice(0, 10),
     [rawEvents]);
 
-  const recentEvents = rawEvents.slice(0, 20);
-
   const Spinner = () => (
     <div className="flex justify-center py-8">
       <div className="animate-spin rounded-full h-6 w-6 border-2 border-violet-500 border-t-transparent" />
@@ -235,7 +232,7 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
   const timeoutRate = summary && summary.totalRequests > 0 ? (operationalStats?.timeoutCount ?? 0) / summary.totalRequests : 0;
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="space-y-5">
 
       {/* KPI Cards */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -301,6 +298,7 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line type="monotone" dataKey="requests" name="Requests" stroke={TOPIC_COLORS.AI} strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="errors" name="Errors" stroke={TOPIC_COLORS.Errors} strokeWidth={2} dot={false} />
                     </LineChart>
@@ -333,7 +331,8 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} unit="ms" />
-                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} formatter={(v: number) => [`${v.toLocaleString()}ms`, 'Avg Response']} />
+                      <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} formatter={(v: any) => [`${v?.toLocaleString()}ms`, 'Avg Response']} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <ReferenceLine y={4000} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: 'Slow threshold', position: 'right', fontSize: 9, fill: '#f59e0b' }} />
                       <Line type="monotone" dataKey="avgMs" name="Avg Response" stroke={TOPIC_COLORS.Interactions} strokeWidth={2} dot={false} />
                     </LineChart>
@@ -493,59 +492,22 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
         )}
       </div>
 
-      {/* Slowest Requests + Prompt/Model */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5">
-            <button onClick={() => setSlowestExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
-              <Clock size={16} style={{ color: TOPIC_COLORS.Errors }} />
-              <span className="text-sm font-semibold text-slate-700">Slowest Requests</span>
-            </button>
-            <button onClick={() => setSlowestExpanded(e => !e)}><CollapseChevron expanded={slowestExpanded} /></button>
-          </div>
-          {slowestExpanded && (
-            <div className="border-t border-gray-100">
-              {loading ? <Spinner /> : slowestRequests.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">No slow requests</p>
-              ) : (
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-50 border-b border-gray-100">
-                    <tr>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">User</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Analysis</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Response</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {slowestRequests.map((e, i) => {
-                      const user = users.find(u => u.userId === e.userId);
-                      return (
-                        <tr key={`${e.sessionId}-${i}`} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2.5 text-sm whitespace-nowrap">
-                            {user ? (
-                              <button onClick={() => { setSelectedUser(user); setIsUserDetailOpen(true); }}
-                                className="font-medium text-slate-700 hover:text-violet-600 cursor-pointer">
-                                {user.userName}
-                              </button>
-                            ) : <span className="text-slate-500">{SCHOOLIE_USER_NAMES[e.userId] ?? e.userId}</span>}
-                          </td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500">{e.analysisIdentifier}</td>
-                          <td className="px-4 py-2.5 text-right">
-                            <span className="text-sm font-semibold tabular-nums text-amber-600">{e.responseTimeMs?.toLocaleString()}ms</span>
-                          </td>
-                          <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDate(e.timestamp)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </div>
+      <SchoolieEventGrid
+        events={slowestRequests}
+        title="Slowest Requests"
+        onUserClick={userId => {
+          const user = users.find(u => u.userId === userId);
+          if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
+        }}
+        onDistrictClick={districtId => {
+          const district = districts.find(d => d.districtId === districtId);
+          if (district) { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }
+        }}
+        onEventTypeClick={eventType => openEventList(rawEvents.filter(e => e.eventType === eventType), eventType)}
+        onAnalysisClick={analysis => openEventList(rawEvents.filter(e => e.analysisIdentifier === analysis), analysis)}
+      />
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5">
             <button onClick={() => setPromptModelExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
               <USAGE_ICONS.KPI size={16} style={{ color: TOPIC_COLORS.AI }} />
@@ -586,84 +548,21 @@ const SchoolieOperationalHealthTab: React.FC<Props> = ({ filters }) => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Operational Event Grid */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5">
-          <button onClick={() => setEventGridExpanded(e => !e)} className="flex-1 flex items-center gap-2.5">
-            <USAGE_ICONS.Events size={16} style={{ color: TOPIC_COLORS.Events }} />
-            <span className="text-sm font-semibold text-slate-700">Recent Events</span>
-            {!loading && recentEvents.length > 0 && <span className="text-[11px] text-gray-400">Last {recentEvents.length}</span>}
-          </button>
-          <div className="flex items-center gap-2">
-            <button onClick={() => openEventList(rawEvents, 'All Events')} className="text-xs text-violet-600 hover:underline font-medium cursor-pointer">View all</button>
-            <button onClick={() => setEventGridExpanded(e => !e)}><CollapseChevron expanded={eventGridExpanded} /></button>
-          </div>
-        </div>
-        {eventGridExpanded && (
-          <div className="border-t border-gray-100">
-            {loading ? <Spinner /> : recentEvents.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No events</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-50 border-b border-gray-100">
-                    <tr>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Time</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">User</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">District</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Surface</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Response</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {recentEvents.map((e, i) => {
-                      const user = users.find(u => u.userId === e.userId);
-                      const district = districts.find(d => d.districtId === e.districtId);
-                      return (
-                        <tr key={`${e.sessionId}-${i}`} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDateTime(e.timestamp)}</td>
-                          <td className="px-4 py-2.5 text-sm whitespace-nowrap">
-                            {user ? (
-                              <button onClick={() => { setSelectedUser(user); setIsUserDetailOpen(true); }}
-                                className="font-medium text-slate-700 hover:text-violet-600 cursor-pointer">
-                                {user.userName}
-                              </button>
-                            ) : <span className="text-slate-500">{SCHOOLIE_USER_NAMES[e.userId] ?? e.userId}</span>}
-                          </td>
-                          <td className="px-4 py-2.5 text-sm whitespace-nowrap">
-                            {district ? (
-                              <button onClick={() => { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }}
-                                className="text-slate-500 hover:text-violet-600 cursor-pointer">
-                                {district.districtName}
-                              </button>
-                            ) : <span className="text-slate-500">{SCHOOLIE_DISTRICT_NAMES[e.districtId] ?? e.districtId}</span>}
-                          </td>
-                          <td className="px-4 py-2.5 text-sm text-slate-500">{e.sourceEntryPoint}</td>
-                          <td className="px-4 py-2.5 text-sm tabular-nums text-right">
-                            {e.responseTimeMs != null
-                              ? <span className={(e.responseTimeMs > 4000) ? 'text-amber-600 font-semibold' : 'text-slate-500'}>{e.responseTimeMs.toLocaleString()}ms</span>
-                              : <span className="text-gray-300">—</span>}
-                          </td>
-                          <td className="px-4 py-2.5">
-                            {e.status === 'success'
-                              ? <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-semibold rounded-full"><CheckCircle size={9} /> OK</span>
-                              : e.status === 'error'
-                              ? <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 text-[11px] font-semibold rounded-full"><XCircle size={9} /> Error</span>
-                              : <span className="text-gray-300 text-xs">—</span>}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <SchoolieEventGrid
+        events={rawEvents}
+        title="Recent Events"
+        onUserClick={userId => {
+          const user = users.find(u => u.userId === userId);
+          if (user) { setSelectedUser(user); setIsUserDetailOpen(true); }
+        }}
+        onDistrictClick={districtId => {
+          const district = districts.find(d => d.districtId === districtId);
+          if (district) { setSelectedDistrict(district); setIsDistrictDetailOpen(true); }
+        }}
+        onEventTypeClick={eventType => openEventList(rawEvents.filter(e => e.eventType === eventType), eventType)}
+        onAnalysisClick={analysis => openEventList(rawEvents.filter(e => e.analysisIdentifier === analysis), analysis)}
+      />
 
       <SchoolieEventListDrawer
         events={eventListTarget?.events ?? []}

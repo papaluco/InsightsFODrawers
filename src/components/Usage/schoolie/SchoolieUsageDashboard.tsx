@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SchoolieUsageFilters } from '../../../types/schoolieUsageTypes';
 import { getSchoolieUsageSummary } from '../../../services/schoolieUsageService';
+import { TAB_COLORS } from '../common/usageHelpers';
 import SchoolieOverviewTab from './SchoolieOverviewTab';
 import SchoolieAdoptionTab from './SchoolieAdoptionTab';
 import SchoolieEngagementTab from './SchoolieEngagementTab';
@@ -9,12 +10,12 @@ import SchoolieOperationalHealthTab from './SchoolieOperationalHealthTab';
 
 type Tab = 'overview' | 'adoption' | 'engagement' | 'satisfaction' | 'operational' | string;
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'overview',     label: 'Overview' },
-  { id: 'adoption',     label: 'Adoption' },
-  { id: 'engagement',   label: 'Engagement' },
-  { id: 'satisfaction', label: 'Satisfaction' },
-  { id: 'operational',  label: 'Operational Health' },
+const TABS: { id: Tab; label: string; color: string }[] = [
+  { id: 'overview',     label: 'Overview',          color: TAB_COLORS.Overview },
+  { id: 'adoption',     label: 'Adoption',           color: TAB_COLORS.Users },
+  { id: 'engagement',   label: 'Engagement',         color: TAB_COLORS.Interactions },
+  { id: 'satisfaction', label: 'Satisfaction',       color: TAB_COLORS.Sessions },
+  { id: 'operational',  label: 'Operational Health', color: TAB_COLORS.Performance },
 ];
 
 interface Props {
@@ -51,17 +52,18 @@ const SchoolieUsageDashboard: React.FC<Props> = ({ filters, onDataUpdate, onTabC
   return (
     <div className="space-y-5">
       {/* Tab bar */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        <div className="flex border-b border-gray-200 px-2 pt-1 overflow-x-auto">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex flex-wrap border-b border-gray-200">
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-5 py-2.5 text-sm font-semibold transition-colors -mb-px whitespace-nowrap ${
+              className={`px-6 py-3 text-sm font-semibold transition-colors border-b-2 flex-1 sm:flex-none ${
                 tab === t.id
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'bg-gray-50'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50 border-transparent'
               }`}
+              style={tab === t.id ? { color: t.color, borderColor: t.color } : {}}
             >
               {t.label}
             </button>

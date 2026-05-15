@@ -1,32 +1,46 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, ChevronUp, ChevronDown, MessageSquare } from 'lucide-react';
-import { SchoolieUserStatRow, SchoolieSessionStatRow } from '../../../types/schoolieUsageTypes';
+import { SchoolieUserStatRow, SchoolieSessionStatRow, SchoolieDistrictStatRow } from '../../../types/schoolieUsageTypes';
+import { SchoolieUsageEvent } from '../../../data/mockSchoolieUsageData';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import SchoolieUserDetailDrawer from './SchoolieUserDetailDrawer';
+import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
+import SchoolieEventListDrawer from './SchoolieEventListDrawer';
 import { TAB_COLORS, USAGE_ICONS, fmtDate } from '../common/usageHelpers';
 
 interface Props {
   users: SchoolieUserStatRow[];
   sessions: SchoolieSessionStatRow[];
+  districts?: SchoolieDistrictStatRow[];
+  rawEvents?: SchoolieUsageEvent[];
   title: string;
   isOpen: boolean;
   onClose: () => void;
+  zIndex?: number;
   isChildDrawerOpen?: boolean;
 }
 
 const SchoolieUserListDrawer: React.FC<Props> = ({
   users,
   sessions,
+  districts,
+  rawEvents,
   title,
   isOpen,
   onClose,
+  zIndex = 52,
   isChildDrawerOpen = false,
 }) => {
   const [selectedUser, setSelectedUser] = useState<SchoolieUserStatRow | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedDistrict, setSelectedDistrict] = useState<SchoolieDistrictStatRow | null>(null);
+  const [isDistrictDetailOpen, setIsDistrictDetailOpen] = useState(false);
+  const [isEventListOpen, setIsEventListOpen] = useState(false);
+  const [eventListEvents, setEventListEvents] = useState<SchoolieUsageEvent[]>([]);
+  const [eventListTitle, setEventListTitle] = useState('');
   const [sort, setSort] = useState<{ key: keyof SchoolieUserStatRow; dir: 'asc' | 'desc' }>({ key: 'totalRequests', dir: 'desc' });
 
-  const isAnyChildOpen = isChildDrawerOpen || isDetailOpen;
+  const isAnyChildOpen = isChildDrawerOpen || isDetailOpen || isDistrictDetailOpen || isEventListOpen;
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -62,7 +76,7 @@ const SchoolieUserListDrawer: React.FC<Props> = ({
 
   return (
     <>
-      <div className={`fixed inset-0 bg-white z-[52] flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-0 bg-white flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`} style={{ zIndex }}>
         <div className="px-2 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
           <div className="flex items-center gap-3">
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors" title="Back">
@@ -113,21 +127,68 @@ const SchoolieUserListDrawer: React.FC<Props> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {sorted.map(user => (
-                    <tr
-                      key={user.userId}
-                      onClick={() => { setSelectedUser(user); setIsDetailOpen(true); }}
-                      className="cursor-pointer hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-4 py-2.5 text-sm font-medium text-slate-700 whitespace-nowrap">{user.userName}</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap">{user.districtName}</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{user.totalRequests.toLocaleString()}</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{Math.round(user.successRate * 100)}%</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{Math.round(user.avgResponseTimeMs).toLocaleString()}ms</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 whitespace-nowrap">{user.topAnalysis || '—'}</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDate(user.lastActive)}</td>
-                    </tr>
-                  ))}
+                  {sorted.map(user => {
+                    const districtRow = districts?.find(d => d.districtId === user.districtId);
+                    return (
+                      <tr key={user.userId} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          <button
+                            onClick={() => { setSelectedUser(user); setIsDetailOpen(true); }}
+                            className="text-sm font-medium text-slate-700 hover:text-violet-600 cursor-pointer text-left"
+                          >
+                            {user.userName}
+                          </button>
+                        </td>
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          {districtRow ? (
+                            <button
+                              onClick={() => { setSelectedDistrict(districtRow); setIsDistrictDetailOpen(true); }}
+                              className="text-sm text-slate-500 hover:text-violet-600 cursor-pointer text-left"
+                            >
+                              {user.districtName}
+                            </button>
+                          ) : (
+                            <span className="text-sm text-slate-500">{user.districtName}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 tabular-nums whitespace-nowrap">
+                          {rawEvents ? (
+                            <button
+                              onClick={() => {
+                                setEventListEvents(rawEvents.filter(e => e.userId === user.userId));
+                                setEventListTitle(`${user.userName} — Events`);
+                                setIsEventListOpen(true);
+                              }}
+                              className="text-sm text-slate-500 hover:text-violet-600 cursor-pointer tabular-nums"
+                            >
+                              {user.totalRequests.toLocaleString()}
+                            </button>
+                          ) : (
+                            <span className="text-sm text-slate-500">{user.totalRequests.toLocaleString()}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{Math.round(user.successRate * 100)}%</td>
+                        <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{Math.round(user.avgResponseTimeMs).toLocaleString()}ms</td>
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          {rawEvents && user.topAnalysis ? (
+                            <button
+                              onClick={() => {
+                                setEventListEvents(rawEvents.filter(e => e.analysisIdentifier === user.topAnalysis));
+                                setEventListTitle(`${user.topAnalysis} — Events`);
+                                setIsEventListOpen(true);
+                              }}
+                              className="text-sm text-slate-500 hover:text-violet-600 cursor-pointer text-left"
+                            >
+                              {user.topAnalysis}
+                            </button>
+                          ) : (
+                            <span className="text-sm text-slate-500">{user.topAnalysis || '—'}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDate(user.lastActive)}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {sorted.length === 0 && (
@@ -146,8 +207,24 @@ const SchoolieUserListDrawer: React.FC<Props> = ({
         sessions={sessions}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
-        zIndex={62}
+        zIndex={zIndex + 10}
         isTopmost={isDetailOpen}
+      />
+      <SchoolieDistrictDetailDrawer
+        district={selectedDistrict}
+        sessions={sessions}
+        isOpen={isDistrictDetailOpen}
+        onClose={() => setIsDistrictDetailOpen(false)}
+        zIndex={zIndex + 10}
+        isTopmost={isDistrictDetailOpen}
+      />
+      <SchoolieEventListDrawer
+        events={eventListEvents}
+        title={eventListTitle}
+        isOpen={isEventListOpen}
+        onClose={() => setIsEventListOpen(false)}
+        zIndex={zIndex + 10}
+        isTopmost={isEventListOpen}
       />
     </>
   );

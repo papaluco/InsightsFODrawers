@@ -1,13 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, ChevronUp, ChevronDown, MessageSquare } from 'lucide-react';
-import { SchoolieDistrictStatRow, SchoolieSessionStatRow } from '../../../types/schoolieUsageTypes';
+import { SchoolieDistrictStatRow, SchoolieSessionStatRow, SchoolieUserStatRow } from '../../../types/schoolieUsageTypes';
+import { SchoolieUsageEvent } from '../../../data/mockSchoolieUsageData';
 import { ChevronLeftIcon } from '../../Common/Icons';
 import SchoolieDistrictDetailDrawer from './SchoolieDistrictDetailDrawer';
+import SchoolieUserListDrawer from './SchoolieUserListDrawer';
+import SchoolieEventListDrawer from './SchoolieEventListDrawer';
 import { TAB_COLORS, USAGE_ICONS, fmtDate } from '../common/usageHelpers';
 
 interface Props {
   districts: SchoolieDistrictStatRow[];
   sessions: SchoolieSessionStatRow[];
+  users?: SchoolieUserStatRow[];
+  rawEvents?: SchoolieUsageEvent[];
   title: string;
   isOpen: boolean;
   onClose: () => void;
@@ -17,6 +22,8 @@ interface Props {
 const SchoolieDistrictListDrawer: React.FC<Props> = ({
   districts,
   sessions,
+  users,
+  rawEvents,
   title,
   isOpen,
   onClose,
@@ -24,9 +31,14 @@ const SchoolieDistrictListDrawer: React.FC<Props> = ({
 }) => {
   const [selectedDistrict, setSelectedDistrict] = useState<SchoolieDistrictStatRow | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isUserListOpen, setIsUserListOpen] = useState(false);
+  const [userListDistrict, setUserListDistrict] = useState<SchoolieDistrictStatRow | null>(null);
+  const [isEventListOpen, setIsEventListOpen] = useState(false);
+  const [eventListEvents, setEventListEvents] = useState<SchoolieUsageEvent[]>([]);
+  const [eventListTitle, setEventListTitle] = useState('');
   const [sort, setSort] = useState<{ key: keyof SchoolieDistrictStatRow; dir: 'asc' | 'desc' }>({ key: 'totalRequests', dir: 'desc' });
 
-  const isAnyChildOpen = isChildDrawerOpen || isDetailOpen;
+  const isAnyChildOpen = isChildDrawerOpen || isDetailOpen || isUserListOpen || isEventListOpen;
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -113,14 +125,43 @@ const SchoolieDistrictListDrawer: React.FC<Props> = ({
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {sorted.map(district => (
-                    <tr
-                      key={district.districtId}
-                      onClick={() => { setSelectedDistrict(district); setIsDetailOpen(true); }}
-                      className="cursor-pointer hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-4 py-2.5 text-sm font-medium text-slate-700 whitespace-nowrap">{district.districtName}</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{district.activeUsers.toLocaleString()}</td>
-                      <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{district.totalRequests.toLocaleString()}</td>
+                    <tr key={district.districtId} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        <button
+                          onClick={() => { setSelectedDistrict(district); setIsDetailOpen(true); }}
+                          className="text-sm font-medium text-slate-700 hover:text-violet-600 cursor-pointer text-left"
+                        >
+                          {district.districtName}
+                        </button>
+                      </td>
+                      <td className="px-4 py-2.5 tabular-nums whitespace-nowrap">
+                        {users ? (
+                          <button
+                            onClick={() => { setUserListDistrict(district); setIsUserListOpen(true); }}
+                            className="text-sm text-slate-500 hover:text-violet-600 cursor-pointer tabular-nums"
+                          >
+                            {district.activeUsers.toLocaleString()}
+                          </button>
+                        ) : (
+                          <span className="text-sm text-slate-500">{district.activeUsers.toLocaleString()}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 tabular-nums whitespace-nowrap">
+                        {rawEvents ? (
+                          <button
+                            onClick={() => {
+                              setEventListEvents(rawEvents.filter(e => e.districtId === district.districtId));
+                              setEventListTitle(`${district.districtName} — Events`);
+                              setIsEventListOpen(true);
+                            }}
+                            className="text-sm text-slate-500 hover:text-violet-600 cursor-pointer tabular-nums"
+                          >
+                            {district.totalRequests.toLocaleString()}
+                          </button>
+                        ) : (
+                          <span className="text-sm text-slate-500">{district.totalRequests.toLocaleString()}</span>
+                        )}
+                      </td>
                       <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{Math.round(district.successRate * 100)}%</td>
                       <td className="px-4 py-2.5 text-sm text-slate-500 tabular-nums whitespace-nowrap">{Math.round(district.avgResponseTimeMs).toLocaleString()}ms</td>
                       <td className="px-4 py-2.5 text-sm text-slate-400 whitespace-nowrap">{district.lastActivity ? fmtDate(district.lastActivity) : '—'}</td>
@@ -146,6 +187,22 @@ const SchoolieDistrictListDrawer: React.FC<Props> = ({
         onClose={() => setIsDetailOpen(false)}
         zIndex={62}
         isTopmost={isDetailOpen}
+      />
+      <SchoolieUserListDrawer
+        users={users?.filter(u => u.districtId === userListDistrict?.districtId) ?? []}
+        sessions={sessions.filter(s => s.districtId === userListDistrict?.districtId)}
+        title={`${userListDistrict?.districtName ?? ''} — Users`}
+        isOpen={isUserListOpen}
+        onClose={() => setIsUserListOpen(false)}
+        zIndex={62}
+      />
+      <SchoolieEventListDrawer
+        events={eventListEvents}
+        title={eventListTitle}
+        isOpen={isEventListOpen}
+        onClose={() => setIsEventListOpen(false)}
+        zIndex={62}
+        isTopmost={isEventListOpen}
       />
     </>
   );

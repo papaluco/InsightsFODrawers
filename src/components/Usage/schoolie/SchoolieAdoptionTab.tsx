@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
+  Tooltip, Legend, ResponsiveContainer, Cell,
 } from 'recharts';
 import { Users, TrendingUp, Percent } from 'lucide-react';
 import {
@@ -241,7 +241,7 @@ const SchoolieAdoptionTab: React.FC<Props> = ({ filters }) => {
   );
 
   return (
-    <div className="space-y-5 p-5">
+    <div className="space-y-5">
 
       {/* KPI Cards */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -315,6 +315,7 @@ const SchoolieAdoptionTab: React.FC<Props> = ({ filters }) => {
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line type="monotone" dataKey="users" name="Active Users" stroke={TOPIC_COLORS.Users} strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -357,22 +358,13 @@ const SchoolieAdoptionTab: React.FC<Props> = ({ filters }) => {
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} />
                       <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Bar dataKey="new" name="New Users" stackId="a" fill="#10b981"
                         cursor="pointer" onClick={() => openUserList(newUsers, 'New Users')} />
                       <Bar dataKey="returning" name="Returning Users" stackId="a" fill={TOPIC_COLORS.AI} radius={[4, 4, 0, 0]}
                         cursor="pointer" onClick={() => openUserList(returningUsers, 'Returning Users')} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <div className="flex items-center gap-4 mt-2 justify-end">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />
-                      <span className="text-xs text-gray-500">New</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: TOPIC_COLORS.AI }} />
-                      <span className="text-xs text-gray-500">Returning</span>
-                    </div>
-                  </div>
                 </>
               )}
             </div>
@@ -470,15 +462,24 @@ const SchoolieAdoptionTab: React.FC<Props> = ({ filters }) => {
                   <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} width={80} />
                   <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} labelStyle={{ fontWeight: 600 }} />
-                  <Bar dataKey="requests" name="Requests" radius={[0, 4, 4, 0]} cursor="pointer"
-                    onClick={(data: { name: string }) => openEventList(
-                      rawEvents.filter(e => e.analysisIdentifier === data.name),
-                      `Events — ${data.name}`
-                    )}>
-                    {analysisData.map((entry, index) => (
-                      <Cell key={entry.name} fill={ANALYSIS_BAR_COLORS[index % ANALYSIS_BAR_COLORS.length]} />
-                    ))}
-                  </Bar>
+                  <Bar 
+  dataKey="requests" 
+  name="Requests" 
+  radius={[0, 4, 4, 0]} 
+  cursor="pointer"
+  onClick={(data: any) => {
+    if (data?.name) {
+      openEventList(
+        rawEvents.filter(e => e.analysisIdentifier === data.name),
+        `Events — ${data.name}`
+      );
+    }
+  }}
+>
+  {analysisData.map((entry, index) => (
+    <Cell key={entry.name} fill={ANALYSIS_BAR_COLORS[index % ANALYSIS_BAR_COLORS.length]} />
+  ))}
+</Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}
