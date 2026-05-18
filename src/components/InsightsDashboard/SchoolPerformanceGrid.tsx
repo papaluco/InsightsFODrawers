@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { SchoolieIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon } from '../Common/Icons';
-import { CopyButton } from '../Common/CopyButton';
+import { CopyMenu } from '../Common/CopyMenu';
+import { toBlob } from 'html-to-image';
 
 interface SchoolPerformanceData {
   school: string;
@@ -59,6 +60,7 @@ interface SchoolPerformanceGridProps {
 }
 
 export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ onSchoolieClick, onOpenSingleSchool }) => {
+  const gridRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number | 'All'>(10);
   const [searchTerm, setSearchTerm] = useState('');
@@ -145,6 +147,17 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
     await navigator.clipboard.writeText(text);
   };
 
+  const copyGridImageToClipboard = async () => {
+    if (!gridRef.current) return;
+    const blob = await toBlob(gridRef.current, { backgroundColor: '#ffffff', pixelRatio: 2 });
+    if (!blob) return;
+    if (typeof ClipboardItem !== 'undefined') {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    } else {
+      await copyGridToClipboard();
+    }
+  };
+
   const TableHeader = ({ label, sortKey, align = "center" }: { label: string, sortKey?: keyof SchoolPerformanceData, align?: "left" | "center" | "right" }) => (
     <th 
       onClick={() => sortKey && handleSort(sortKey)} 
@@ -166,7 +179,7 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
         </div>
         <div className="flex items-center gap-2">
           {/* Copy Button Section */}
-          <CopyButton onCopy={copyGridToClipboard} />
+          <CopyMenu onCopyData={copyGridToClipboard} onCopyImage={copyGridImageToClipboard} />
 
           {/* Schoolie Button Section */}
           {onSchoolieClick && (
@@ -192,7 +205,7 @@ export const SchoolPerformanceGrid: React.FC<SchoolPerformanceGridProps> = ({ on
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div ref={gridRef} className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
