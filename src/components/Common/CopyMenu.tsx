@@ -4,11 +4,13 @@ import { CopyIcon, ImageIcon, DatabaseIcon } from './Icons';
 interface CopyMenuProps {
   onCopyData?: () => Promise<void> | void;
   onCopyImage?: () => Promise<void> | void;
+  disableImageCopy?: boolean;
 }
 
 export const CopyMenu: React.FC<CopyMenuProps> = ({
   onCopyData,
   onCopyImage,
+  disableImageCopy = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -79,11 +81,17 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
 
             {onCopyImage && (
               <button
+                disabled={disableImageCopy}
                 onClick={async () => {
+                  if (disableImageCopy) return;
+
                   await onCopyImage();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-50 transition-colors text-left"
+                className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${disableImageCopy
+                    ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                    : 'hover:bg-indigo-50'
+                  }`}
               >
                 <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
                   <ImageIcon size={16} />
@@ -95,7 +103,9 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
                   </p>
 
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                    PNG Clipboard
+                    {disableImageCopy
+                      ? 'Disabled for All Rows'
+                      : 'PNG Clipboard'}
                   </p>
                 </div>
               </button>
