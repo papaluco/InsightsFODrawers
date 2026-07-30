@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Label, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Label } from 'recharts';
 import { CHART_COLORS, pct, TOPIC_COLORS } from '../../Usage/common/usageHelpers';
 
 export interface ReportPieItem {
@@ -90,53 +90,51 @@ const ReportsPieChart: React.FC<Props> = ({
               <div className="flex items-center gap-10"> 
                 
                 <div style={{ width: 148, height: 148, flexShrink: 0 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={data}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={64}
-                        dataKey="value"
-                        startAngle={90}
-                        endAngle={-270}
-                        onClick={
-                          onSegmentClick
-                            ? (entry) => {
-                                if (typeof entry.name === 'string') {
-                                  onSegmentClick(entry.name);
-                                }
+                  <PieChart width={148} height={148}>
+                    <Pie
+                      data={data}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={64}
+                      dataKey="value"
+                      startAngle={90}
+                      endAngle={-270}
+                      onClick={
+                        onSegmentClick
+                          ? (entry) => {
+                              if (typeof entry.name === 'string') {
+                                onSegmentClick(entry.name);
                               }
-                            : undefined
-                        }
-                        className={onSegmentClick ? 'cursor-pointer' : ''}
-                        strokeWidth={2}
-                        stroke="#fff"
-                      >
-                        <Label
-                          content={(props) => {
-                            const vb = props.viewBox as { cx: number; cy: number };
-                            return (
-                              <g>
-                                <text x={vb.cx} y={vb.cy - 7} textAnchor="middle" fill="#111827" fontSize="20" fontWeight="700">
-                                  {total.toLocaleString()}
-                                </text>
-                                <text x={vb.cx} y={vb.cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">
-                                  Total
-                                </text>
-                              </g>
-                            );
-                          }}
-                          position="center"
-                        />
-                        {data.map((_, i) => (
-                          <Cell key={i} fill={colors[i % colors.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                            }
+                          : undefined
+                      }
+                      className={onSegmentClick ? 'cursor-pointer' : ''}
+                      strokeWidth={2}
+                      stroke="#fff"
+                    >
+                      <Label
+                        content={(props) => {
+                          const vb = props.viewBox as { cx: number; cy: number };
+                          return (
+                            <g>
+                              <text x={vb.cx} y={vb.cy - 7} textAnchor="middle" fill="#111827" fontSize="20" fontWeight="700">
+                                {total.toLocaleString()}
+                              </text>
+                              <text x={vb.cx} y={vb.cy + 10} textAnchor="middle" fill="#9ca3af" fontSize="10">
+                                Total
+                              </text>
+                            </g>
+                          );
+                        }}
+                        position="center"
+                      />
+                      {data.map((_, i) => (
+                        <Cell key={i} fill={colors[i % colors.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
                 </div>
 
                 <div className="w-64 space-y-1">
