@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import TrendIndicator from '../../Common/TrendIndicator';
 
 interface PNACardProps {
   actualPNA: number;
@@ -13,6 +13,7 @@ export const PNACard: React.FC<PNACardProps> = ({
   onClick,
 }) => {
   const isNegative = actualPNA > targetPNA;
+  const status = isNegative ? 'unfavorable' : 'favorable';
 
   return (
     <button
@@ -20,7 +21,7 @@ export const PNACard: React.FC<PNACardProps> = ({
       className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer text-left overflow-hidden"
     >
       {/* Top colored border */}
-      <div className={`h-1 ${isNegative ? 'bg-red-500' : 'bg-emerald-500'}`} />
+      <div className={`h-1 ${isNegative ? 'bg-insightsUnfavorable' : 'bg-insightsFavorable'}`} />
 
       <div className="p-6">
         {/* Header with title and trend icon */}
@@ -28,7 +29,7 @@ export const PNACard: React.FC<PNACardProps> = ({
           <h3 className="text-base font-semibold text-gray-900">
             PNA
           </h3>
-          <TrendingUp className={`w-5 h-5 ${isNegative ? 'text-red-500' : 'text-emerald-500'}`} />
+          <TrendIndicator direction={isNegative ? 'down' : 'up'} status={status} />
         </div>
 
         {/* Main value */}

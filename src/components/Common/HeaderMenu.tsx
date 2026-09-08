@@ -1,5 +1,5 @@
-import React from 'react';
 import primeroLogo from '../../assets/Primero.ico';
+import UserMenu from './UserMenu';
 
 const HeaderMenu = () => {
   return (
@@ -22,12 +22,8 @@ const HeaderMenu = () => {
           />
         </div>
 
-        {/* User Initials Circle */}
-        <div className="flex items-center justify-center w-9 h-9 bg-indigo-600 rounded-full shadow-sm">
-          <span className="text-xs font-bold text-white tracking-tighter">
-            HG
-          </span>
-        </div>
+        {/* User Menu */}
+        <UserMenu />
       </div>
     </header>
   );

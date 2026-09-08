@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --insights-favorable: 142.1 76.2% 36.3%;
+  --insights-unfavorable: 0 72.2% 50.6%;
+  --insights-neutral: 220 8.9% 46.1%;
+}

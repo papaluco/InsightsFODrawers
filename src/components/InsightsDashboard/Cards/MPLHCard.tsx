@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingDown } from 'lucide-react';
+import TrendIndicator from '../../Common/TrendIndicator';
 
 interface MPLHCardProps {
   actualMPLH: number;
@@ -13,6 +13,7 @@ export const MPLHCard: React.FC<MPLHCardProps> = ({
   onClick,
 }) => {
   const isPositive = actualMPLH >= targetMPLH;
+  const status = isPositive ? 'favorable' : 'unfavorable';
 
   return (
     <button
@@ -20,7 +21,7 @@ export const MPLHCard: React.FC<MPLHCardProps> = ({
       className="w-full bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer text-left overflow-hidden"
     >
       {/* Top colored border */}
-      <div className="h-1 bg-red-500" />
+      <div className={`h-1 ${isPositive ? 'bg-insightsFavorable' : 'bg-insightsUnfavorable'}`} />
 
       <div className="p-6">
         {/* Header with title and trend icon */}
@@ -28,7 +29,7 @@ export const MPLHCard: React.FC<MPLHCardProps> = ({
           <h3 className="text-base font-semibold text-gray-900">
             MPLH
           </h3>
-          <TrendingDown className="w-5 h-5 text-red-500" />
+          <TrendIndicator direction={isPositive ? 'up' : 'down'} status={status} />
         </div>
 
         {/* Main value */}

@@ -7,9 +7,12 @@ export default {
         primary: {
           DEFAULT: '#665AD8',
           // Optional: You can add shades later if needed
-          light: '#857be0', 
+          light: '#857be0',
           dark: '#4e44c2',
         },
+        insightsFavorable: 'hsl(var(--insights-favorable))',
+        insightsUnfavorable: 'hsl(var(--insights-unfavorable))',
+        insightsNeutral: 'hsl(var(--insights-neutral))',
       },
     },
   },
