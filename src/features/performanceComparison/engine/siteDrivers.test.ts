@@ -24,6 +24,7 @@ describe('evaluateSiteAgainstTarget', () => {
       targetStatus: 'NotMet',
       varianceFromTarget: -1,
       unfavorableVariance: 1, // 1 pt short
+      varianceFormatted: '−1.0 pts',
       actualFormatted: '54.0%',
       targetFormatted: '55%',
     });
@@ -31,7 +32,7 @@ describe('evaluateSiteAgainstTarget', () => {
 
   it('flips the unfavorable direction for lower-is-favorable KPIs', () => {
     expect(evaluateSiteAgainstTarget('Waste', { siteId: 1, siteName: 'Lincoln Elementary', actual: 1200, target: 1000 }))
-      .toMatchObject({ targetStatus: 'NotMet', varianceFromTarget: 200, unfavorableVariance: 200 });
+      .toMatchObject({ targetStatus: 'NotMet', varianceFromTarget: 200, unfavorableVariance: 200, varianceFormatted: '+$200' });
     expect(evaluateSiteAgainstTarget('Waste', { siteId: 1, siteName: 'Lincoln Elementary', actual: 900, target: 1000 }))
       .toMatchObject({ targetStatus: 'Met', unfavorableVariance: -100 });
   });

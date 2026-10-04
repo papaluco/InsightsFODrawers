@@ -1,19 +1,16 @@
 import React, { useId } from 'react';
-import { AlertTriangle, CheckCircle2, MinusCircle, XCircle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { NO_DATA_TEXT } from '../../../utils/kpiFormatters';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
+import type { SiteDriversResult } from '../engine/siteDrivers';
 import type { KpiComparisonResult, NeedsAttentionReason, SideKpiResult } from '../engine/types';
-import { getTargetStatusDisplay, NEEDS_ATTENTION_REASON_LABELS, TargetStatusTone } from '../ui/comparisonDisplay';
+import { getTargetStatusDisplay, NEEDS_ATTENTION_REASON_LABELS } from '../ui/comparisonDisplay';
+import { getSiteDriversSummaryLines } from '../ui/siteDriversView';
 import { ClassificationBadge } from './ClassificationBadge';
+import { TargetStatusIcon, TargetStatusText } from './TargetStatusIndicator';
 
 const TH = 'px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-bottom';
-
-const STATUS_ICON: Record<TargetStatusTone, React.ReactNode> = {
-  met: <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-insightsFavorable" />,
-  notMet: <XCircle className="w-3.5 h-3.5 shrink-0 text-insightsUnfavorable" />,
-  none: <MinusCircle className="w-3.5 h-3.5 shrink-0 text-gray-300" />,
-};
 
 /** One side's actual and target. Text comes from the engine result (spec §5.2 *Formatted fields). */
 const SideValueCell: React.FC<{ side: SideKpiResult; isInformational: boolean }> = ({ side, isInformational }) => {
@@ -31,14 +28,15 @@ const SideValueCell: React.FC<{ side: SideKpiResult; isInformational: boolean }>
 };
 
 const TargetStatusLine: React.FC<{ name: string; side: SideKpiResult; isInformational: boolean }> = ({ name, side, isInformational }) => {
-  const { text, tone } = getTargetStatusDisplay(side, isInformational);
+  const display = getTargetStatusDisplay(side, isInformational);
   return (
     <div className="flex items-start gap-1.5 text-xs leading-snug">
-      <span className="mt-px">{STATUS_ICON[tone]}</span>
+      <span className="mt-px">
+        <TargetStatusIcon tone={display.tone} />
+      </span>
       {/* Status follows the side name inline and never splits ("Not Met" stays together). */}
       <span>
-        <span className="text-gray-500">{name}:</span>{' '}
-        <span className={`whitespace-nowrap ${tone === 'none' ? 'text-gray-500' : 'font-semibold text-gray-800'}`}>{text}</span>
+        <span className="text-gray-500">{name}:</span> <TargetStatusText display={display} />
       </span>
     </div>
   );
@@ -73,6 +71,48 @@ const NeedsAttentionMarker: React.FC<{ reasons: NeedsAttentionReason[] }> = ({ r
   );
 };
 
+/**
+ * Site Drivers row summary (NXT-77212, spec §8): sites meeting target from the engine's
+ * siteDrivers result, plus View Sites. Shown only when a side resolves to more than one site.
+ * View Sites never focuses the row.
+ */
+const SiteDriversCell: React.FC<{ lines: string[] | null; kpiName: string; onViewSites: () => void }> = ({ lines, kpiName, onViewSites }) => {
+  if (!lines) {
+    return (
+      <td className="px-3 py-3 align-top text-sm text-gray-300" title="Site Drivers apply when a side includes more than one site">
+        —
+      </td>
+    );
+  }
+  return (
+    <td className="px-3 py-3 align-top text-xs leading-snug text-gray-600">
+      {lines.map((line, index) => (
+        <div key={line}>
+          {line}
+          {index === lines.length - 1 && (
+            <>
+              <span className="text-gray-400"> · </span>
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  onViewSites();
+                }}
+                // Keep Enter/Space on the button from toggling the row's focus.
+                onKeyDown={e => e.stopPropagation()}
+                aria-label={`View sites for ${kpiName}`}
+                className="whitespace-nowrap font-semibold text-indigo-600 hover:text-indigo-800 hover:underline rounded outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              >
+                View Sites
+              </button>
+            </>
+          )}
+        </div>
+      ))}
+    </td>
+  );
+};
+
 interface ComparisonKpiTableProps {
   /** KPIs in scope, in spec §4 order. */
   results: KpiComparisonResult[];
@@ -83,6 +123,9 @@ interface ComparisonKpiTableProps {
   focusedKpi: ComparisonKpiKey | null;
   onFocusKpi: (kpi: ComparisonKpiKey | null) => void;
   needsAttentionOnly: boolean;
+  /** Site-level engine results per KPI (Site Drivers column). */
+  siteDrivers: Record<ComparisonKpiKey, SiteDriversResult>;
+  onViewSites: (kpi: ComparisonKpiKey) => void;
 }
 
 /**
@@ -98,6 +141,8 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
   focusedKpi,
   onFocusKpi,
   needsAttentionOnly,
+  siteDrivers,
+  onViewSites,
 }) => {
   const toggleFocus = (kpi: ComparisonKpiKey) => onFocusKpi(focusedKpi === kpi ? null : kpi);
 
@@ -105,7 +150,7 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       {/* Tables scroll horizontally inside their own container (spec §12). */}
       <div className="overflow-x-auto">
-        <table className="min-w-[1180px] w-full divide-y divide-gray-200">
+        <table className="min-w-[1280px] w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className={`${TH} w-48`}>KPI</th>
@@ -120,7 +165,7 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
               <th className={TH}>Change</th>
               <th className={`${TH} min-w-[180px]`}>Target Status</th>
               <th className={`${TH} w-[30%]`}>Performance</th>
-              <th className={TH}>Site Drivers</th>
+              <th className={`${TH} min-w-[240px]`}>Site Drivers</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -180,10 +225,11 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                       {/* The badge carries the classification, so the description drops its "<Classification> — " prefix. */}
                       <p className="mt-1.5 text-xs leading-relaxed text-gray-600">{result.descriptionBody}</p>
                     </td>
-                    {/* Site Drivers summary arrives with NXT-77212 (Phase 7). */}
-                    <td className="px-3 py-3 align-top text-sm text-gray-300" title="Site Drivers coming soon">
-                      —
-                    </td>
+                    <SiteDriversCell
+                      lines={getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames)}
+                      kpiName={definition.name}
+                      onViewSites={() => onViewSites(result.kpi)}
+                    />
                   </tr>
                 );
               })

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, Download, GitCompareArrows } from 'lucide-react';
 import { SchoolieIcon } from '../../../components/Common/Icons';
 import { MOCK_CURRENT_USER } from '../../../data/mockCurrentUser';
@@ -12,6 +12,7 @@ import { ComparisonSideKey, useComparisonStore } from '../store/useComparisonSto
 import { ComparisonFilters } from './ComparisonFilters';
 import { ComparisonResultsArea } from './ComparisonResultsArea';
 import { ComparisonSetup } from './ComparisonSetup';
+import { SiteDriversDrawer } from './SiteDriversDrawer';
 
 /** NXT-77202 §6 materiality note. */
 const MATERIALITY_NOTE =
@@ -34,6 +35,17 @@ const PerformanceComparisonContent: React.FC = () => {
   const setSideTimeframe = useComparisonStore(s => s.setSideTimeframe);
   const swapSides = useComparisonStore(s => s.swapSides);
   const setFocusedKpi = useComparisonStore(s => s.setFocusedKpi);
+  /** KPI shown in the Site Drivers drawer; null = closed. */
+  const [siteDriversKpi, setSiteDriversKpi] = useState<ComparisonKpiKey | null>(null);
+  const closeSiteDrivers = useCallback(() => setSiteDriversKpi(null), []);
+
+  // NXT-77212 §8: the drawer refreshes in place when the comparison changes, and closes once the
+  // (loaded) comparison no longer has a side with more than one site, or a side is cleared.
+  const { results, isLoading } = comparison;
+  useEffect(() => {
+    if (!siteDriversKpi || isLoading) return;
+    if (!results?.siteDrivers[siteDriversKpi].available) setSiteDriversKpi(null);
+  }, [siteDriversKpi, results, isLoading]);
 
   const handleSitesChange = (side: ComparisonSideKey, sites: SiteSelection) => {
     setSideSites(side, sites);
@@ -55,6 +67,11 @@ const PerformanceComparisonContent: React.FC = () => {
     if (kpi) trackComparisonEvent('COMPARISON_KPI_FOCUSED', { kpi });
   };
 
+  const handleViewSites = (kpi: ComparisonKpiKey) => {
+    setSiteDriversKpi(kpi);
+    trackComparisonEvent('COMPARISON_SITE_DRIVERS_OPENED', { kpi });
+  };
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
       <ComparisonSetup
@@ -64,8 +81,9 @@ const PerformanceComparisonContent: React.FC = () => {
         onSwap={handleSwap}
       />
       <ComparisonFilters />
-      <ComparisonResultsArea comparison={comparison} onFocusKpi={handleFocusKpi} />
+      <ComparisonResultsArea comparison={comparison} onFocusKpi={handleFocusKpi} onViewSites={handleViewSites} />
       <p className="text-xs italic text-gray-500">{MATERIALITY_NOTE}</p>
+      <SiteDriversDrawer kpi={siteDriversKpi} comparison={comparison} onClose={closeSiteDrivers} onSwap={handleSwap} />
     </div>
   );
 };

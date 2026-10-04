@@ -17,7 +17,8 @@ export type InsightsEventType =
   | 'COMPARISON_OPENED'
   | 'COMPARISON_SIDE_CHANGED'
   | 'COMPARISON_SWAPPED'
-  | 'COMPARISON_KPI_FOCUSED';
+  | 'COMPARISON_KPI_FOCUSED'
+  | 'COMPARISON_SITE_DRIVERS_OPENED';
 
 export const INSIGHTS_INTERACTION_TYPES: InsightsEventType[] = [
   'SITE_FILTER_CHANGED',
@@ -36,6 +37,7 @@ export const INSIGHTS_INTERACTION_TYPES: InsightsEventType[] = [
   'COMPARISON_SIDE_CHANGED',
   'COMPARISON_SWAPPED',
   'COMPARISON_KPI_FOCUSED',
+  'COMPARISON_SITE_DRIVERS_OPENED',
   // KPI_RENDERED is intentionally excluded — passive render tracking, not a user interaction
 ];
 
@@ -58,6 +60,7 @@ export const INSIGHTS_EVENT_FRIENDLY: Record<InsightsEventType, string> = {
   COMPARISON_SIDE_CHANGED:   'Comparison Side Changed',
   COMPARISON_SWAPPED:        'Comparison Swapped',
   COMPARISON_KPI_FOCUSED:    'Comparison KPI Focused',
+  COMPARISON_SITE_DRIVERS_OPENED: 'Comparison Site Drivers Opened',
 };
 
 export interface InsightsEventContext {

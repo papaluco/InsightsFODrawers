@@ -1,7 +1,7 @@
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { compareKpi, getTargetStatus, NO_TARGET_TEXT } from './compareKpi';
-import { formatInventoryDiscrepancy, formatKpiTarget, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
+import { formatInventoryDiscrepancy, formatKpiDelta, formatKpiTarget, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
 import { KpiComparisonResult, SideTimeframe, TargetStatus } from './types';
 
 /**
@@ -41,6 +41,8 @@ export interface SiteTargetEvaluation {
   targetStatus: TargetStatus;
   /** actual − target in KPI units. Null without data or a target, and for informational KPIs. */
   varianceFromTarget: number | null;
+  /** Variance from target in the KPI's delta format ("−1.0 pts", "+$200"); null when there is no variance. */
+  varianceFormatted: string | null;
   /** How far the site falls short of its target (positive = unfavorable), respecting direction. */
   unfavorableVariance: number | null;
 }
@@ -62,7 +64,11 @@ export interface SiteDriversSide {
 export interface MatchedSiteResult {
   siteId: number;
   siteName: string;
+  /** The site's comparison (classification, change, both target statuses). */
   result: KpiComparisonResult;
+  /** The site against its own target on each side (variance from target; spec §8 default sort uses the right side). */
+  left: SiteTargetEvaluation;
+  right: SiteTargetEvaluation;
 }
 
 export interface SiteDriversResult {
@@ -97,6 +103,7 @@ export function evaluateSiteAgainstTarget(kpi: ComparisonKpiKey, site: SiteValue
     hasData: site.actual !== null,
     targetStatus,
     varianceFromTarget,
+    varianceFormatted: varianceFromTarget === null ? null : formatKpiDelta(kpi, varianceFromTarget),
     unfavorableVariance:
       varianceFromTarget === null ? null : definition.favorableDirection === 'lower' ? varianceFromTarget : -varianceFromTarget,
   };
@@ -121,10 +128,13 @@ export function evaluateSiteDrivers(
   right: SiteDriversSideInput,
 ): SiteDriversResult {
   const matched = siteIdSet(left) === siteIdSet(right);
+  const leftSide = evaluateSide(kpi, left);
+  const rightSide = evaluateSide(kpi, right);
 
   const matchedSites = matched
-    ? left.sites.map(leftSite => {
-        const rightSite = right.sites.find(s => s.siteId === leftSite.siteId) as SiteValuesInput;
+    ? left.sites.map((leftSite, index) => {
+        const rightIndex = right.sites.findIndex(s => s.siteId === leftSite.siteId);
+        const rightSite = right.sites[rightIndex];
         return {
           siteId: leftSite.siteId,
           siteName: leftSite.siteName,
@@ -133,6 +143,8 @@ export function evaluateSiteDrivers(
             left: { ...leftSite, label: `${leftSite.siteName} · ${left.timeframeLabel}`, timeframe: left.timeframe },
             right: { ...rightSite, label: `${rightSite.siteName} · ${right.timeframeLabel}`, timeframe: right.timeframe },
           }),
+          left: leftSide.sites[index],
+          right: rightSide.sites[rightIndex],
         };
       })
     : null;
@@ -141,8 +153,8 @@ export function evaluateSiteDrivers(
     kpi,
     available: left.sites.length > 1 || right.sites.length > 1,
     matched,
-    left: evaluateSide(kpi, left),
-    right: evaluateSide(kpi, right),
+    left: leftSide,
+    right: rightSide,
     matchedSites,
   };
 }

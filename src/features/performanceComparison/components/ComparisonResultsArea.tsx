@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { GitCompareArrows, Loader2, X } from 'lucide-react';
 import { CollapsiblePanel } from '../../../components/Common/CollapsiblePanel';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import type { ComparisonView } from '../hooks/useComparison';
 import { useComparisonTrend } from '../hooks/useComparisonTrend';
+import { useSideShortNames } from '../hooks/useSideShortNames';
 import { TREND_UNAVAILABLE_MESSAGE } from '../trend/trendRules';
 import { TREND_INTERVAL_LABELS } from '../trend/trendView';
 import { useComparisonStore } from '../store/useComparisonStore';
-import { getSideShortNames } from '../ui/comparisonDisplay';
 import { ComparisonKpiTable } from './ComparisonKpiTable';
 import { ComparisonSummary } from './ComparisonSummary';
 import { ComparisonTrendChart } from './ComparisonTrendChart';
@@ -27,6 +27,8 @@ const TrendMessage: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 interface ComparisonResultsAreaProps {
   comparison: ComparisonView;
   onFocusKpi: (kpi: ComparisonKpiKey | null) => void;
+  /** View Sites in the KPI table: opens the Site Drivers drawer for that KPI. */
+  onViewSites: (kpi: ComparisonKpiKey) => void;
 }
 
 /**
@@ -34,8 +36,8 @@ interface ComparisonResultsAreaProps {
  * empty-state prompt until both sides are set, and a light loading state while either side is
  * fetching. Every section reads engine results only from `comparison.results`.
  */
-export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ comparison, onFocusKpi }) => {
-  const { bothSidesSet, isLoading, results, left, right } = comparison;
+export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ comparison, onFocusKpi, onViewSites }) => {
+  const { bothSidesSet, isLoading, results } = comparison;
   const expandedSections = useComparisonStore(s => s.expandedSections);
   const toggleSection = useComparisonStore(s => s.toggleSection);
   const focusedKpi = useComparisonStore(s => s.focusedKpi);
@@ -43,13 +45,7 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
   const setTrendInterval = useComparisonStore(s => s.setTrendInterval);
   const trend = useComparisonTrend(comparison);
 
-  const sideShortNames = useMemo<[string, string]>(
-    () =>
-      left.dataset && right.dataset
-        ? getSideShortNames(left.dataset, right.dataset)
-        : [results?.leftLabel ?? '', results?.rightLabel ?? ''],
-    [left.dataset, right.dataset, results],
-  );
+  const sideShortNames = useSideShortNames(comparison);
 
   if (!bothSidesSet) {
     return (
@@ -125,6 +121,8 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
             focusedKpi={focusedKpi}
             onFocusKpi={onFocusKpi}
             needsAttentionOnly={needsAttentionOnly}
+            siteDrivers={results.siteDrivers}
+            onViewSites={onViewSites}
           />
         </CollapsiblePanel>
 
