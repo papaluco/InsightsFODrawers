@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React, { useId, useLayoutEffect, useRef, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { NO_DATA_TEXT } from '../../../utils/kpiFormatters';
@@ -6,7 +6,7 @@ import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import type { SiteDriversResult } from '../engine/siteDrivers';
 import type { KpiComparisonResult, NeedsAttentionReason, SideKpiResult } from '../engine/types';
 import { getTargetStatusDisplay, NEEDS_ATTENTION_REASON_LABELS } from '../ui/comparisonDisplay';
-import { getSiteDriversSummaryLines } from '../ui/siteDriversView';
+import { getSiteDriversSummaryLines, getSiteDriversSummaryTitle } from '../ui/siteDriversView';
 import { ClassificationBadge } from './ClassificationBadge';
 import { TargetStatusIcon, TargetStatusText } from './TargetStatusIndicator';
 
@@ -72,11 +72,60 @@ const NeedsAttentionMarker: React.FC<{ reasons: NeedsAttentionReason[] }> = ({ r
 };
 
 /**
+ * Performance description, clamped to two lines so rows stay compact. When the text is cut off,
+ * the full text shows in a tooltip on hover, and while the row has keyboard focus. The focused
+ * KPI's row shows it in full. The whole text is always in the DOM, so screen readers get all of it.
+ */
+const ClampedDescription: React.FC<{ text: string; expanded: boolean }> = ({ text, expanded }) => {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [isClamped, setIsClamped] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || expanded) {
+      setIsClamped(false);
+      return;
+    }
+    const measure = () => setIsClamped(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    // Column widths change with the viewport, so re-check when the cell resizes.
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [text, expanded]);
+
+  return (
+    // title="" stops the row's "Click to focus" tooltip from stacking on top of this one.
+    <div className="group/desc relative mt-1.5" title={isClamped ? '' : undefined}>
+      <p ref={ref} className={`text-xs leading-relaxed text-gray-600 ${expanded ? '' : 'line-clamp-2'}`}>
+        {text}
+      </p>
+      {isClamped && (
+        <span
+          aria-hidden="true"
+          className="invisible group-hover/desc:visible group-focus-visible/row:visible absolute bottom-full left-0 mb-1 z-20 w-80 max-w-[80vw] rounded-md bg-gray-900 px-2.5 py-1.5 text-[11px] leading-snug text-white shadow-lg"
+        >
+          {text}
+        </span>
+      )}
+    </div>
+  );
+};
+
+interface SiteDriversCellProps {
+  lines: string[] | null;
+  /** Full wording of the summary, shown as the cell's tooltip. */
+  title: string | null;
+  kpiName: string;
+  onViewSites: () => void;
+}
+
+/**
  * Site Drivers row summary (NXT-77212, spec §8): sites meeting target from the engine's
  * siteDrivers result, plus View Sites. Shown only when a side resolves to more than one site.
  * View Sites never focuses the row.
  */
-const SiteDriversCell: React.FC<{ lines: string[] | null; kpiName: string; onViewSites: () => void }> = ({ lines, kpiName, onViewSites }) => {
+const SiteDriversCell: React.FC<SiteDriversCellProps> = ({ lines, title, kpiName, onViewSites }) => {
   if (!lines) {
     return (
       <td className="px-3 py-3 align-top text-sm text-gray-300" title="Site Drivers apply when a side includes more than one site">
@@ -85,7 +134,7 @@ const SiteDriversCell: React.FC<{ lines: string[] | null; kpiName: string; onVie
     );
   }
   return (
-    <td className="px-3 py-3 align-top text-xs leading-snug text-gray-600">
+    <td className="px-3 py-3 align-top text-xs leading-snug text-gray-600" title={title ?? undefined}>
       {lines.map((line, index) => (
         <div key={line}>
           {line}
@@ -154,18 +203,19 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className={`${TH} w-48`}>KPI</th>
-              <th className={`${TH} min-w-[170px]`}>
+              <th className={`${TH} min-w-[140px]`}>
                 <span className="block normal-case tracking-normal text-sm font-semibold text-gray-800">{leftLabel}</span>
                 Actual · Target
               </th>
-              <th className={`${TH} min-w-[170px]`}>
+              <th className={`${TH} min-w-[140px]`}>
                 <span className="block normal-case tracking-normal text-sm font-semibold text-gray-800">{rightLabel}</span>
                 Actual · Target
               </th>
-              <th className={TH}>Change</th>
-              <th className={`${TH} min-w-[180px]`}>Target Status</th>
-              <th className={`${TH} w-[30%]`}>Performance</th>
-              <th className={`${TH} min-w-[240px]`}>Site Drivers</th>
+              {/* Widths keep most descriptions to two lines at 1440px: Performance gets the room, Site Drivers stays compact. */}
+              <th className={`${TH} w-[112px]`}>Change</th>
+              <th className={`${TH} min-w-[160px]`}>Target Status</th>
+              <th className={`${TH} min-w-[380px]`}>Performance</th>
+              <th className={`${TH} w-[210px] min-w-[210px]`}>Site Drivers</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -195,7 +245,7 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                         toggleFocus(result.kpi);
                       }
                     }}
-                    className={`cursor-pointer transition-colors outline-none focus-visible:bg-indigo-50/60 ${
+                    className={`group/row cursor-pointer transition-colors outline-none focus-visible:bg-indigo-50/60 ${
                       isFocused ? 'bg-indigo-50 shadow-[inset_4px_0_0_0_#6366f1]' : 'hover:bg-blue-50/50'
                     }`}
                   >
@@ -213,7 +263,8 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                     </td>
                     <SideValueCell side={result.left} isInformational={isInformational} />
                     <SideValueCell side={result.right} isInformational={isInformational} />
-                    <td className="px-3 py-3 align-top whitespace-nowrap text-sm text-gray-800">{result.deltaFormatted ?? '—'}</td>
+                    {/* A combined change ("+9.6% (+$31,240)") may wrap at its space; each part stays whole. */}
+                    <td className="px-3 py-3 align-top text-sm text-gray-800">{result.deltaFormatted ?? '—'}</td>
                     <td className="px-3 py-3 align-top">
                       <div className="flex flex-col gap-1">
                         <TargetStatusLine name={sideShortNames[0]} side={result.left} isInformational={isInformational} />
@@ -223,10 +274,11 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                     <td className="px-3 py-3 align-top">
                       <ClassificationBadge result={result} />
                       {/* The badge carries the classification, so the description drops its "<Classification> — " prefix. */}
-                      <p className="mt-1.5 text-xs leading-relaxed text-gray-600">{result.descriptionBody}</p>
+                      <ClampedDescription text={result.descriptionBody} expanded={isFocused} />
                     </td>
                     <SiteDriversCell
-                      lines={getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames)}
+                      lines={getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames, { compact: true })}
+                      title={getSiteDriversSummaryTitle(siteDrivers[result.kpi], sideShortNames)}
                       kpiName={definition.name}
                       onViewSites={() => onViewSites(result.kpi)}
                     />

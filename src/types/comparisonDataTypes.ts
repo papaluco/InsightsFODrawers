@@ -74,12 +74,20 @@ export interface BenchmarkRow {
   scope: BenchmarkScope;
   /** siteTypeId or siteId; omitted for district. */
   scopeId?: number;
-  /** null = not configured at this scope (falls through to the next scope). */
+  /** null = not configured at this scope (falls through to the next scope), unless `noTarget` is set. */
   value: number | null;
+  /**
+   * Explicit "no target" (value must be null): this scope deliberately has no benchmark, so
+   * resolution stops here instead of falling back to the site type or district (spec §9).
+   */
+  noTarget?: true;
 }
 
 export interface ResolvedBenchmark {
   value: number | null;
-  /** Which scope supplied the value; null when no benchmark applies. */
+  /**
+   * Which scope supplied the value, or whose explicit "no target" row stopped resolution
+   * (value null); null when nothing is configured anywhere in the chain.
+   */
   source: BenchmarkScope | null;
 }

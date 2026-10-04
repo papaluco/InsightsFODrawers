@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { evaluateSiteDrivers, SiteDriversSideInput, SiteValuesInput } from '../engine/siteDrivers';
-import { getSiteDriversSummaryLines, nextSiteSort, sortMatchedSites, sortSiteEvaluations } from './siteDriversView';
+import { getSiteDriversSummaryLines, getSiteDriversSummaryTitle, nextSiteSort, sortMatchedSites, sortSiteEvaluations } from './siteDriversView';
 
 const side = (label: string, timeframeLabel: string, sites: SiteValuesInput[]): SiteDriversSideInput => ({ label, timeframeLabel, sites });
 
@@ -50,11 +50,23 @@ describe('getSiteDriversSummaryLines', () => {
     ]);
   });
 
-  it('unmatched with two multi-site sides: one compact line per side, named by the differing part', () => {
-    expect(getSiteDriversSummaryLines(drivers('Lunch', highSchoolsRight, middleSchools), ['High Schools', 'Middle Schools'])).toEqual([
-      'High Schools: 1 of 3 meeting target',
-      'Middle Schools: 1 of 2 meeting target',
-    ]);
+  it('unmatched with two multi-site sides: one line per side, named by the differing part', () => {
+    const result = drivers('Lunch', highSchoolsRight, middleSchools);
+    const names: [string, string] = ['High Schools', 'Middle Schools'];
+    expect(getSiteDriversSummaryLines(result, names)).toEqual(['High Schools: 1 of 3 meeting target', 'Middle Schools: 1 of 2 meeting target']);
+    // Compact (KPI table column): drops "target"; the full wording goes in the tooltip.
+    expect(getSiteDriversSummaryLines(result, names, { compact: true })).toEqual(['High Schools: 1 of 3 meeting', 'Middle Schools: 1 of 2 meeting']);
+  });
+
+  it('has the full wording for a tooltip', () => {
+    expect(getSiteDriversSummaryTitle(drivers('Lunch', highSchoolsRight, middleSchools), ['High Schools', 'Middle Schools'])).toBe(
+      'High Schools: 1 of 3 sites meeting target · 2 below target\nMiddle Schools: 1 of 2 sites meeting target · 1 below target',
+    );
+    expect(getSiteDriversSummaryTitle(drivers('Lunch', highSchoolsLeft, highSchoolsRight), ['SY 2024–25', 'SY 2025–26'])).toBe(
+      'SY 2024–25: 2 of 4 sites meeting target · 2 below target\nSY 2025–26: 1 of 3 sites meeting target · 2 below target',
+    );
+    const a = side('Adams High · SY 2024–25', 'SY 2024–25', [highSchoolsLeft.sites[0]]);
+    expect(getSiteDriversSummaryTitle(drivers('Lunch', a, a), ['a', 'b'])).toBeNull();
   });
 
   it('says "above target" for lower-is-favorable KPIs', () => {

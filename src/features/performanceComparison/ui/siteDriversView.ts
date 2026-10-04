@@ -43,11 +43,17 @@ export function getSideAttainmentText(drivers: SiteDriversResult, side: SiteDriv
  *
  * - Matched: "8 of 10 → 6 of 10 sites meeting target" (left → right, the table's orientation).
  * - Unmatched, one multi-site side: "6 of 10 sites meeting target · 4 below target".
- * - Unmatched, both multi-site: one shorter line per side, named with the compact side names
- *   ("High Schools: 3 of 4 meeting target") so the row stays compact.
+ * - Unmatched, both multi-site: one line per side, named with the compact side names
+ *   ("High Schools: 3 of 4 meeting target"). With `compact` (the KPI table, where the column is
+ *   narrow) the lines drop "target" ("High Schools: 3 of 4 meeting"); getSiteDriversSummaryTitle
+ *   has the full wording for a tooltip.
  * - Informational KPIs: site counts only, no target attainment (spec §3).
  */
-export function getSiteDriversSummaryLines(drivers: SiteDriversResult, sideShortNames: [string, string]): string[] | null {
+export function getSiteDriversSummaryLines(
+  drivers: SiteDriversResult,
+  sideShortNames: [string, string],
+  { compact = false }: { compact?: boolean } = {},
+): string[] | null {
   if (!drivers.available) return null;
   const isInformational = getKpiDefinition(drivers.kpi).kind === 'informational';
 
@@ -70,8 +76,23 @@ export function getSiteDriversSummaryLines(drivers: SiteDriversResult, sideShort
   return sides.map(([side, name]) => {
     if (!named) return getSideAttainmentText(drivers, side);
     if (isInformational || side.summary.sitesWithTarget === 0) return `${name}: ${getSideAttainmentText(drivers, side)}`;
-    return `${name}: ${meetingPart(side)} meeting target`;
+    return `${name}: ${meetingPart(side)} ${compact ? 'meeting' : 'meeting target'}`;
   });
+}
+
+/**
+ * Full wording of the row summary for a tooltip: one line per summarized side, each named
+ * when both sides are summarized ("High Schools: 3 of 4 sites meeting target · 1 below target").
+ * null when Site Drivers doesn't apply.
+ */
+export function getSiteDriversSummaryTitle(drivers: SiteDriversResult, sideShortNames: [string, string]): string | null {
+  if (!drivers.available) return null;
+  const sides = ([
+    [drivers.left, sideShortNames[0]],
+    [drivers.right, sideShortNames[1]],
+  ] as const).filter(([side]) => drivers.matched || side.sites.length > 1);
+  if (sides.length === 1) return getSideAttainmentText(drivers, sides[0][0]);
+  return sides.map(([side, name]) => `${name}: ${getSideAttainmentText(drivers, side)}`).join('\n');
 }
 
 // ─── Sorting ─────────────────────────────────────────────────────────────────

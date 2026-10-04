@@ -17,6 +17,8 @@ describe('resolveBenchmark precedence (spec §3)', () => {
     { kpi: 'Lunch', schoolYear: 2025, scope: 'site', scopeId: ROOSEVELT_HIGH, value: 58 },
     { kpi: 'Breakfast', schoolYear: 2025, scope: 'siteType', scopeId: SITE_TYPE_IDS.high, value: null },
     { kpi: 'Breakfast', schoolYear: 2025, scope: 'district', value: 20 },
+    // Explicit "no target" for Madison High Breakfast: stops the fallback to the district 20%.
+    { kpi: 'Breakfast', schoolYear: 2025, scope: 'site', scopeId: MADISON_HIGH, value: null, noTarget: true },
   ];
   const resolve = (siteIds: number[], scopeType: Parameters<typeof resolveBenchmark>[2], kpi: 'Lunch' | 'Breakfast' = 'Lunch') =>
     resolveBenchmark(kpi, siteIds, scopeType, 2025, table);
@@ -40,6 +42,13 @@ describe('resolveBenchmark precedence (spec §3)', () => {
   });
 
   it('a null row falls through to the next scope', () => {
+    expect(resolve(HIGH_SCHOOLS, 'siteType', 'Breakfast')).toEqual({ value: 20, source: 'district' });
+  });
+
+  it('an explicit "no target" row stops the fallback (spec §9)', () => {
+    expect(resolve([MADISON_HIGH], 'site', 'Breakfast')).toEqual({ value: null, source: 'site' });
+    // Other sites, and the site-type scope, still fall back as usual.
+    expect(resolve([ROOSEVELT_HIGH], 'site', 'Breakfast')).toEqual({ value: 20, source: 'district' });
     expect(resolve(HIGH_SCHOOLS, 'siteType', 'Breakfast')).toEqual({ value: 20, source: 'district' });
   });
 
@@ -88,6 +97,16 @@ describe('demo benchmark table (spec §9)', () => {
     expect(resolveBenchmark('Snack', ALL_SITES, 'allSites', 2024).value).toBeNull();
     expect(resolveBenchmark('Snack', ALL_SITES, 'allSites', 2025).value).toBe(10);
     expect(resolveBenchmark('Snack', [ROOSEVELT_HIGH], 'site', 2024).value).toBeNull();
+  });
+
+  it('SCENARIO: Hamilton High has no Lunch target for SY 2025–26 while other high schools keep theirs', () => {
+    const HAMILTON_HIGH = 14;
+    expect(resolveBenchmark('Lunch', [HAMILTON_HIGH], 'site', 2025)).toEqual({ value: null, source: 'site' });
+    expect(resolveBenchmark('Lunch', [HAMILTON_HIGH], 'site', 2024)).toEqual({ value: 60, source: 'siteType' });
+    expect(resolveBenchmark('Lunch', [MADISON_HIGH], 'site', 2025)).toEqual({ value: 62, source: 'siteType' });
+    expect(resolveBenchmark('Lunch', [ROOSEVELT_HIGH], 'site', 2025)).toEqual({ value: 58, source: 'site' });
+    // The High Schools side target is unaffected (site benchmarks never feed a type scope).
+    expect(resolveBenchmark('Lunch', HIGH_SCHOOLS, 'siteType', 2025)).toEqual({ value: 62, source: 'siteType' });
   });
 
   it('SCENARIO: Inventory Turnover Rate has site benchmarks only', () => {

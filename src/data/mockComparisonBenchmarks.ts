@@ -31,6 +31,11 @@ import { DEMO_SITES, getSiteById, SITE_TYPE_IDS, SiteScopeKind } from './siteReg
  *  - Deliberately missing: Inventory Value (never), A La Carte (none configured), and
  *    Snack (missing only for SY 2024–25).
  *  - Inventory Turnover Rate has site benchmarks only ("Varies by site"), as context.
+ *  - Explicit "no target": Hamilton High has no Lunch target for SY 2025–26 while the
+ *    other high schools keep theirs (a mixed-target Site Drivers case).
+ *
+ * Explicit "no target" rows ({ value: null, noTarget: true }) stop the precedence chain.
+ * A plain null row only means "not configured at this scope" and falls through.
  */
 
 const SCHOOL_YEARS = [2023, 2024, 2025] as const;
@@ -118,6 +123,14 @@ addOverride('Breakfast', 'site', 1, { 2025: 35 }); //                 Lincoln El
 addOverride('MPLH', 'site', 7, { 2023: 19, 2024: 19.5, 2025: 20 }); // Washington Middle
 addOverride('Revenue', 'site', 12, { 2025: 6000 }); //                Roosevelt High, $ per serving day
 
+// SCENARIO: explicit "no target" at site level. Hamilton High has NO Lunch target for
+// SY 2025–26, while the other high schools keep theirs (Roosevelt's site value, the rest the
+// High Schools 62%). Without this row Hamilton would fall back to the site-type 62%, so the
+// row is an explicit stop, not a missing row. Shows a mixed-target case in Site Drivers
+// (High Schools, Prior Year to Date vs Year to Date, Lunch): Hamilton shows "No target" and is
+// left out of the "of N sites meeting target" count. SY 2024–25 is unaffected (60%).
+rows.push({ kpi: 'Lunch', schoolYear: 2025, scope: 'site', scopeId: 14, value: null, noTarget: true }); // Hamilton High
+
 // SCENARIO: Inventory Turnover Rate varies by site (context only, no district or type value).
 const TURNOVER_DAYS_BY_TYPE: Record<number, number> = {
   [SITE_TYPE_IDS.elementary]: 14,
@@ -134,22 +147,23 @@ export const COMPARISON_BENCHMARKS: readonly BenchmarkRow[] = rows;
 
 // ─── Resolution ──────────────────────────────────────────────────────────────
 
-function findValue(
+function findRow(
   benchmarks: readonly BenchmarkRow[],
   kpi: ComparisonKpiKey,
   schoolYear: number,
   scope: BenchmarkScope,
   scopeId?: number,
-): number | null {
-  const row = benchmarks.find(
+): BenchmarkRow | undefined {
+  return benchmarks.find(
     b => b.kpi === kpi && b.schoolYear === schoolYear && b.scope === scope && (scope === 'district' || b.scopeId === scopeId),
   );
-  return row?.value ?? null;
 }
 
 /**
  * The benchmark for a side (spec §3 precedence). Returns the first configured value in
  * the precedence chain and which scope it came from, or { value: null, source: null }.
+ * An explicit "no target" row ({ value: null, noTarget: true }) stops the chain and resolves
+ * to { value: null, source: <its scope> }; a plain null row falls through to the next scope.
  * KPIs with targetPolicy 'none' (Inventory Value) always resolve to null.
  */
 export function resolveBenchmark(
@@ -169,8 +183,9 @@ export function resolveBenchmark(
   chain.push({ scope: 'district' });
 
   for (const { scope, scopeId } of chain) {
-    const value = findValue(benchmarks, kpi, schoolYear, scope, scopeId);
-    if (value !== null) return { value, source: scope };
+    const row = findRow(benchmarks, kpi, schoolYear, scope, scopeId);
+    if (row?.noTarget) return { value: null, source: scope };
+    if (row && row.value !== null) return { value: row.value, source: scope };
   }
   return none;
 }
