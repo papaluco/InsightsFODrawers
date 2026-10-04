@@ -5,8 +5,9 @@ import {
 } from 'recharts';
 import { InsightsUsageEvent, InsightsDistrictStatRow } from '../../../types/insightsUsageTypes';
 import { getTimeOfDay, TIME_OF_DAY_COLORS, TIME_OF_DAY_LABELS, TIME_OF_DAY_ORDER } from '../../../utils/timeOfDay';
+import { formatBucketLabel, getBucket, UsageGranularity } from '../../../utils/timeBuckets';
 
-type Granularity = 'day' | 'week' | 'month';
+type Granularity = UsageGranularity;
 type TimeMode = 'district' | 'server';
 
 function CollapseChevron({ expanded }: { expanded: boolean }) {
@@ -15,29 +16,6 @@ function CollapseChevron({ expanded }: { expanded: boolean }) {
       <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z" clipRule="evenodd" />
     </svg>
   );
-}
-
-function getBucket(isoTimestamp: string, granularity: Granularity): string {
-  const date = new Date(isoTimestamp);
-  if (granularity === 'day') return isoTimestamp.slice(0, 10);
-  if (granularity === 'month') return isoTimestamp.slice(0, 7);
-  const day = date.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(date);
-  monday.setDate(date.getDate() + diff);
-  return monday.toISOString().slice(0, 10);
-}
-
-function formatBucketLabel(bucket: string, granularity: Granularity): string {
-  if (granularity === 'month') {
-    const [y, m] = bucket.split('-').map(Number);
-    return new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-  }
-  const date = new Date(bucket + 'T12:00:00');
-  if (granularity === 'week') {
-    return `Wk ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-  }
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 interface Props {

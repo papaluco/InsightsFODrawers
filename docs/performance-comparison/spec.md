@@ -60,6 +60,7 @@ That has three consequences for how the code should be written:
 | Quarters | School-year quarters: Q1 = Jul–Sep, Q2 = Oct–Dec, Q3 = Jan–Mar, Q4 = Apr–Jun. |
 | Benchmark resolution | Single site: site → site type → district → none. Site-type selection: site type → district → none. All Sites / Multiple Sites: district → none. **Never average site benchmarks.** Site Drivers uses each site's own resolved benchmark. |
 | Informational KPI targets | Inventory Turnover Rate and Physical Inventory Discrepancy may display a benchmark as context, but get **no** Met/Not Met status, are excluded from target-attainment counts, and never qualify for Needs Attention. Inventory Value has no target. |
+| Site label for one-site types | A site-type selection that resolves to exactly one site (e.g. Central Office) uses that site's name as its label, not the plural type name (see §6). |
 | Site Drivers matching | Matched (side-by-side by site) only when both sides resolve to the **identical** set of sites. Otherwise each side's sites are listed independently. |
 | Trend compatibility | See §7. |
 | Schoolie | Real structured-facts payload, new `performance_comparison` prompt, mock response templated from the payload. See §11. |
@@ -244,9 +245,9 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 - **Alignment:** buckets are aligned by **position within each side's period**, not by calendar date:
   - Day: position = school-day index within the period, except week-vs-week aligns by weekday (Mon–Fri).
   - Week: week index within the period.
-  - Month: month position within the school year (Jul = 1).
-  - Quarter: school-year quarter.
-- **Compatibility (prototype rule):** a trend is available when (a) both timeframes are the same kind (both school years, both months, both weeks, both single days) or are custom ranges whose lengths differ by ≤ 10%, and (b) the selected interval is finer than the period (no Quarter for a month, no Week for a single day), and (c) each side produces at least 2 buckets. Otherwise show: **"Trend comparison unavailable. Select comparable timeframes to view performance trends."** The rest of the page stays available.
+  - Month: month position counted from the start of the period (month 1 = the month the period starts in). For school years this is identical to the school-year position (Jul = 1); counting from the period start keeps custom ranges that cross Jul 1 in order.
+  - Quarter: buckets remain school-year quarters (Q1 = Jul–Sep), but positions count from the quarter the period starts in. For school years this is identical to the quarter number.
+- **Compatibility (prototype rule):** a trend is available when (a) both timeframes are the same kind (both school years, both months, both weeks, both single days) or are custom ranges whose lengths differ by ≤ 10%, and (b) the selected interval is finer than the period (no Quarter for a month, no Week for a single day; a custom range's grain is set by its length: ≤ 1 day = day, ≤ 7 days = week, ≤ 31 days = month, ≤ 92 days = quarter, longer = year), and (c) each side produces at least 2 buckets. Otherwise show: **"Trend comparison unavailable. Select comparable timeframes to view performance trends."** The rest of the page stays available.
 - **Partial periods:** show only buckets that have occurred; never draw zero or extrapolated bars for the future; show the partial-period note under the chart.
 - Non-serving days (weekends, breaks) are excluded from Day buckets, not shown as No Data.
 

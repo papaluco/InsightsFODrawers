@@ -15,6 +15,7 @@ import { calcReportUserScore, getEngagementTier } from '../../../utils/engagemen
 import EngagementTierBadge from '../../Common/EngagementTierBadge';
 import FeedbackKPICard from '../feedback/FeedbackKPICard';
 import { getTimeOfDay, TIME_OF_DAY_COLORS, TIME_OF_DAY_LABELS, TIME_OF_DAY_ORDER } from '../../../utils/timeOfDay';
+import { formatBucketLabel, getBucket, UsageGranularity } from '../../../utils/timeBuckets';
 
 // ─── Layout helpers ──────────────────────────────────────────────────────────
 
@@ -55,28 +56,7 @@ const StatRow: React.FC<{ label: string; value: string | number }> = ({ label, v
 
 // ─── Timing helpers ───────────────────────────────────────────────────────────
 
-type Granularity = 'day' | 'week' | 'month';
-
-function getBucket(ts: string, g: Granularity): string {
-  if (g === 'day') return ts.slice(0, 10);
-  if (g === 'month') return ts.slice(0, 7);
-  const date = new Date(ts);
-  const diff = date.getDay() === 0 ? -6 : 1 - date.getDay();
-  const mon = new Date(date);
-  mon.setDate(date.getDate() + diff);
-  return mon.toISOString().slice(0, 10);
-}
-
-function fmtBucket(bucket: string, g: Granularity): string {
-  if (g === 'month') {
-    const [y, m] = bucket.split('-').map(Number);
-    return new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-  }
-  const d = new Date(bucket + 'T12:00:00');
-  return g === 'week'
-    ? `Wk ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-    : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+type Granularity = UsageGranularity;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -233,7 +213,7 @@ const ReportsUserDetailPage: React.FC<Props> = ({ user, allEvents, onClose }) =>
     });
     return [...bucketMap.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([bucket, counts]) => ({ label: fmtBucket(bucket, granularity), ...counts }));
+      .map(([bucket, counts]) => ({ label: formatBucketLabel(bucket, granularity), ...counts }));
   }, [userEvents, granularity]);
 
   // ── Engagement ───────────────────────────────────────────────────────────────

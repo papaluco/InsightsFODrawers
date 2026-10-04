@@ -16,6 +16,7 @@ Before working on anything related to Performance Comparison, read:
 - **Don't change existing dashboard behavior or mock data** beyond what the spec calls for (the Compare button, controlled-selector props that stay backward compatible, and promoting `DEMO_SITES`).
 - Reuse existing components and patterns listed in the discovery report before building new ones.
 - Run lint, typecheck, and tests (Vitest, added in Phase 1) before reporting a phase complete.
+- The repo has pre-existing lint and typecheck errors. Don't fix them unless asked, and don't add new ones: report lint/typecheck counts for new and touched files only, and confirm they are zero.
 
 ## Working style for this feature
 - Work one phase at a time (`docs/performance-comparison/phase-prompts.md`). Don't start the next phase until asked.

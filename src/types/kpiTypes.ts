@@ -18,6 +18,18 @@ export const KPI_SHORT_NAMES = [
 
 export type KPIKey = typeof KPI_SHORT_NAMES[number];
 
+/**
+ * KPIs added for Performance Comparison (NXT-77201 spec §3, §4). Kept out of
+ * KPI_SHORT_NAMES on purpose so the Usage module's KPI filter (KPI_SELECT_OPTIONS)
+ * is unchanged.
+ */
+export const NEW_KPI_SHORT_NAMES = ['A La Carte', 'Reimbursement'] as const;
+
+export type NewKPIKey = typeof NEW_KPI_SHORT_NAMES[number];
+
+/** Every KPI available in Performance Comparison: the 15 dashboard KPIs plus the new ones. */
+export type ComparisonKpiKey = KPIKey | NewKPIKey;
+
 export const KPI_LONG_NAMES = [
   'Meals per Labor Hour (MPLH)',
   'Paid Not Applied (PNA)',
@@ -50,7 +62,7 @@ export const KPI_SELECT_OPTIONS = KPI_SHORT_NAMES.map((k, i) => ({
   label: KPI_LONG_NAMES[i],
 }));
 
-// Colors for all 15 KPIs
+// Colors for all 15 dashboard KPIs plus the Performance Comparison additions
 export const KPI_CHART_COLORS: Record<string, string> = {
   MPLH:                           '#6366f1',
   PNA:                            '#10b981',
@@ -67,4 +79,6 @@ export const KPI_CHART_COLORS: Record<string, string> = {
   'Inventory Value':              '#a855f7',
   'Inventory Turnover Rate':      '#f43f5e',
   'Physical Inventory Discrepancy': '#0ea5e9',
+  'A La Carte':                   '#eab308',
+  Reimbursement:                  '#3b82f6',
 };

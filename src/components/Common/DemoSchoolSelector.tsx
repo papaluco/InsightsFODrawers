@@ -1,28 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Building2, ChevronDown, Square, CheckSquare } from 'lucide-react';
+import {
+  ALL_SITES_ID,
+  DEMO_SITES,
+  getSiteSelectorLabel,
+  SiteRegistry,
+  SiteSelection,
+} from '../../data/siteRegistry';
 
-// Hardcoded Demo Data based on your screenshot
-const DEMO_SITES = {
-  siteTypeList: [
-    { siteTypeId: 101, siteTypeName: 'Central Office' },
-    { siteTypeId: 102, siteTypeName: 'Child Care Facility Provider' },
-    { siteTypeId: 103, siteTypeName: 'Elementary School' },
-    { siteTypeId: 104, siteTypeName: 'High School' },
-    { siteTypeId: 105, siteTypeName: 'Middle School' },
-  ],
-  siteList: [
-    { siteId: 1, siteName: 'Andria High School_tier 1 low', siteTypeId: 104 },
-    { siteId: 2, siteName: 'Arbutus Elementary School', siteTypeId: 103 },
-    { siteId: 3, siteName: 'Lincoln Elementary', siteTypeId: 103 },
-  ]
-};
+// Builds the { siteIdList, siteTypeIdList } filter shape emitted by onApply (both empty for "All")
+const buildFilters = (filtersArray: SiteSelection, sitesData: SiteRegistry) => {
+  if (filtersArray.includes(ALL_SITES_ID)) return { siteIdList: [], siteTypeIdList: [] };
 
-// Simplified Filter Utility from your machete file
-const buildFilters = (filtersArray: number[], sitesData: any) => {
-  if (filtersArray.includes(0)) return { siteIdList: [], siteTypeIdList: [] };
-  
-  const siteIds = sitesData.siteList.map((s: any) => s.siteId);
-  const siteTypeIds = sitesData.siteTypeList.map((st: any) => st.siteTypeId);
+  const siteIds = sitesData.siteList.map(s => s.siteId);
+  const siteTypeIds = sitesData.siteTypeList.map(st => st.siteTypeId);
 
   return {
     siteIdList: filtersArray.filter(f => siteIds.includes(f)),
@@ -30,8 +21,10 @@ const buildFilters = (filtersArray: number[], sitesData: any) => {
   };
 };
 
+export type DemoSchoolFilters = ReturnType<typeof buildFilters>;
+
 interface DemoSchoolSelectorProps {
-  onApply?: (filters: any) => void;
+  onApply?: (filters: DemoSchoolFilters) => void;
   darkMode?: boolean;
 }
 
@@ -52,7 +45,7 @@ export const DemoSchoolSelector: React.FC<DemoSchoolSelectorProps> = ({ onApply,
 
   const handleToggle = (id: number) => {
     setPending(prev => {
-      let next = new Set(prev);
+      const next = new Set(prev);
       if (id === 0) {
         // Toggle All Schools logic
         if (next.has(0)) return [];
@@ -75,13 +68,7 @@ export const DemoSchoolSelector: React.FC<DemoSchoolSelectorProps> = ({ onApply,
     if (onApply) onApply(buildFilters(pending, DEMO_SITES));
   };
 
-  const getLabel = () => {
-    if (applied.includes(0)) return "All Schools";
-    const schoolCount = applied.filter(id => DEMO_SITES.siteList.some(s => s.siteId === id)).length;
-    return schoolCount === 1 
-      ? DEMO_SITES.siteList.find(s => applied.includes(s.siteId))?.siteName 
-      : `${schoolCount} Schools Selected`;
-  };
+  const getLabel = () => getSiteSelectorLabel(applied);
 
   const isSelected = (id: number) => pending.includes(id);
 
