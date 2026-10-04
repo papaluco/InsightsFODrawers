@@ -4,6 +4,7 @@ import {
   formatMonthDay,
   formatShortDate,
   getDateParts,
+  inclusiveDayCount,
   isAfter,
   isBefore,
   isIsoDate,
@@ -11,6 +12,7 @@ import {
   minDate,
   startOfMonth,
   startOfWeek,
+  toIsoDate,
 } from './dateOnly';
 import { getSchoolYear, getSchoolYearByStartYear, SchoolYear } from './schoolYear';
 
@@ -29,6 +31,7 @@ export type TimeframeOptionId =
   | 'last_month'
   | 'ytd'
   | 'prior_year'
+  | 'priorYearToDate'
   | 'sy2324'
   | 'sy2223'
   | 'sy2122'
@@ -37,7 +40,7 @@ export type TimeframeOptionId =
 
 export const TIMEFRAME_OPTION_IDS: readonly TimeframeOptionId[] = [
   'today', 'yesterday', 'this_week', 'last_week', 'this_month', 'last_month',
-  'ytd', 'prior_year', 'sy2324', 'sy2223', 'sy2122', 'sy2021', 'custom',
+  'ytd', 'prior_year', 'priorYearToDate', 'sy2324', 'sy2223', 'sy2122', 'sy2021', 'custom',
 ];
 
 /** Fixed school-year options → the calendar year the school year starts in. */
@@ -81,6 +84,12 @@ export interface ResolvedTimeframe {
   throughDate: IsoDate | null;
 }
 
+/** The same month and day one year earlier; Feb 29 maps to Feb 28 (spec §3). */
+function sameDayOneYearEarlier(date: IsoDate): IsoDate {
+  const { year, month, day } = getDateParts(date);
+  return toIsoDate(year - 1, month, month === 2 && day === 29 ? 28 : day);
+}
+
 function getPeriod(
   optionId: TimeframeOptionId,
   asOf: IsoDate,
@@ -116,6 +125,12 @@ function getPeriod(
     case 'prior_year': {
       const sy = getSchoolYearByStartYear(getSchoolYear(asOf).startYear - 1);
       return { kind: 'schoolYear', start: sy.start, end: sy.end };
+    }
+    // Same elapsed portion of the prior school year as Year to Date (spec §3). Kind stays
+    // 'schoolYear' so it trends against YTD; month positions count from Jul 1 on both sides.
+    case 'priorYearToDate': {
+      const sy = getSchoolYearByStartYear(getSchoolYear(asOf).startYear - 1);
+      return { kind: 'schoolYear', start: sy.start, end: sameDayOneYearEarlier(asOf) };
     }
     case 'custom': {
       if (!customRange) throw new Error('A custom range is required for the "custom" timeframe.');
@@ -163,9 +178,13 @@ export function formatDateRangeLabel(start: IsoDate, end: IsoDate): string {
 
 /**
  * Timeframe part of a side's generated label (spec §6):
- * school-year options → "SY 2025–26"; relative options → their name; Custom Range → the date range.
+ * school-year options → "SY 2025–26"; Prior Year to Date → "SY 2024–25 through Apr 16";
+ * relative options → their name; Custom Range → the date range.
  */
 export function getTimeframeLabel(timeframe: ResolvedTimeframe): string {
+  if (timeframe.optionId === 'priorYearToDate' && timeframe.schoolYear) {
+    return `${timeframe.schoolYear.label} through ${formatMonthDay(timeframe.end)}`;
+  }
   if (timeframe.kind === 'schoolYear' && timeframe.schoolYear) return timeframe.schoolYear.label;
   if (timeframe.kind === 'custom') return formatDateRangeLabel(timeframe.start, timeframe.end);
   return RELATIVE_OPTION_LABELS[timeframe.optionId] ?? formatDateRangeLabel(timeframe.start, timeframe.end);
@@ -176,4 +195,40 @@ export function getPartialPeriodLabel(timeframe: ResolvedTimeframe): string | nu
   if (!timeframe.isPartial) return null;
   if (!timeframe.throughDate) return 'Partial · no data yet';
   return `Partial · through ${formatShortDate(timeframe.throughDate)}`;
+}
+
+// ─── Period-length notice (spec §6) ──────────────────────────────────────────
+
+export const PERIOD_LENGTH_NOTICE =
+  'These timeframes cover different lengths of time and cumulative totals may be difficult to compare directly.';
+
+export const PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR =
+  'These timeframes cover different lengths of time. For a like-for-like comparison, consider Prior Year to Date.';
+
+/** Minimum extra length (as a fraction of the partial side's covered days) that triggers the notice. */
+export const PERIOD_LENGTH_NOTICE_THRESHOLD = 0.1;
+
+/** Calendar days a side covers: through its through date when partial, otherwise the full period. */
+function coveredDays(timeframe: ResolvedTimeframe): number {
+  if (!timeframe.isPartial) return inclusiveDayCount(timeframe.start, timeframe.end);
+  return timeframe.throughDate ? inclusiveDayCount(timeframe.start, timeframe.throughDate) : 0;
+}
+
+/**
+ * Informational notice when the two sides cover different lengths of time (spec §6).
+ * Shown only when exactly one side is partial and the other covers at least 10% more
+ * days. Year to Date vs Prior Year (either order) gets a notice suggesting Prior Year to
+ * Date. Returns null when no notice applies. Never changes either selection.
+ */
+export function getPeriodLengthNotice(left: ResolvedTimeframe, right: ResolvedTimeframe): string | null {
+  if (left.isPartial === right.isPartial) return null;
+
+  const [partial, complete] = left.isPartial ? [left, right] : [right, left];
+  const partialDays = coveredDays(partial);
+  // Rounded so exact boundaries (e.g. 290 vs 319 days = 10.0%) aren't lost to floating-point error.
+  const extraFraction = partialDays === 0 ? Infinity : coveredDays(complete) / partialDays - 1;
+  if (Number(extraFraction.toFixed(6)) < PERIOD_LENGTH_NOTICE_THRESHOLD) return null;
+
+  const pair = new Set([left.optionId, right.optionId]);
+  return pair.has('ytd') && pair.has('prior_year') ? PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR : PERIOD_LENGTH_NOTICE;
 }

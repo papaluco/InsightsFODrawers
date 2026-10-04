@@ -153,6 +153,23 @@ describe('partial SY 2025–26', () => {
   });
 });
 
+describe('Prior Year to Date', () => {
+  const pytd = buildSideDataset(ALL, { optionId: 'priorYearToDate' });
+
+  it('resolves to Jul 1, 2024 – Apr 16, 2025, complete, with its own label', () => {
+    expect(pytd.label).toBe('All Sites · SY 2024–25 through Apr 16');
+    expect(pytd.timeframe).toMatchObject({ start: '2024-07-01', end: '2025-04-16', isPartial: false });
+  });
+
+  it('includes only facts through Apr 16, 2025 and uses SY 2024–25 benchmarks', () => {
+    const { dailyFacts } = getComparisonMockData();
+    const rows = dailyFacts.filter(f => f.date >= '2024-07-01' && f.date <= '2025-04-16');
+    expect(pytd.kpis.Revenue.actual).toBeCloseTo(rows.reduce((t, r) => t + r.revenue, 0), 6);
+    expect(pytd.kpis.Revenue.target).toBe(3200 * rows.length);
+    expect(pytd.kpis.Snack.target).toBeNull(); // Snack is missing only for SY 2024–25
+  });
+});
+
 describe('targets', () => {
   it('ratio targets come straight from the resolved benchmark', () => {
     expect(current.kpis.Lunch.target).toBe(60);

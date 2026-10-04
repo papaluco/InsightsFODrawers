@@ -50,6 +50,8 @@ That has three consequences for how the code should be written:
 | Demo "today" | A single constant `DEMO_AS_OF_DATE = 2026-04-16`, used by the timeframe selector, data generator, partial-period detection, and labels. |
 | School year | July 1 – June 30. Not configurable. |
 | Mock data years | SY 2023–24 and SY 2024–25 full; SY 2025–26 partial through `DEMO_AS_OF_DATE`. Earlier school years in the selector (SY 2022–23 and older) have no data, which is a natural No Data demo. |
+| Prior Year to Date | A timeframe option covering the same elapsed portion of the prior school year as Year to Date: from Jul 1 of the prior school year through the as-of date's month and day one year earlier. With `DEMO_AS_OF_DATE` 2026-04-16 it is Jul 1, 2024 – Apr 16, 2025. Feb 29 maps to Feb 28. It is **not** partial (the period is complete). |
+| Timeframe selections are never altered | The application never trims, normalizes, or changes a user's selected timeframe to match the other side. Differences in period length are surfaced only through the informational period-length notice (§6). |
 | Default comparison | **None.** Both sides start empty. Nothing is calculated until both sides have a site scope and a timeframe. |
 | KPI values | Mock data, not real business formulas. Generate plausible values directly. Store additive components where aggregation needs them (see §9). |
 | A La Carte | À la carte sales, dollars. Mock data. |
@@ -137,6 +139,7 @@ Exact names may follow repo conventions, but every field above must be represent
 - **Percentage-point KPIs:** |change| ≥ 0.5 pts → material; < 0.5 → Comparable. Use the raw pt difference, never relative %. Guard against floating-point error (e.g. compare after rounding to 4 dp) so 60 → 60.5 is exactly material.
 - **Relative-% KPIs:** |relative change| ≥ 2% → material; < 2% → Comparable.
 - **Baseline zero (relative-% KPIs):** left = 0 and right ≠ 0 → classification `RelativeNotApplicable`; show the absolute change; no relative %; not Improved/Declined/Comparable; never show ∞. Both 0 → change 0, Comparable.
+  - `RelativeNotApplicable` results are excluded from the Summary's Improved/Comparable/Declined counts (§8), but can still qualify for Needs Attention through the right side's target status (§5.8).
 - **Informational KPIs:** no materiality; classification `Informational`.
 
 ### 5.5 Directionality
@@ -166,7 +169,7 @@ Directional KPIs only. `needsAttention = right.targetStatus === 'NotMet' || clas
 ### 5.9 Deterministic descriptions (§10, §11, §20, §21)
 Format: `<Classification> — <sentence>.` Optionally a second short sentence for partial-period context. One or two sentences, factual, no causes, no recommendations, no "better/worse", no temporal words ("previous", "current", "now") unless chronology is explicit, no A/B, no "left/right side". When a side must be named, use its generated label.
 
-Decision matrix:
+Decision matrix (all 12 classification × transition combinations, plus the missing-target row):
 
 | Classification | Transition | Sentence behavior |
 |---|---|---|
@@ -232,9 +235,13 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 - **Setup:** two side panels (left and right), each with a site selector and a timeframe selector, reusing `DemoSchoolSelector` and `TimeframeSelector` made controlled through optional `value`/`onChange` props. The dashboard's existing uncontrolled usage must keep working.
 - **Generated label** shown below each side's selectors:
   - Site part: single site → site name; one site type → plural type name ("High Schools"); All → "All Sites"; anything else → "Multiple Sites".
-  - Timeframe part: school-year options → "SY 2025–26" (YTD and Prior Year resolve to their SY); relative options use their name ("This Month", "Last Week"); Custom Range → "Aug 1 – Sep 30, 2025".
+  - Timeframe part: school-year options → "SY 2025–26" (YTD and Prior Year resolve to their SY); Prior Year to Date → "SY 2024–25 through Apr 16"; relative options use their name ("This Month", "Last Week"); Custom Range → "Aug 1 – Sep 30, 2025".
   - Joined with " · ".
   - Partial indicator when the timeframe extends past `DEMO_AS_OF_DATE`, e.g. a small badge "Partial · through Apr 16, 2026".
+- **Timeframe options:** the existing `TimeframeSelector` options plus **Prior Year to Date**, listed directly after Prior Year (see §3). Example generated label: "High Schools · SY 2024–25 through Apr 16".
+- **Period-length notice** (informational only; never changes a selection), shown below the setup when **exactly one side is partial** and the other side covers **at least 10% more days** (calendar days; the partial side counts days through its through date):
+  - Default text: "These timeframes cover different lengths of time and cumulative totals may be difficult to compare directly."
+  - When the pair is Year to Date and Prior Year (in either order), use instead: "These timeframes cover different lengths of time. For a like-for-like comparison, consider Prior Year to Date."
 - **Swap:** exchanges the complete definitions and recalculates everything. Disabled until both sides are set.
 - **Empty state:** until both sides are set, the Summary/KPI/Trend areas show a single prompt: "Select sites and a timeframe for both sides to compare."
 - **Filters:** a KPI multi-select (`MultiSelectDropdown`; default all 17 KPIs), a Needs Attention toggle, and Clear Filters/Reset (resets the KPI filter and Needs Attention only, not the sides).

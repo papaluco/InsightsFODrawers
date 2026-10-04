@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { DEMO_AS_OF_DATE } from '../constants/demo';
+import { inclusiveDayCount } from './dateOnly';
 import {
   formatDateRangeLabel,
   getPartialPeriodLabel,
+  getPeriodLengthNotice,
+  PERIOD_LENGTH_NOTICE,
+  PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR,
   getTimeframeLabel,
   resolveTimeframe,
   TIMEFRAME_OPTION_IDS,
@@ -11,6 +15,7 @@ import {
 
 // DEMO_AS_OF_DATE (2026-04-16) is a Thursday in SY 2025–26.
 const resolve = (id: TimeframeOptionId) => resolveTimeframe(id, DEMO_AS_OF_DATE);
+const inclusiveDays = ({ start, end }: { start: string; end: string }) => inclusiveDayCount(start, end);
 
 describe('resolveTimeframe against DEMO_AS_OF_DATE', () => {
   it('uses 2026-04-16 as the demo date', () => {
@@ -27,6 +32,7 @@ describe('resolveTimeframe against DEMO_AS_OF_DATE', () => {
     ['last_month',  'month',      '2026-03-01', '2026-03-31', false, '2026-03-31'],
     ['ytd',         'schoolYear', '2025-07-01', '2026-06-30', true,  '2026-04-16'],
     ['prior_year',  'schoolYear', '2024-07-01', '2025-06-30', false, '2025-06-30'],
+    ['priorYearToDate', 'schoolYear', '2024-07-01', '2025-04-16', false, '2025-04-16'],
     ['sy2324',      'schoolYear', '2023-07-01', '2024-06-30', false, '2024-06-30'],
     ['sy2223',      'schoolYear', '2022-07-01', '2023-06-30', false, '2023-06-30'],
     ['sy2122',      'schoolYear', '2021-07-01', '2022-06-30', false, '2022-06-30'],
@@ -120,6 +126,7 @@ describe('timeframe labels (spec §6)', () => {
     ['last_month', 'Last Month'],
     ['ytd', 'SY 2025–26'],
     ['prior_year', 'SY 2024–25'],
+    ['priorYearToDate', 'SY 2024–25 through Apr 16'],
     ['sy2324', 'SY 2023–24'],
     ['sy2223', 'SY 2022–23'],
     ['sy2122', 'SY 2021–22'],
@@ -154,5 +161,75 @@ describe('partial-period label', () => {
   it('handles periods with no data yet', () => {
     expect(getPartialPeriodLabel(resolveTimeframe('custom', DEMO_AS_OF_DATE, { start: '2026-05-01', end: '2026-05-31' })))
       .toBe('Partial · no data yet');
+  });
+});
+
+describe('Prior Year to Date (spec §3)', () => {
+  it('covers the same elapsed portion of the prior school year as Year to Date', () => {
+    const ytd = resolve('ytd');
+    const pytd = resolve('priorYearToDate');
+    expect(pytd).toMatchObject({ kind: 'schoolYear', start: '2024-07-01', end: '2025-04-16' });
+    expect(inclusiveDays(pytd)).toBe(inclusiveDays({ start: ytd.start, end: ytd.throughDate ?? ytd.start }));
+    expect(pytd.schoolYear?.label).toBe('SY 2024–25');
+  });
+
+  it('is never partial: the period is complete', () => {
+    expect(resolve('priorYearToDate')).toMatchObject({ isPartial: false, throughDate: '2025-04-16' });
+    expect(getPartialPeriodLabel(resolve('priorYearToDate'))).toBeNull();
+  });
+
+  it('maps Feb 29 to Feb 28', () => {
+    expect(resolveTimeframe('priorYearToDate', '2024-02-29')).toMatchObject({ start: '2022-07-01', end: '2023-02-28' });
+    expect(getTimeframeLabel(resolveTimeframe('priorYearToDate', '2024-02-29'))).toBe('SY 2022–23 through Feb 28');
+  });
+
+  it('rolls over with the school year', () => {
+    expect(resolveTimeframe('priorYearToDate', '2026-06-30')).toMatchObject({ start: '2024-07-01', end: '2025-06-30' });
+    expect(resolveTimeframe('priorYearToDate', '2026-07-01')).toMatchObject({ start: '2025-07-01', end: '2025-07-01' });
+  });
+});
+
+describe('getPeriodLengthNotice (spec §6)', () => {
+  it('suggests Prior Year to Date for Year to Date vs Prior Year, in either order', () => {
+    expect(getPeriodLengthNotice(resolve('ytd'), resolve('prior_year'))).toBe(PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR);
+    expect(getPeriodLengthNotice(resolve('prior_year'), resolve('ytd'))).toBe(PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR);
+  });
+
+  it('shows no notice for the like-for-like Prior Year to Date vs Year to Date', () => {
+    expect(getPeriodLengthNotice(resolve('priorYearToDate'), resolve('ytd'))).toBeNull();
+  });
+
+  it('uses the default notice for other partial vs longer pairs', () => {
+    expect(getPeriodLengthNotice(resolve('sy2324'), resolve('ytd'))).toBe(PERIOD_LENGTH_NOTICE);
+    expect(getPeriodLengthNotice(resolve('last_month'), resolve('this_month'))).toBe(PERIOD_LENGTH_NOTICE);
+    expect(getPeriodLengthNotice(resolve('this_week'), resolve('last_week'))).toBe(PERIOD_LENGTH_NOTICE);
+  });
+
+  it('needs exactly one partial side', () => {
+    expect(getPeriodLengthNotice(resolve('prior_year'), resolve('sy2324'))).toBeNull(); // both complete
+    expect(getPeriodLengthNotice(resolve('this_month'), resolve('ytd'))).toBeNull(); //   both partial
+    expect(getPeriodLengthNotice(resolve('today'), resolve('prior_year'))).toBeNull(); //  both complete
+  });
+
+  it('needs the complete side to cover at least 10% more days than the partial side has covered', () => {
+    // Partial side: Apr 1 – Apr 16 covered = 16 days (custom range ending in the future).
+    const partial = resolveTimeframe('custom', DEMO_AS_OF_DATE, { start: '2026-04-01', end: '2026-04-30' });
+    const complete = (days: number) =>
+      resolveTimeframe('custom', DEMO_AS_OF_DATE, { start: '2026-03-01', end: `2026-03-${String(days).padStart(2, '0')}` });
+    expect(getPeriodLengthNotice(partial, complete(17))).toBeNull(); //                6.25% more
+    expect(getPeriodLengthNotice(partial, complete(18))).toBe(PERIOD_LENGTH_NOTICE); // 12.5% more
+    expect(getPeriodLengthNotice(partial, complete(16))).toBeNull(); //                same length
+  });
+
+  it('counts exactly 10% more as qualifying', () => {
+    // 20 covered days vs 22 days = exactly 10%.
+    const partial = resolveTimeframe('custom', '2026-04-20', { start: '2026-04-01', end: '2026-04-30' });
+    const complete = resolveTimeframe('custom', '2026-04-20', { start: '2026-03-01', end: '2026-03-22' });
+    expect(getPeriodLengthNotice(partial, complete)).toBe(PERIOD_LENGTH_NOTICE);
+  });
+
+  it('treats a period with no data yet as covering 0 days', () => {
+    const future = resolveTimeframe('custom', DEMO_AS_OF_DATE, { start: '2026-05-01', end: '2026-05-31' });
+    expect(getPeriodLengthNotice(future, resolve('last_month'))).toBe(PERIOD_LENGTH_NOTICE);
   });
 });
