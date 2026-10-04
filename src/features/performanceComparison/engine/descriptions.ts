@@ -159,7 +159,8 @@ const DECISION_MATRIX: Record<'Improved' | 'Declined' | 'Comparable', Record<Tar
   },
   Comparable: {
     MetToMet: { comparablePhrase: 'remained relatively stable', connective: 'and', outcome: 'meets' },
-    NotMetToNotMet: { comparablePhrase: 'remained relatively stable', connective: 'and', outcome: 'remainsOutside' },
+    // "is below", not "remains below": avoids "remained relatively stable and remains below…".
+    NotMetToNotMet: { comparablePhrase: 'remained relatively stable', connective: 'and', outcome: 'doesNotMeet' },
     NotMetToMet: { comparablePhrase: 'changed by less than the materiality threshold', connective: 'but', outcome: 'meets' },
     MetToNotMet: { comparablePhrase: 'changed by less than the materiality threshold', connective: 'and', outcome: 'doesNotMeet' },
   },

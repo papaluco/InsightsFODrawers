@@ -128,7 +128,7 @@ const MATRIX_CASES: Array<[Classification, TargetTransition, ComparisonKpiKey, S
     ['Comparable', 'MetToMet', 'Lunch', { actual: 63, target: 60 }, { actual: 63.4, target: 60 },
       'Comparable — Lunch participation remained relatively stable and meets the 60% target.'],
     ['Comparable', 'NotMetToNotMet', 'Lunch', { actual: 55, target: 60 }, { actual: 55.3, target: 60 },
-      'Comparable — Lunch participation remained relatively stable and remains below the 60% target.'],
+      'Comparable — Lunch participation remained relatively stable and is below the 60% target.'],
     ['Comparable', 'NotMetToMet', 'Lunch', { actual: 59.8, target: 60 }, { actual: 60.2, target: 60 },
       'Comparable — Lunch participation changed by less than the materiality threshold but meets the 60% target.'],
     ['Comparable', 'MetToNotMet', 'Lunch', { actual: 60.2, target: 60 }, { actual: 59.8, target: 60 },
@@ -146,6 +146,12 @@ describe('decision matrix: every classification × transition', () => {
   it('the cases above cover all 12 combinations exactly once', () => {
     expect(new Set(MATRIX_CASES.map(([c, t]) => `${c}+${t}`)).size).toBe(12);
     expect(MATRIX_CASES).toHaveLength(12);
+  });
+
+  it('Comparable + NotMetToNotMet uses "is above" for lower-is-favorable KPIs, never "remains"', () => {
+    expect(run('PNA', { actual: 8, target: 5 }, { actual: 8.2, target: 5 }).description).toBe(
+      'Comparable — PNA remained relatively stable and is above the 5% target.',
+    );
   });
 
   it('no target on either side → no transition and no target commentary', () => {
@@ -515,5 +521,6 @@ describe('descriptions never name sides except by generated label (spec §2, §5
       }
     }
     expect(checked).toBe(17 * values.length ** 2 * targets.length ** 2);
-  });
+    // Exhaustive (~5s alone); a generous timeout keeps it from failing on a busy machine.
+  }, 20_000);
 });

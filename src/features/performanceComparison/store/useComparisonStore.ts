@@ -7,7 +7,8 @@ import type { TrendInterval } from '../trend/trendRules';
 
 /**
  * Performance Comparison state (NXT-77202, spec §6). One store holds both side
- * definitions, the filters, the focused KPI, and the trend interval. Derived data
+ * definitions, the filters, the focused KPI, the trend interval, and which page
+ * sections are collapsed. Derived data
  * (datasets and engine results) is never stored here; it comes from
  * useComparison / useComparisonResults so every component reads the same results.
  *
@@ -22,6 +23,19 @@ export interface ComparisonSideDefinition {
   sites: SiteSelection | null;
   timeframe: TimeframeSelection | null;
 }
+
+/** Collapsible page sections, in page order (NXT-77202 §6 layout order). */
+export const COMPARISON_SECTION_IDS = ['setup', 'filters', 'summary', 'kpiTable', 'trend'] as const;
+export type ComparisonSectionId = (typeof COMPARISON_SECTION_IDS)[number];
+
+/** Every section starts expanded. */
+const ALL_SECTIONS_EXPANDED: Record<ComparisonSectionId, boolean> = {
+  setup: true,
+  filters: true,
+  summary: true,
+  kpiTable: true,
+  trend: true,
+};
 
 export const EMPTY_SIDE: ComparisonSideDefinition = { sites: null, timeframe: null };
 
@@ -40,6 +54,8 @@ interface ComparisonState {
   focusedKpi: ComparisonKpiKey | null;
   /** Trend interval chosen by the user; null = use the default interval (spec §3). */
   trendInterval: TrendInterval | null;
+  /** Expanded/collapsed state per page section. */
+  expandedSections: Record<ComparisonSectionId, boolean>;
 
   setSideSites: (side: ComparisonSideKey, sites: SiteSelection) => void;
   setSideTimeframe: (side: ComparisonSideKey, timeframe: TimeframeSelection) => void;
@@ -52,6 +68,7 @@ interface ComparisonState {
   resetFilters: () => void;
   setFocusedKpi: (kpi: ComparisonKpiKey | null) => void;
   setTrendInterval: (interval: TrendInterval | null) => void;
+  toggleSection: (section: ComparisonSectionId) => void;
   /** Back to the initial empty comparison. */
   resetComparison: () => void;
 }
@@ -67,6 +84,7 @@ const INITIAL_STATE = {
   ...DEFAULT_FILTERS,
   focusedKpi: null,
   trendInterval: null,
+  expandedSections: ALL_SECTIONS_EXPANDED,
 };
 
 export const useComparisonStore = create<ComparisonState>()(set => ({
@@ -99,6 +117,9 @@ export const useComparisonStore = create<ComparisonState>()(set => ({
   setFocusedKpi: focusedKpi => set({ focusedKpi }),
 
   setTrendInterval: trendInterval => set({ trendInterval }),
+
+  toggleSection: section =>
+    set(state => ({ expandedSections: { ...state.expandedSections, [section]: !state.expandedSections[section] } })),
 
   resetComparison: () => set({ ...INITIAL_STATE, kpiFilter: [...DEFAULT_FILTERS.kpiFilter] }),
 }));

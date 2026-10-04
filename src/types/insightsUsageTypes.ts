@@ -16,7 +16,8 @@ export type InsightsEventType =
   // Performance Comparison (NXT-77201 spec §12)
   | 'COMPARISON_OPENED'
   | 'COMPARISON_SIDE_CHANGED'
-  | 'COMPARISON_SWAPPED';
+  | 'COMPARISON_SWAPPED'
+  | 'COMPARISON_KPI_FOCUSED';
 
 export const INSIGHTS_INTERACTION_TYPES: InsightsEventType[] = [
   'SITE_FILTER_CHANGED',
@@ -34,6 +35,7 @@ export const INSIGHTS_INTERACTION_TYPES: InsightsEventType[] = [
   'COMPARISON_OPENED',
   'COMPARISON_SIDE_CHANGED',
   'COMPARISON_SWAPPED',
+  'COMPARISON_KPI_FOCUSED',
   // KPI_RENDERED is intentionally excluded — passive render tracking, not a user interaction
 ];
 
@@ -55,6 +57,7 @@ export const INSIGHTS_EVENT_FRIENDLY: Record<InsightsEventType, string> = {
   COMPARISON_OPENED:         'Comparison Opened',
   COMPARISON_SIDE_CHANGED:   'Comparison Side Changed',
   COMPARISON_SWAPPED:        'Comparison Swapped',
+  COMPARISON_KPI_FOCUSED:    'Comparison KPI Focused',
 };
 
 export interface InsightsEventContext {

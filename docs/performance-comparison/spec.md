@@ -183,7 +183,7 @@ Decision matrix (all 12 classification × transition combinations, plus the miss
 | Declined | NotMet→NotMet | material decline + remains outside target |
 | Declined | NotMet→Met | material decline but meets target |
 | Comparable | Met→Met | relatively stable + meets target |
-| Comparable | NotMet→NotMet | relatively stable + remains outside target |
+| Comparable | NotMet→NotMet | relatively stable + is outside target ("remained relatively stable and is below/above the X target", never "…and remains below…") |
 | Comparable | NotMet→Met | below materiality threshold + meets target |
 | Comparable | Met→NotMet | below materiality threshold + does not meet target |
 | any | no transition (missing target) | omit target commentary |

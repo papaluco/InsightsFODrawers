@@ -6,6 +6,7 @@ import type { SiteSelection } from '../../../data/siteRegistry';
 import type { TimeframeSelection } from '../../../services/comparisonDataService';
 import { trackInsightsEvent } from '../../../services/insightsUsageService';
 import type { InsightsEventContext, InsightsEventType } from '../../../types/insightsUsageTypes';
+import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { useComparison } from '../hooks/useComparison';
 import { ComparisonSideKey, useComparisonStore } from '../store/useComparisonStore';
 import { ComparisonFilters } from './ComparisonFilters';
@@ -32,6 +33,7 @@ const PerformanceComparisonContent: React.FC = () => {
   const setSideSites = useComparisonStore(s => s.setSideSites);
   const setSideTimeframe = useComparisonStore(s => s.setSideTimeframe);
   const swapSides = useComparisonStore(s => s.swapSides);
+  const setFocusedKpi = useComparisonStore(s => s.setFocusedKpi);
 
   const handleSitesChange = (side: ComparisonSideKey, sites: SiteSelection) => {
     setSideSites(side, sites);
@@ -48,6 +50,11 @@ const PerformanceComparisonContent: React.FC = () => {
     trackComparisonEvent('COMPARISON_SWAPPED');
   };
 
+  const handleFocusKpi = (kpi: ComparisonKpiKey | null) => {
+    setFocusedKpi(kpi);
+    if (kpi) trackComparisonEvent('COMPARISON_KPI_FOCUSED', { kpi });
+  };
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
       <ComparisonSetup
@@ -57,7 +64,7 @@ const PerformanceComparisonContent: React.FC = () => {
         onSwap={handleSwap}
       />
       <ComparisonFilters />
-      <ComparisonResultsArea comparison={comparison} />
+      <ComparisonResultsArea comparison={comparison} onFocusKpi={handleFocusKpi} />
       <p className="text-xs italic text-gray-500">{MATERIALITY_NOTE}</p>
     </div>
   );

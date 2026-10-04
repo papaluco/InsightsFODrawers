@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { COMPARISON_KPI_KEYS } from '../../../constants/kpiDefinitions';
 import { ALL_SITES_ID, SITE_TYPE_IDS } from '../../../data/siteRegistry';
-import { EMPTY_SIDE, isSideComplete, useComparisonStore } from './useComparisonStore';
+import { COMPARISON_SECTION_IDS, EMPTY_SIDE, isSideComplete, useComparisonStore } from './useComparisonStore';
 
 const store = () => useComparisonStore.getState();
 
@@ -117,5 +117,27 @@ describe('resetFilters (spec §6 Clear Filters/Reset)', () => {
     expect(store().needsAttentionOnly).toBe(false);
     expect(store().left).toEqual(left);
     expect(store().right).toEqual(right);
+  });
+});
+
+describe('collapsible sections', () => {
+  it('starts with every section expanded', () => {
+    for (const section of COMPARISON_SECTION_IDS) expect(store().expandedSections[section]).toBe(true);
+  });
+
+  it('toggles one section at a time', () => {
+    store().toggleSection('summary');
+    expect(store().expandedSections.summary).toBe(false);
+    expect(store().expandedSections.kpiTable).toBe(true);
+    store().toggleSection('summary');
+    expect(store().expandedSections.summary).toBe(true);
+  });
+
+  it('keeps collapse state through Clear Filters and Swap', () => {
+    setBothSides();
+    store().toggleSection('setup');
+    store().resetFilters();
+    store().swapSides();
+    expect(store().expandedSections.setup).toBe(false);
   });
 });
