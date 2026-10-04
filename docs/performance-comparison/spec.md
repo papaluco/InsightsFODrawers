@@ -59,6 +59,11 @@ That has three consequences for how the code should be written:
 | Default trend interval | Based on the longer of the two sides' spans: ≤ 14 days → Day; ≤ 93 days → Week; ≤ 366 days → Month; otherwise Quarter. |
 | Quarters | School-year quarters: Q1 = Jul–Sep, Q2 = Oct–Dec, Q3 = Jan–Mar, Q4 = Apr–Jun. |
 | Benchmark resolution | Single site: site → site type → district → none. Site-type selection: site type → district → none. All Sites / Multiple Sites: district → none. **Never average site benchmarks.** Site Drivers uses each site's own resolved benchmark. |
+| Sum-KPI benchmarks | **Prototype convention.** Benchmarks for Revenue, Meals, MEQs, A La Carte, Reimbursement, and Waste are stored as a rate **per site, per serving day**. A side's target = rate × the scope's site-serving-days with data through the through date (days each site was open and reporting). This makes targets meaningful for any timeframe and site scope, and gives partial periods a proportional target. Production may store these benchmarks differently (e.g. annual or monthly totals); developers should map them to an equivalent per-day rate. |
+| District target choices | District Lunch target is 60% and Eco Dis is 52%. `DASHBOARD_METRICS.expected` stores Lunch as 2% and Eco Dis as 10%, which are not plausible targets for those KPIs. Breakfast, Snack, and Supper use `DASHBOARD_METRICS.expected` (20%, 10%, 10%). |
+| Inventory targets | Inventory Turnover Rate has **site-level** benchmarks only ("Varies by site"), as context; site-type and district scopes show no turnover target. Physical Inventory Discrepancy has a district context target of 0% (`DASHBOARD_METRICS.expected`, i.e. "≤ 0% of total inventory"). Neither gets Met/Not Met. |
+| Inventory point in time | Inventory KPIs use each site's **last month-end count within the period**. A period with no month-end count yet (e.g. This Month, This Week, Today before the month closes) shows No Data for inventory. |
+| Benchmark school year | A timeframe's benchmarks come from its school year. A custom range that spans Jul 1 uses the benchmarks of the school year it **starts** in. |
 | Informational KPI targets | Inventory Turnover Rate and Physical Inventory Discrepancy may display a benchmark as context, but get **no** Met/Not Met status, are excluded from target-attainment counts, and never qualify for Needs Attention. Inventory Value has no target. |
 | Site label for one-site types | A site-type selection that resolves to exactly one site (e.g. Central Office) uses that site's name as its label, not the plural type name (see §6). |
 | Site Drivers matching | Matched (side-by-side by site) only when both sides resolve to the **identical** set of sites. Otherwise each side's sites are listed independently. |
@@ -168,9 +173,11 @@ Decision matrix:
 | Improved | NotMet→Met | material improvement + meets target |
 | Improved | NotMet→NotMet | material improvement + remains outside target |
 | Improved | Met→Met | material improvement + meets target |
+| Improved | Met→NotMet | material improvement but does not meet target |
 | Declined | Met→NotMet | material decline + does not meet target |
 | Declined | Met→Met | material decline + still meets target |
 | Declined | NotMet→NotMet | material decline + remains outside target |
+| Declined | NotMet→Met | material decline but meets target |
 | Comparable | Met→Met | relatively stable + meets target |
 | Comparable | NotMet→NotMet | relatively stable + remains outside target |
 | Comparable | NotMet→Met | below materiality threshold + meets target |
@@ -303,6 +310,7 @@ Everything lives in `src/data/` and is generated in memory with a seeded PRNG so
   - Site-type and site overrides that **differ by school year** (e.g. Lunch target 60% in SY 2024–25, 62% in SY 2025–26 for High Schools).
   - Deliberately missing: Inventory Value (never has one), A La Carte (none configured), and one directional KPI missing only for SY 2024–25.
   - Resolver implements the precedence in §3.
+  - **Sum KPIs (prototype convention, see §3):** for Revenue, Meals, MEQs, A La Carte, Reimbursement, and Waste, `value` is a rate per site per serving day, and the comparison data service computes the side target as rate × the scope's site-serving-days with data through the through date. Site-type rates reflect that type's typical site size so a site-type target isn't measured against an average-sized site. Production may store these benchmarks differently; developers should map them to an equivalent per-day rate. All other KPIs store `value` in the KPI's own units.
 - **Leave existing dashboard mocks untouched.**
 
 ### Comparison data service

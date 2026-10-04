@@ -148,3 +148,20 @@ export function getSiteSelectorLabel(selection: SiteSelection, registry: SiteReg
   if (matchingType) return matchingType.siteTypePluralName;
   return `${siteIds.length} Schools Selected`;
 }
+
+export type SiteScopeKind = 'site' | 'siteType' | 'allSites' | 'multipleSites';
+
+/**
+ * Classifies resolved site IDs for benchmark precedence (spec §3), using the same rules
+ * as getSiteScopeLabel: every site → allSites; one site → site (even when it came from a
+ * one-site type); exactly one type's members → siteType; otherwise multipleSites.
+ * Null for an empty scope.
+ */
+export function getSiteScopeType(siteIds: number[], registry: SiteRegistry = DEMO_SITES): SiteScopeKind | null {
+  const sorted = [...siteIds].sort((a, b) => a - b);
+  if (sorted.length === 0) return null;
+  if (isAllSites(sorted, registry)) return 'allSites';
+  if (sorted.length === 1) return 'site';
+  if (findSiteTypeMatchingScope(sorted, registry)) return 'siteType';
+  return 'multipleSites';
+}
