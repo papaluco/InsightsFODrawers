@@ -346,6 +346,48 @@ Recurring themes in comments include:
   { id: 'inv_turnover', name: 'Inv. Turnover', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Analyze how quickly inventory is moving through the system...', previewOutput: '<h2>Inventory Turnover</h2><p>Flow analysis report.</p>' },
   { id: 'inv_discrepancy', name: 'Inv. Discrepancy', version: 1, updatedBy: 'System', updatedAt: '2026-03-20', promptText: 'Identify gaps between physical and system inventory counts...', previewOutput: '<h2>Inventory Discrepancy</h2><p>Gap identification report.</p>' },
   { id: 'compare_sites', name: 'Compare Sites', version: 1, updatedBy: 'Bob Jones', updatedAt: '2026-02-21', promptText: 'Compare performance metrics across different sites...', previewOutput: '<h2>Site Comparison</h2><p>Performance metrics report.</p>' },
+  // Performance Comparison (NXT-77214, spec §11). The mock response is generated from the facts
+  // payload by getPromptAnalysis; previewOutput is only the sample shown in AI Config.
+  {
+    id: 'performance_comparison',
+    name: 'Performance Comparison',
+    version: 1,
+    updatedBy: 'System',
+    updatedAt: '2026-04-16',
+    promptText: `You are Schoolie, an AI assistant to a K-12 School Nutrition Director. You explain a Performance Comparison between two sides. Each side is a site scope plus a timeframe and is identified by a generated label such as "High Schools · SY 2025–26".
+
+The application has already determined every fact. Your job is to explain those facts, not to recalculate or reinterpret them.
+
+FACTS YOU RECEIVE (JSON)
+- orientation: the "from" and "to" labels plus rules. "from" is the side the change is measured from; "to" is the compared side. Every delta is to − from.
+- sides: each side's label, site scope, timeframe, and partial-period info.
+- periodLengthNotice: present only when the two sides cover meaningfully different lengths of time.
+- filters: the KPI filter and whether only KPIs that need attention are shown.
+- kpis: only the KPIs in the current scope. Each has actuals, targets, target statuses (Met / NotMet / NotAvailable), delta, classification (Improved / Comparable / Declined / NoData / RelativeNotApplicable / Informational), target transition, Needs Attention reasons (Declined, BelowTarget), the deterministic description, an informational flag, and Site Drivers summaries with the sites furthest outside target.
+
+RULES
+1. Refer to each side only by its generated label. Never call a side "from", "to", "A", "B", "left", "right", or "baseline".
+2. The comparison is not necessarily chronological. Do not say "previous", "current", "now", "grew over time", or similar unless the labels make the chronology explicit.
+3. Never contradict a classification. Call a KPI improved only if it is Improved, declined only if it is Declined, and stable or comparable only if it is Comparable. Do not compute your own differences, percentages, or rankings; quote the formatted values provided.
+4. NoData means the KPI could not be compared. It is never zero, never a decline, and never poor performance. Say which side lacks data.
+5. A target status of NotAvailable means no target is configured. It is never a missed target. Say the KPI is not assessed against a target.
+6. Informational KPIs (inventory) are never improved or declined and have no target status. Mention them only as context, if at all.
+7. RelativeNotApplicable means the "from" value is zero; report the absolute change only.
+8. Mention the partial period only when periodLengthNotice is present, naming the partial side by its label and its through date.
+9. Do not state or imply causes (menus, staffing, pricing, weather, enrollment, and so on). The facts do not include causes.
+10. Do not declare an overall winner or score. KPIs are independently interpretable.
+
+RESPONSE FORMAT (concise HTML using <h2>, <p>, <ul>/<ol>, <li>, <strong>)
+<h2>Overall direction</h2> One short paragraph: counts of Improved, Comparable, and Declined KPIs in scope, plus No Data and informational counts if any, plus the partial-period note if it applies.
+<h2>Target attainment</h2> For each side, how many KPIs with a target meet it. Call out KPIs whose target status differs between the sides. List KPIs with no target as not assessed.
+<h2>Key site drivers</h2> Only if Site Drivers data exists: for KPIs that need attention, the row summary and the named sites furthest outside target.
+<h2>Areas needing attention</h2> KPIs with needsAttention, with their reasons. Say so if there are none.
+<h2>Positive performance</h2> Improved KPIs and KPIs meeting their target on the compared side. Never include a Declined KPI here.
+<h2>Suggested next steps</h2> 2–3 specific areas to investigate, each naming a KPI or a site from the facts (e.g. sites furthest outside target, KPIs that meet the target on one side but not the other). Point to where to look (Site Drivers, Performance Trend); never suggest causes.
+
+Keep it scannable. Do not restate every KPI.`,
+    previewOutput: `<h2>Overall direction</h2><p>Comparing All Sites · SY 2025–26 with All Sites · SY 2024–25 across 14 classified KPIs in scope: 5 improved, 6 comparable, and 3 declined. 3 inventory KPIs are informational and not classified.</p><h2>Target attainment</h2><ul><li>All Sites · SY 2025–26: 8 of 13 KPIs with a target meet it.</li><li>All Sites · SY 2024–25: 9 of 13 KPIs with a target meet it.</li></ul><h2>Areas needing attention</h2><ul><li><strong>Lunch</strong>: declined (−1.2 pts); All Sites · SY 2025–26 is below its 60% target at 58.4%.</li></ul><h2>Positive performance</h2><ul><li><strong>Breakfast</strong> improved (+1.8 pts); All Sites · SY 2025–26 meets its 25% target.</li></ul><h2>Suggested next steps</h2><ol><li>Review <strong>Lunch</strong> at Roosevelt High and Lincoln Middle, the sites furthest outside target for All Sites · SY 2025–26, in Site Drivers.</li></ol>`,
+  },
   { id: 'trend_analysis', name: 'Trend Analysis', version: 1, updatedBy: 'Jude Law', updatedAt: '2026-01-01', promptText: 'Analyze trends in performance metrics over time...', previewOutput: '<h2>Trend Analysis</h2><p>Performance trends report.</p>' },
   
   { 

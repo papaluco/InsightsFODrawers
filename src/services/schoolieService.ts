@@ -3,6 +3,8 @@ import type { FeedbackRecord } from '../types/feedbackTypes';
 import { initialSchooliePrompts } from '../data/mockSchoolieData';
 import { mockSchoolieVersions } from '../data/mockSchoolieVersions';
 import { mockAIResponses } from '../data/mockAIResponses';
+import { generatePerformanceComparisonAnalysis } from '../data/mockPerformanceComparisonAnalysis';
+import type { ComparisonFactsPayload } from '../features/performanceComparison/schoolie/comparisonFacts';
 
 const promptStore: SchooliePrompt[] = initialSchooliePrompts.map(p => ({ ...p }));
 const versionStore: SchoolieVersion[] = [...mockSchoolieVersions];
@@ -51,8 +53,25 @@ export async function savePrompt(
   return { prompt: { ...updated }, archivedVersion: { ...archivedVersion } };
 }
 
-export async function getPromptAnalysis(promptId: string): Promise<{ html: string; generatedAt: string } | null> {
+/** Prompt id for Performance Comparison analysis (NXT-77214, spec §11). */
+export const PERFORMANCE_COMPARISON_PROMPT_ID = 'performance_comparison';
+
+/**
+ * Mock AI analysis for a prompt. `context` is the structured facts payload sent with the prompt.
+ * For performance_comparison the response is generated from that payload (spec §11); every other
+ * prompt returns its static preview output, as before.
+ */
+export async function getPromptAnalysis(
+  promptId: string,
+  context?: unknown,
+): Promise<{ html: string; generatedAt: string } | null> {
   await delay(1500);
+  if (promptId === PERFORMANCE_COMPARISON_PROMPT_ID && context) {
+    return {
+      html: generatePerformanceComparisonAnalysis(context as ComparisonFactsPayload),
+      generatedAt: new Date().toISOString(),
+    };
+  }
   const prompt = promptStore.find(p => p.id === promptId);
   if (!prompt?.previewOutput) return null;
   return { html: prompt.previewOutput.trim(), generatedAt: new Date().toISOString() };

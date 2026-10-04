@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, GitCompareArrows } from 'lucide-react';
 import { SchoolieIcon } from '../../../components/Common/Icons';
+import { SchoolieDrawer } from '../../../components/InsightsDashboard/SchoolieDrawer';
 import { ToastProvider } from '../../../components/Common/Toast';
 import type { SiteSelection } from '../../../data/siteRegistry';
 import type { TimeframeSelection } from '../../../services/comparisonDataService';
+import { PERFORMANCE_COMPARISON_PROMPT_ID } from '../../../services/schoolieService';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { useComparison } from '../hooks/useComparison';
-import { ComparisonSideKey, useComparisonStore } from '../store/useComparisonStore';
+import { useSchoolieComparisonContext } from '../hooks/useSchoolieComparisonContext';
+import { ComparisonSideKey, isSideComplete, useComparisonStore } from '../store/useComparisonStore';
 import { trackComparisonEvent } from '../telemetry';
 import { PageDownloadMenu } from './ComparisonExportControls';
 import { ComparisonFilters } from './ComparisonFilters';
@@ -19,9 +23,15 @@ const MATERIALITY_NOTE =
   'Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. ' +
   'Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified.';
 
+interface PerformanceComparisonContentProps {
+  isSchoolieOpen: boolean;
+  onCloseSchoolie: () => void;
+}
+
 /** Page body: Setup → Filters → Summary / KPI Comparison / Performance Trend → materiality note (spec §6). */
-const PerformanceComparisonContent: React.FC = () => {
+const PerformanceComparisonContent: React.FC<PerformanceComparisonContentProps> = ({ isSchoolieOpen, onCloseSchoolie }) => {
   const comparison = useComparison();
+  const { contextKey, analysisContext } = useSchoolieComparisonContext(comparison);
   const setSideSites = useComparisonStore(s => s.setSideSites);
   const setSideTimeframe = useComparisonStore(s => s.setSideTimeframe);
   const swapSides = useComparisonStore(s => s.swapSides);
@@ -75,23 +85,56 @@ const PerformanceComparisonContent: React.FC = () => {
       <ComparisonResultsArea comparison={comparison} onFocusKpi={handleFocusKpi} onViewSites={handleViewSites} />
       <p className="text-xs italic text-gray-500">{MATERIALITY_NOTE}</p>
       <SiteDriversDrawer kpi={siteDriversKpi} comparison={comparison} onClose={closeSiteDrivers} onSwap={handleSwap} />
+      {/* NXT-77214 §11: a z-[60] panel beside the comparison, which stays visible and usable behind it. */}
+      {createPortal(
+        <SchoolieDrawer
+          isOpen={isSchoolieOpen}
+          onClose={onCloseSchoolie}
+          title="Schoolie AI — Performance Comparison"
+          subtitle="AI analysis of the current comparison"
+          promptId={PERFORMANCE_COMPARISON_PROMPT_ID}
+          sourceEntryPoint="CompareSites"
+          width="panel"
+          loadingText={
+            analysisContext
+              ? `Analyzing ${analysisContext.facts.orientation.from} vs ${analysisContext.facts.orientation.to}…`
+              : 'Analyzing the current comparison…'
+          }
+          analysisContext={analysisContext}
+          contextKey={contextKey}
+          feedbackAttribution="actual"
+        />,
+        document.body,
+      )}
     </div>
   );
 };
 
-interface DisabledHeaderActionProps {
-  title: string;
-  children: React.ReactNode;
+interface SchoolieHeaderActionProps {
+  disabled: boolean;
+  onClick: () => void;
 }
 
-/** Header action that isn't available yet. The title sits on a wrapper because disabled buttons don't show tooltips in every browser. */
-const DisabledHeaderAction: React.FC<DisabledHeaderActionProps> = ({ title, children }) => (
-  <span title={title} className="inline-flex">
-    <button type="button" disabled aria-label={title} className="flex items-center justify-center px-2 py-1.5 text-gray-500 opacity-40 cursor-not-allowed">
-      {children}
-    </button>
-  </span>
-);
+/** Header Schoolie action (NXT-77214 §11). Disabled, with a tooltip, until both sides are set. */
+const SchoolieHeaderAction: React.FC<SchoolieHeaderActionProps> = ({ disabled, onClick }) => {
+  const title = disabled ? 'Set both sides to analyze this comparison with Schoolie' : 'Ask Schoolie about this comparison';
+  // The title sits on a wrapper because disabled buttons don't show tooltips in every browser.
+  return (
+    <span title={title} className="inline-flex">
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={title}
+        className={`flex items-center justify-center px-2 py-1.5 rounded-lg text-gray-500 transition-colors ${
+          disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100'
+        }`}
+      >
+        <SchoolieIcon size={52} />
+      </button>
+    </span>
+  );
+};
 
 interface PerformanceComparisonOverlayProps {
   isOpen: boolean;
@@ -104,6 +147,20 @@ interface PerformanceComparisonOverlayProps {
  * pattern: z-50, slides in from the right, sticky header, scrolling gray body.
  */
 export const PerformanceComparisonOverlay: React.FC<PerformanceComparisonOverlayProps> = ({ isOpen, onClose }) => {
+  const bothSidesSet = useComparisonStore(s => isSideComplete(s.left) && isSideComplete(s.right));
+  const [isSchoolieOpen, setIsSchoolieOpen] = useState(false);
+  const closeSchoolie = useCallback(() => setIsSchoolieOpen(false), []);
+
+  // Schoolie closes with the overlay, and if a side is cleared there is nothing left to analyze.
+  useEffect(() => {
+    if (!isOpen || !bothSidesSet) setIsSchoolieOpen(false);
+  }, [isOpen, bothSidesSet]);
+
+  const handleOpenSchoolie = () => {
+    setIsSchoolieOpen(true);
+    trackComparisonEvent('COMPARISON_SCHOOLIE_OPENED');
+  };
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Open dropdowns and the date picker handle Escape first (capture phase) and stop it,
@@ -150,17 +207,15 @@ export const PerformanceComparisonOverlay: React.FC<PerformanceComparisonOverlay
             </div>
           </div>
 
-          {/* Schoolie (NXT-77214) arrives in a later phase. Download is the page PDF (NXT-77213, UI only). */}
+          {/* Schoolie (NXT-77214). Download is the page PDF (NXT-77213, UI only). */}
           <div className="flex items-center gap-1 shrink-0">
-            <DisabledHeaderAction title="Ask Schoolie (coming soon)">
-              <SchoolieIcon size={52} />
-            </DisabledHeaderAction>
+            <SchoolieHeaderAction disabled={!bothSidesSet} onClick={handleOpenSchoolie} />
             <PageDownloadMenu />
           </div>
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">{isOpen && <PerformanceComparisonContent />}</div>
+        <div className="flex-1 overflow-y-auto bg-gray-50">{isOpen && <PerformanceComparisonContent isSchoolieOpen={isSchoolieOpen} onCloseSchoolie={closeSchoolie} />}</div>
       </div>
     </ToastProvider>
   );
