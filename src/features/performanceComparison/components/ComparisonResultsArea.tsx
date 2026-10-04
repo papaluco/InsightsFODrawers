@@ -4,16 +4,25 @@ import { CollapsiblePanel } from '../../../components/Common/CollapsiblePanel';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import type { ComparisonView } from '../hooks/useComparison';
+import { useComparisonTrend } from '../hooks/useComparisonTrend';
+import { TREND_UNAVAILABLE_MESSAGE } from '../trend/trendRules';
+import { TREND_INTERVAL_LABELS } from '../trend/trendView';
 import { useComparisonStore } from '../store/useComparisonStore';
 import { getSideShortNames } from '../ui/comparisonDisplay';
 import { ComparisonKpiTable } from './ComparisonKpiTable';
 import { ComparisonSummary } from './ComparisonSummary';
+import { ComparisonTrendChart } from './ComparisonTrendChart';
+import { TrendIntervalSelector } from './TrendIntervalSelector';
 
 /** NXT-77202 §6 empty state copy. */
 export const COMPARISON_EMPTY_STATE_TEXT = 'Select sites and a timeframe for both sides to compare.';
 
 /** NXT-77211 §7 trend empty state copy. */
 const TREND_EMPTY_STATE_TEXT = 'Select a KPI from the KPI Comparison table to view its trend.';
+
+const TrendMessage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">{children}</div>
+);
 
 interface ComparisonResultsAreaProps {
   comparison: ComparisonView;
@@ -31,6 +40,8 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
   const toggleSection = useComparisonStore(s => s.toggleSection);
   const focusedKpi = useComparisonStore(s => s.focusedKpi);
   const needsAttentionOnly = useComparisonStore(s => s.needsAttentionOnly);
+  const setTrendInterval = useComparisonStore(s => s.setTrendInterval);
+  const trend = useComparisonTrend(comparison);
 
   const sideShortNames = useMemo<[string, string]>(
     () =>
@@ -121,10 +132,33 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
           title="Performance Trend"
           isExpanded={expandedSections.trend}
           onToggle={() => toggleSection('trend')}
+          actions={<TrendIntervalSelector options={trend.intervalOptions} value={trend.interval} onChange={setTrendInterval} />}
         >
-          <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-400">
-            {focusedName ? `Performance Trend for ${focusedName} coming soon` : TREND_EMPTY_STATE_TEXT}
-          </div>
+          {!focusedKpi ? (
+            // spec §7: never auto-select a KPI.
+            <TrendMessage>{TREND_EMPTY_STATE_TEXT}</TrendMessage>
+          ) : !trend.interval || !trend.chartData ? (
+            <TrendMessage>{TREND_UNAVAILABLE_MESSAGE}</TrendMessage>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-semibold text-gray-900">
+                {focusedName} <span className="font-normal text-gray-500">by {TREND_INTERVAL_LABELS[trend.interval].toLowerCase()}</span>
+              </p>
+              <ComparisonTrendChart
+                kpi={focusedKpi}
+                data={trend.chartData}
+                leftLabel={results.leftLabel}
+                rightLabel={results.rightLabel}
+                showTargets={getKpiDefinition(focusedKpi).kind === 'directional'}
+              />
+              {/* spec §7 partial periods: only buckets that have occurred are drawn */}
+              {trend.partialNotes.map(note => (
+                <p key={note} className="text-xs italic text-gray-500">
+                  {note}
+                </p>
+              ))}
+            </div>
+          )}
         </CollapsiblePanel>
       </div>
     </div>

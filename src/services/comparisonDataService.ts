@@ -68,6 +68,13 @@ export interface SeriesPoint {
   end: IsoDate;
   /** null when the bucket has no data (e.g. a month of summer break). */
   actual: number | null;
+  /**
+   * This side's target for the bucket, null when none applies. Ratio and point-in-time KPIs use
+   * the side's target unchanged. Sum KPIs use the per-site, per-serving-day benchmark rate ×
+   * the bucket's site-serving-days with data (spec §3 convention), so a month's target covers
+   * that month only; a bucket with no data has no sum target.
+   */
+  target: number | null;
 }
 
 export interface SeriesOptions {
@@ -213,7 +220,11 @@ export function buildSideDataset(
   const series = (kpi: ComparisonKpiKey, interval: TrendInterval, options: SeriesOptions = {}): SeriesPoint[] =>
     buildTrendBuckets(timeframe, interval, { isServingDay, dayAlignment: options.dayAlignment }).map(bucket => {
       const rows = selectRows(siteIds, bucket.start, bucket.end);
-      return { ...bucket, actual: aggregateKpi(kpi, rows.facts, rows.snapshots) };
+      return {
+        ...bucket,
+        actual: aggregateKpi(kpi, rows.facts, rows.snapshots),
+        target: computeTarget(kpi, siteIds, scopeType, schoolYear, rows.facts.length),
+      };
     });
 
   return {

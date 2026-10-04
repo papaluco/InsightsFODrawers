@@ -164,15 +164,18 @@ export function buildTrendBuckets(
   return buckets;
 }
 
-export interface AlignedTrendRow {
+export interface AlignedTrendRow<T extends TrendBucket = TrendBucket> {
   position: number;
   positionLabel: string;
-  left: TrendBucket | null;
-  right: TrendBucket | null;
+  left: T | null;
+  right: T | null;
 }
 
-/** Pairs two sides' buckets by position. A position present on only one side has null on the other. */
-export function alignTrendBuckets(left: TrendBucket[], right: TrendBucket[]): AlignedTrendRow[] {
+/**
+ * Pairs two sides' buckets by position. A position present on only one side has null on the other.
+ * Generic so callers can pair richer bucket types (e.g. series points with values) without losing fields.
+ */
+export function alignTrendBuckets<T extends TrendBucket>(left: T[], right: T[]): AlignedTrendRow<T>[] {
   const positions = Array.from(new Set([...left, ...right].map(b => b.position))).sort((a, b) => a - b);
   return positions.map(position => {
     const leftBucket = left.find(b => b.position === position) ?? null;

@@ -148,6 +148,26 @@ describe('partial SY 2025–26', () => {
     expect(months[1].actual).toBeGreaterThan(0);
   });
 
+  it('series targets: ratio KPIs keep the side target in every bucket', () => {
+    const months = current.series('Lunch', 'month');
+    expect(months.every(m => m.target === current.kpis.Lunch.target)).toBe(true);
+  });
+
+  it('series targets: sum KPIs use rate × each bucket site-serving-days, and add up to the side target', () => {
+    const { dailyFacts } = getComparisonMockData();
+    const months = current.series('Revenue', 'month');
+    const sep = months[2];
+    const sepSiteDays = dailyFacts.filter(f => f.date >= sep.start && f.date <= sep.end).length;
+    expect(sep.target).toBe(3200 * sepSiteDays);
+    expect(months[0].target).toBeNull(); // summer: no serving days, no target (never 0)
+    const total = months.reduce((sum, m) => sum + (m.target ?? 0), 0);
+    expect(total).toBeCloseTo(current.kpis.Revenue.target!, 6);
+  });
+
+  it('series targets are null when no benchmark is configured', () => {
+    expect(current.series('A La Carte', 'month').every(m => m.target === null)).toBe(true);
+  });
+
   it('sum targets scale with elapsed site-serving-days, so partial years get a proportional target', () => {
     const { dailyFacts } = getComparisonMockData();
     const siteDays = dailyFacts.filter(f => f.date >= '2025-07-01' && f.date <= '2026-04-16').length;

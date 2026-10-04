@@ -15,6 +15,13 @@ import {
   Legend,
 } from "recharts";
 import { useRef } from 'react';
+import {
+  TREND_AXIS_TICK,
+  TREND_GRID_PROPS,
+  TREND_TARGET_LINE_COLOR,
+  TREND_TOOLTIP_CONTENT_STYLE,
+  TREND_TOOLTIP_CURSOR,
+} from '../Common/charts/trendChartStyles';
 
 // Mock data to match the visual in your screenshot
 const MOCK_CHART_DATA = [
@@ -146,18 +153,13 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
               data={MOCK_CHART_DATA}
               margin={{ top: 20, right: 20, left: 20, bottom: 40 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <CartesianGrid {...TREND_GRID_PROPS} />
 
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fill: '#0f172a',
-                  fontSize: 9,
-                  fontWeight: 400,
-                  letterSpacing: '0.1em'
-                }}
+                tick={TREND_AXIS_TICK}
                 angle={-45}
                 textAnchor="end"
                 height={60}
@@ -167,12 +169,7 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fill: '#0f172a',
-                  fontSize: 9,
-                  fontWeight: 400,
-                  letterSpacing: '0.1em'
-                }}
+                tick={TREND_AXIS_TICK}
                 tickFormatter={(val) => val.toLocaleString()}
                 width={60}
                 label={{
@@ -191,12 +188,8 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
               />
 
               <Tooltip
-                cursor={{ fill: '#f9fafb' }}
-                contentStyle={{
-                  borderRadius: '8px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                }}
+                cursor={TREND_TOOLTIP_CURSOR}
+                contentStyle={TREND_TOOLTIP_CONTENT_STYLE}
               />
 
               <Legend
@@ -219,9 +212,9 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
                 type="monotone"
                 dataKey="benchmark"
                 name="Benchmark"
-                stroke="#6366f1"
+                stroke={TREND_TARGET_LINE_COLOR}
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#fff', stroke: '#6366f1', strokeWidth: 2 }}
+                dot={{ r: 4, fill: '#fff', stroke: TREND_TARGET_LINE_COLOR, strokeWidth: 2 }}
                 activeDot={{ r: 6 }}
               />
             </ComposedChart>

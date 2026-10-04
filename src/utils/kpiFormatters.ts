@@ -171,3 +171,27 @@ export function formatKpiDelta(key: ComparisonKpiKey, delta: number): string {
 export function formatRelativeDelta(key: ComparisonKpiKey, relativeChange: number, delta: number): string {
   return `${formatRelativeChange(relativeChange)} (${formatKpiDelta(key, delta)})`;
 }
+
+/**
+ * Short chart-axis label in the KPI's units: "$1.2M", "250K", "60%", "18.5", "14 days".
+ * Dollar and count values are abbreviated; other formats keep their display format.
+ */
+export function formatKpiAxisValue(key: ComparisonKpiKey, value: number): string {
+  const format = getKpiDefinition(key).displayFormat;
+  const compact = (v: number) =>
+    Math.abs(v).toLocaleString('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+  const sign = value < 0 ? MINUS_SIGN : '';
+  switch (format) {
+    case 'currency':
+      return `${sign}$${compact(value)}`;
+    case 'count':
+      return `${sign}${compact(value)}`;
+    case 'percent':
+    case 'percentOfInventoryValue':
+      return formatPercent(value, { trimZeros: true });
+    case 'mplh':
+      return formatCount(value, { decimals: 1, trimZeros: true });
+    case 'days':
+      return formatDays(value, { decimals: 0 });
+  }
+}

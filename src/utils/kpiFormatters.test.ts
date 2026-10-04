@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { ComparisonKpiKey } from '../types/kpiTypes';
 import {
   formatCount,
   formatCurrency,
   formatDays,
   formatInventoryDiscrepancy,
   formatKpiDelta,
+  formatKpiAxisValue,
   formatKpiValue,
   formatMplh,
   formatPercent,
@@ -150,5 +152,20 @@ describe('roundToDisplayPrecision', () => {
         expect(formatKpiValue(kpi, roundToDisplayPrecision(kpi, value))).toBe(formatKpiValue(kpi, value));
       }
     }
+  });
+});
+
+describe('formatKpiAxisValue', () => {
+  it.each<[ComparisonKpiKey, number, string]>([
+    ['Revenue', 1_234_567, '$1.2M'],
+    ['Revenue', 950, '$950'],
+    ['Waste', -2500, '−$2.5K'],
+    ['Meals', 250_000, '250K'],
+    ['Lunch', 60, '60%'],
+    ['Lunch', 62.5, '62.5%'],
+    ['MPLH', 18.5, '18.5'],
+    ['Inventory Turnover Rate', 14, '14 days'],
+  ])('%s %d → %s', (kpi, value, expected) => {
+    expect(formatKpiAxisValue(kpi, value)).toBe(expected);
   });
 });
