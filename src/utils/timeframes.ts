@@ -235,3 +235,18 @@ export function getPeriodLengthNotice(left: TimeframePeriod, right: TimeframePer
   const pair = new Set([left.optionId, right.optionId]);
   return pair.has('ytd') && pair.has('prior_year') ? PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR : PERIOD_LENGTH_NOTICE;
 }
+
+// ─── Selector option descriptions (NXT-77202) ────────────────────────────────
+
+/**
+ * Secondary text under each TimeframeSelector option, derived from resolveTimeframe so it
+ * always matches the period the option resolves to (e.g. This Week → "Apr 13 – Apr 19, 2026").
+ * Year to Date shows the elapsed period through the as-of date, since "to date" means exactly
+ * that. Custom Range has no fixed period and returns null.
+ */
+export function getTimeframeOptionDescription(optionId: TimeframeOptionId, asOf: IsoDate): string | null {
+  if (optionId === 'custom') return null;
+  const timeframe = resolveTimeframe(optionId, asOf);
+  const end = optionId === 'ytd' && timeframe.throughDate ? timeframe.throughDate : timeframe.end;
+  return formatDateRangeLabel(timeframe.start, end);
+}

@@ -15,6 +15,7 @@ import { KPICards } from '../components/InsightsDashboard/KPICards';
 import { SchoolPerformanceGrid } from '../components/InsightsDashboard/SchoolPerformanceGrid';
 
 import { PerformanceTrends } from '../components/InsightsDashboard/PerformanceTrends';
+import { PerformanceComparisonOverlay } from '../features/performanceComparison/components/PerformanceComparisonOverlay';
 
 // PDF Logic
 import { PDFDashRenderer } from '../components/Downloading/PDFGen/PDFDashRenderer';
@@ -70,6 +71,10 @@ function InsightsPage() {
     subtitle: string;
     sourceEntryPoint: SchoolieSourceEntryPoint;
   } | null>(null);
+
+  // Performance Comparison overlay (NXT-77202)
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const handleCloseComparison = useCallback(() => setIsComparisonOpen(false), []);
 
   // PDF Export State
   const [isExporting, setIsExporting] = useState(false);
@@ -131,6 +136,11 @@ function InsightsPage() {
     if (navOrigin === 'PNA_LIST') setIsPNADrawerOpen(true);
     if (navOrigin === 'ENP_LIST') setIsENPDrawerOpen(true);
   }, [navOrigin]);
+
+  const handleOpenComparison = () => {
+    setIsComparisonOpen(true);
+    trackInsightsEvent({ eventType: 'COMPARISON_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { entryPoint: 'Dashboard' } });
+  };
 
   const handleOpenTrendsSchoolie = () => {
     setSchoolieDrawer({
@@ -203,6 +213,7 @@ function InsightsPage() {
         <SimpleHeader 
           onExportTriggered={handleDashboardExport}
           isGenerating={isExporting}
+          onCompareClick={handleOpenComparison}
         />
 
         {/* --- KPI SECTION --- */}
@@ -244,6 +255,8 @@ function InsightsPage() {
           />
         </div>
       </div>
+
+      <PerformanceComparisonOverlay isOpen={isComparisonOpen} onClose={handleCloseComparison} />
 
       {schoolieDrawer && (
         <SchoolieDrawer

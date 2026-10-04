@@ -5,6 +5,7 @@ import {
   formatDateRangeLabel,
   getPartialPeriodLabel,
   getPeriodLengthNotice,
+  getTimeframeOptionDescription,
   PERIOD_LENGTH_NOTICE,
   PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR,
   getTimeframeLabel,
@@ -231,5 +232,26 @@ describe('getPeriodLengthNotice (spec §6)', () => {
   it('treats a period with no data yet as covering 0 days', () => {
     const future = resolveTimeframe('custom', DEMO_AS_OF_DATE, { start: '2026-05-01', end: '2026-05-31' });
     expect(getPeriodLengthNotice(future, resolve('last_month'))).toBe(PERIOD_LENGTH_NOTICE);
+  });
+});
+
+describe('getTimeframeOptionDescription', () => {
+  it.each<[TimeframeOptionId, string | null]>([
+    ['today',      'Apr 16, 2026'],
+    ['yesterday',  'Apr 15, 2026'],
+    // Weeks are Monday–Sunday: the Thursday as-of date falls in Apr 13–19.
+    ['this_week',  'Apr 13 – Apr 19, 2026'],
+    ['last_week',  'Apr 6 – Apr 12, 2026'],
+    ['this_month', 'Apr 1 – Apr 30, 2026'],
+    ['last_month', 'Mar 1 – Mar 31, 2026'],
+    // Year to Date runs through the as-of date, not the end of the school year.
+    ['ytd',        'Jul 1, 2025 – Apr 16, 2026'],
+    ['prior_year', 'Jul 1, 2024 – Jun 30, 2025'],
+    ['prior_ytd',  'Jul 1, 2024 – Apr 16, 2025'],
+    ['sy2324',     'Jul 1, 2023 – Jun 30, 2024'],
+    ['sy2021',     'Jul 1, 2020 – Jun 30, 2021'],
+    ['custom',     null],
+  ])('%s → %s', (id, expected) => {
+    expect(getTimeframeOptionDescription(id, DEMO_AS_OF_DATE)).toBe(expected);
   });
 });

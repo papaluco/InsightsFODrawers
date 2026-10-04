@@ -14,7 +14,14 @@ interface MultiSelectDropdownProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   maxListHeight?: number;
+  /** Button text when every option is selected. Defaults to the "N selected" count. */
+  allSelectedLabel?: string;
+  /** Button text when nothing is selected. Defaults to "All {label}" (Usage filters treat empty as all). */
+  emptyLabel?: string;
 }
+
+// Search, Select All/Clear and footer rows around the option list, for deciding whether to open upward.
+const DROPDOWN_CHROME_HEIGHT = 110;
 
 export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.memo(({
   label,
@@ -23,6 +30,8 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
   onChange,
   placeholder = 'Search...',
   maxListHeight = 240,
+  allSelectedLabel,
+  emptyLabel,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -34,9 +43,15 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
   const openDropdown = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      // Open upward when the menu won't fit below the trigger and there's more room above
+      // (e.g. near the bottom of the screen), and never grow past the available space.
+      const spaceBelow = window.innerHeight - rect.bottom - 8;
+      const spaceAbove = rect.top - 8;
+      const openUpward = spaceBelow < maxListHeight + DROPDOWN_CHROME_HEIGHT && spaceAbove > spaceBelow;
       setDropdownStyle({
         position: 'fixed',
-        top: rect.bottom + 4,
+        ...(openUpward ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
+        maxHeight: openUpward ? spaceAbove : spaceBelow,
         left: rect.left,
         width: Math.max(rect.width, 240),
         zIndex: 9999,
@@ -97,7 +112,9 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
 
   const displayLabel =
     selected.length === 0
-      ? `All ${label}`
+      ? (emptyLabel ?? `All ${label}`)
+      : allSelectedLabel !== undefined && selected.length === options.length
+        ? allSelectedLabel
       : selected.length === 1
         ? (options.find(o => o.value === selected[0])?.label ?? selected[0])
         : `${selected.length} selected`;
@@ -106,10 +123,10 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
     <div
       ref={dropdownRef}
       style={dropdownStyle}
-      className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
+      className="flex flex-col bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden"
     >
       {/* Search */}
-      <div className="px-2 pt-2 pb-1.5 border-b border-gray-100">
+      <div className="shrink-0 px-2 pt-2 pb-1.5 border-b border-gray-100">
         <div className="relative">
           <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
@@ -124,7 +141,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
       </div>
 
       {/* Select All / Clear */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-gray-100">
+      <div className="shrink-0 flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-gray-100">
         <button
           type="button"
           onClick={selectAll}
@@ -143,7 +160,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
       </div>
 
       {/* Option list */}
-      <div className="overflow-y-auto" style={{ maxHeight: maxListHeight }}>
+      <div className="min-h-0 overflow-y-auto" style={{ maxHeight: maxListHeight }}>
         {filtered.length === 0 ? (
           <div className="px-3 py-4 text-xs text-gray-400 italic text-center">
             No matches
@@ -173,7 +190,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
 
       {/* Selected count footer */}
       {selected.length > 0 && (
-        <div className="px-3 py-1.5 bg-indigo-50 border-t border-indigo-100 text-[11px] text-indigo-600 font-semibold">
+        <div className="shrink-0 px-3 py-1.5 bg-indigo-50 border-t border-indigo-100 text-[11px] text-indigo-600 font-semibold">
           {selected.length} of {options.length} selected
         </div>
       )}

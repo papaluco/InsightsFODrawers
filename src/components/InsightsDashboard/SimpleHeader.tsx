@@ -1,6 +1,6 @@
 import React from 'react';
-import { BarChart2, Settings, Target } from 'lucide-react';
-import { DemoSchoolSelector } from '../Common/DemoSchoolSelector'; 
+import { BarChart2, GitCompareArrows, Settings, Target } from 'lucide-react';
+import { DemoSchoolFilters, DemoSchoolSelector } from '../Common/DemoSchoolSelector';
 import { TimeframeSelector } from '../Common/TimeframeSelector';
 import { SchoolieIcon } from '../Common/Icons';
 import { DashExportMenu, ExportOptions } from '../Downloading/ExportMenu/DashExportMenu';
@@ -8,13 +8,16 @@ import { DashExportMenu, ExportOptions } from '../Downloading/ExportMenu/DashExp
 interface SimpleHeaderProps {
   onExportTriggered: (options: ExportOptions) => void;
   isGenerating?: boolean;
+  /** Opens Performance Comparison (NXT-77202). */
+  onCompareClick?: () => void;
 }
 
 export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ 
   onExportTriggered, 
-  isGenerating = false 
+  isGenerating = false,
+  onCompareClick,
 }) => {
-  const handleSchoolChange = (filters: any) => {
+  const handleSchoolChange = (filters: DemoSchoolFilters) => {
     console.log("Header Filter Update:", filters);
   };
 
@@ -45,6 +48,14 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({
 
         {/* Action Buttons Group (White Tiled Look) */}
         <div className="flex items-center gap-2 ml-2">
+
+          <button
+            title="Compare"
+            onClick={onCompareClick}
+            className="p-2 bg-white rounded-lg text-gray-500 hover:text-indigo-600 hover:shadow-sm transition-all border-none"
+          >
+            <GitCompareArrows size={20} />
+          </button>
           
           <DashExportMenu 
             isGenerating={isGenerating} 

@@ -9,6 +9,7 @@ import {
   formatMonthDay,
   formatMonthYear,
   formatShortDate,
+  fromLocalDate,
   getWeekday,
   inclusiveDayCount,
   isIsoDate,
@@ -16,6 +17,7 @@ import {
   startOfMonth,
   startOfWeek,
   toIsoDate,
+  toLocalDate,
 } from './dateOnly';
 
 describe('dateOnly', () => {
@@ -81,5 +83,17 @@ describe('dateOnly', () => {
     expect(formatShortDate('2026-04-16')).toBe('Apr 16, 2026');
     expect(formatLongDate('2026-04-16')).toBe('April 16, 2026');
     expect(formatMonthYear('2026-04-16')).toBe('Apr 2026');
+  });
+});
+
+describe('toLocalDate / fromLocalDate', () => {
+  it('builds a local-midnight Date on the same calendar day', () => {
+    const date = toLocalDate('2026-04-16');
+    expect([date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()]).toEqual([2026, 3, 16, 0]);
+  });
+
+  it('round-trips', () => {
+    expect(fromLocalDate(toLocalDate('2024-02-29'))).toBe('2024-02-29');
+    expect(fromLocalDate(new Date(2025, 11, 31, 23, 59))).toBe('2025-12-31');
   });
 });

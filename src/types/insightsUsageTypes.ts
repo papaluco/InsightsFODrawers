@@ -12,7 +12,11 @@ export type InsightsEventType =
   | 'KPI_DRAWER_DOWNLOAD'
   | 'KPI_SCHOOLIE_OPENED'
   | 'DASHBOARD_SCHOOLIE_OPENED'
-  | 'KPI_RENDERED';
+  | 'KPI_RENDERED'
+  // Performance Comparison (NXT-77201 spec §12)
+  | 'COMPARISON_OPENED'
+  | 'COMPARISON_SIDE_CHANGED'
+  | 'COMPARISON_SWAPPED';
 
 export const INSIGHTS_INTERACTION_TYPES: InsightsEventType[] = [
   'SITE_FILTER_CHANGED',
@@ -27,6 +31,9 @@ export const INSIGHTS_INTERACTION_TYPES: InsightsEventType[] = [
   'KPI_DRAWER_DOWNLOAD',
   'KPI_SCHOOLIE_OPENED',
   'DASHBOARD_SCHOOLIE_OPENED',
+  'COMPARISON_OPENED',
+  'COMPARISON_SIDE_CHANGED',
+  'COMPARISON_SWAPPED',
   // KPI_RENDERED is intentionally excluded — passive render tracking, not a user interaction
 ];
 
@@ -45,6 +52,9 @@ export const INSIGHTS_EVENT_FRIENDLY: Record<InsightsEventType, string> = {
   KPI_SCHOOLIE_OPENED:       'KPI Schoolie Opened',
   DASHBOARD_SCHOOLIE_OPENED: 'Dashboard Schoolie Opened',
   KPI_RENDERED:              'KPI Rendered',
+  COMPARISON_OPENED:         'Comparison Opened',
+  COMPARISON_SIDE_CHANGED:   'Comparison Side Changed',
+  COMPARISON_SWAPPED:        'Comparison Swapped',
 };
 
 export interface InsightsEventContext {
@@ -53,6 +63,9 @@ export interface InsightsEventContext {
   isDistrictDrawer?: boolean;
   format?: string;
   entryPoint?: string;
+  /** Performance Comparison: which side changed and what ('sites' | 'timeframe'). Internal only. */
+  comparisonSide?: 'left' | 'right';
+  comparisonField?: 'sites' | 'timeframe';
   // Set to true on KPI_RENDERED events when the KPI was available but user has it hidden.
   // Stub: in production this comes from the layout config API. Available = rendered + notRendered.
   notRendered?: boolean;

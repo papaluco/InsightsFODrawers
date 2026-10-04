@@ -133,3 +133,17 @@ export function formatMonthYear(date: IsoDate): string {
   const { year, month } = getDateParts(date);
   return `${MONTH_SHORT[month - 1]} ${year}`;
 }
+
+/**
+ * Local-midnight Date for a date-only value, for date pickers. Avoids `new Date('2026-04-16')`,
+ * which parses as UTC midnight and shows the previous day in time zones west of UTC.
+ */
+export function toLocalDate(date: IsoDate): Date {
+  const { year, month, day } = getDateParts(date);
+  return new Date(year, month - 1, day);
+}
+
+/** The local calendar date of a Date (e.g. from a date picker) as an IsoDate. */
+export function fromLocalDate(date: Date): IsoDate {
+  return toIsoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
