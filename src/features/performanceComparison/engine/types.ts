@@ -1,6 +1,6 @@
 import { KpiKind } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
-import { IsoDate } from '../../../utils/dateOnly';
+import { TimeframePeriod } from '../../../utils/timeframes';
 
 /**
  * Rules engine input and output types (NXT-77217, spec §5.1 and §5.2).
@@ -10,12 +10,11 @@ import { IsoDate } from '../../../utils/dateOnly';
  * descriptions name a side only by its generated label.
  */
 
-/** Partial-period info for one side (spec §5.1). */
-export interface SidePartialInfo {
-  isPartial: boolean;
-  /** Last day with data; null when the period hasn't started yet. */
-  throughDate: IsoDate | null;
-}
+/**
+ * One side's timeframe: partial-period info (spec §5.1) plus the period itself, so the
+ * engine can tell when period lengths differ (spec §6 period-length notice).
+ */
+export type SideTimeframe = TimeframePeriod;
 
 /** One side's values for one KPI (spec §5.1). */
 export interface SideKpiInput {
@@ -25,7 +24,7 @@ export interface SideKpiInput {
   target: number | null;
   /** Generated label, e.g. "High Schools · SY 2025–26". */
   label: string;
-  partial?: SidePartialInfo;
+  timeframe?: SideTimeframe;
   /** Physical Inventory Discrepancy only: the $ amount shown alongside the %. */
   secondaryActual?: number | null;
 }
@@ -89,8 +88,11 @@ export interface KpiComparisonResult {
   targetTransition: TargetTransition | null;
   needsAttention: boolean;
   needsAttentionReasons: NeedsAttentionReason[];
-  /** Deterministic, user-facing description (spec §5.9), including the partial note if any. */
+  /** Deterministic, user-facing description (spec §5.9), including the partial note when it's material. */
   description: string;
-  /** The partial-period sentence on its own, e.g. "High Schools · SY 2025–26 includes data through April 16, 2026." */
+  /**
+   * The partial-period sentence on its own, e.g. "High Schools · SY 2025–26 includes data through April 16, 2026."
+   * Only for sum KPIs when the period-length notice applies; otherwise null (spec §5.9).
+   */
   partialNote: string | null;
 }

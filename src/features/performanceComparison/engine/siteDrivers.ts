@@ -2,7 +2,7 @@ import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { compareKpi, getTargetStatus, NO_TARGET_TEXT } from './compareKpi';
 import { formatInventoryDiscrepancy, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
-import { KpiComparisonResult, SidePartialInfo, TargetStatus } from './types';
+import { KpiComparisonResult, SideTimeframe, TargetStatus } from './types';
 
 /**
  * Site-level evaluation for Site Drivers (NXT-77212, spec §5 and §8).
@@ -26,7 +26,7 @@ export interface SiteDriversSideInput {
   label: string;
   /** The side's timeframe label, used to build site labels ("Roosevelt High · SY 2025–26"). */
   timeframeLabel: string;
-  partial?: SidePartialInfo;
+  timeframe?: SideTimeframe;
   sites: SiteValuesInput[];
 }
 
@@ -130,8 +130,8 @@ export function evaluateSiteDrivers(
           siteName: leftSite.siteName,
           result: compareKpi({
             kpi,
-            left: { ...leftSite, label: `${leftSite.siteName} · ${left.timeframeLabel}`, partial: left.partial },
-            right: { ...rightSite, label: `${rightSite.siteName} · ${right.timeframeLabel}`, partial: right.partial },
+            left: { ...leftSite, label: `${leftSite.siteName} · ${left.timeframeLabel}`, timeframe: left.timeframe },
+            right: { ...rightSite, label: `${rightSite.siteName} · ${right.timeframeLabel}`, timeframe: right.timeframe },
           }),
         };
       })

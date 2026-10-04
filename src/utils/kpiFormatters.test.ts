@@ -16,6 +16,7 @@ import {
   formatSignedDays,
   formatSignedMplh,
   MINUS_SIGN,
+  roundToDisplayPrecision,
 } from './kpiFormatters';
 
 describe('value formatters', () => {
@@ -130,5 +131,24 @@ describe('formatKpiDelta / formatRelativeDelta', () => {
     expect(formatRelativeDelta('Revenue', 0.02, 2000)).toBe('+2.0% (+$2,000)');
     expect(formatRelativeDelta('Waste', -0.02, -200)).toBe(`${MINUS_SIGN}2.0% (${MINUS_SIGN}$200)`);
     expect(formatRelativeDelta('Meals', 0.01, 125)).toBe('+1.0% (+125)');
+  });
+});
+
+describe('roundToDisplayPrecision', () => {
+  it('rounds exactly as formatKpiValue displays', () => {
+    expect(roundToDisplayPrecision('Lunch', 59.97)).toBe(60);
+    expect(roundToDisplayPrecision('Lunch', 59.94)).toBe(59.9);
+    expect(roundToDisplayPrecision('Revenue', 1234.5)).toBe(1235);
+    expect(roundToDisplayPrecision('MPLH', 18.496)).toBe(18.5);
+    expect(roundToDisplayPrecision('Inventory Turnover Rate', 14.26)).toBe(14.3);
+    expect(roundToDisplayPrecision('Waste', -500.4)).toBe(-500);
+  });
+
+  it('agrees with the formatted value for every KPI', () => {
+    for (const kpi of ['Lunch', 'Revenue', 'Meals', 'MPLH', 'Inventory Turnover Rate', 'Physical Inventory Discrepancy'] as const) {
+      for (const value of [0.05, 12.345, 59.97, 1234.5, 18.495]) {
+        expect(formatKpiValue(kpi, roundToDisplayPrecision(kpi, value))).toBe(formatKpiValue(kpi, value));
+      }
+    }
   });
 });

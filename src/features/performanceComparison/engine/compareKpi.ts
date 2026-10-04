@@ -6,8 +6,9 @@ import {
   formatKpiValue,
   formatRelativeDelta,
   NO_DATA_TEXT,
+  roundToDisplayPrecision,
 } from '../../../utils/kpiFormatters';
-import { buildDescription, buildPartialNote } from './descriptions';
+import { buildDescription, buildPartialNote, isPartialNoteMaterial } from './descriptions';
 import { roundForComparison } from './rounding';
 import {
   Classification,
@@ -40,13 +41,15 @@ export const NO_TARGET_TEXT = '—';
  * One side's target status. Directional KPIs with a configured target only:
  * - no target, or no data on that side → NotAvailable (a missing benchmark is never a missed target)
  * - higher is favorable → Met when actual ≥ target; lower is favorable → Met when actual ≤ target
+ * - both values are compared at display precision, so the status always agrees with what users
+ *   see (59.97% displays as 60.0% and meets a 60% target)
  * Informational KPIs are always NotAvailable, even when a context benchmark is shown (spec §3).
  */
 export function getTargetStatus(kpi: ComparisonKpiKey, actual: number | null, target: number | null): TargetStatus {
   const definition = getKpiDefinition(kpi);
   if (definition.targetPolicy !== 'configured' || actual === null || target === null) return 'NotAvailable';
-  const a = roundForComparison(actual);
-  const t = roundForComparison(target);
+  const a = roundToDisplayPrecision(kpi, actual);
+  const t = roundToDisplayPrecision(kpi, target);
   const met = definition.favorableDirection === 'lower' ? a <= t : a >= t;
   return met ? 'Met' : 'NotMet';
 }
@@ -185,7 +188,11 @@ export function compareKpi(input: KpiComparisonInput): KpiComparisonResult {
     change.classification === 'NoData' ? null : getTargetTransition(left.targetStatus, right.targetStatus);
   const needsAttentionReasons = getNeedsAttentionReasons(definition, change.classification, right.targetStatus);
 
-  const partialNote = change.classification === 'NoData' ? null : buildPartialNote(input.left, input.right);
+  // §5.9: the partial note is appended only when material (sum KPI + period-length notice).
+  const partialNote =
+    change.classification !== 'NoData' && isPartialNoteMaterial(definition, input.left, input.right)
+      ? buildPartialNote(input.left, input.right)
+      : null;
   const description = buildDescription({
     definition,
     input,

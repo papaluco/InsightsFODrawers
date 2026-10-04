@@ -60,7 +60,7 @@ export function buildKpiComparisonInput(kpi: ComparisonKpiKey, left: SideDataset
   const side = (dataset: SideDataset) => ({
     ...dataset.kpis[kpi],
     label: dataset.label,
-    partial: { isPartial: dataset.timeframe.isPartial, throughDate: dataset.timeframe.throughDate },
+    timeframe: dataset.timeframe,
   });
   return { kpi, left: side(left), right: side(right) };
 }
@@ -69,7 +69,7 @@ function buildSiteDriversSide(kpi: ComparisonKpiKey, dataset: SideDataset): Site
   return {
     label: dataset.label,
     timeframeLabel: dataset.timeframeLabel,
-    partial: { isPartial: dataset.timeframe.isPartial, throughDate: dataset.timeframe.throughDate },
+    timeframe: dataset.timeframe,
     sites: dataset.siteIds.map(siteId => ({
       siteId,
       siteName: dataset.siteNames[siteId] ?? `Site ${siteId}`,

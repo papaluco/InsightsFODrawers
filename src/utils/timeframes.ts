@@ -167,6 +167,9 @@ export function resolveTimeframe(
   return { optionId, kind, start, end, ...(schoolYear && { schoolYear }), isPartial, throughDate };
 }
 
+/** The parts of a resolved timeframe that period comparisons need. */
+export type TimeframePeriod = Pick<ResolvedTimeframe, 'optionId' | 'start' | 'end' | 'isPartial' | 'throughDate'>;
+
 /** "Aug 1 – Sep 30, 2025", "Dec 15, 2025 – Jan 10, 2026", or "Aug 1, 2025" for a single day. */
 export function formatDateRangeLabel(start: IsoDate, end: IsoDate): string {
   if (start === end) return formatShortDate(start);
@@ -209,7 +212,7 @@ export const PERIOD_LENGTH_NOTICE_YTD_VS_PRIOR_YEAR =
 export const PERIOD_LENGTH_NOTICE_THRESHOLD = 0.1;
 
 /** Calendar days a side covers: through its through date when partial, otherwise the full period. */
-function coveredDays(timeframe: ResolvedTimeframe): number {
+function coveredDays(timeframe: TimeframePeriod): number {
   if (!timeframe.isPartial) return inclusiveDayCount(timeframe.start, timeframe.end);
   return timeframe.throughDate ? inclusiveDayCount(timeframe.start, timeframe.throughDate) : 0;
 }
@@ -220,7 +223,7 @@ function coveredDays(timeframe: ResolvedTimeframe): number {
  * days. Year to Date vs Prior Year (either order) gets a notice suggesting Prior Year to
  * Date. Returns null when no notice applies. Never changes either selection.
  */
-export function getPeriodLengthNotice(left: ResolvedTimeframe, right: ResolvedTimeframe): string | null {
+export function getPeriodLengthNotice(left: TimeframePeriod, right: TimeframePeriod): string | null {
   if (left.isPartial === right.isPartial) return null;
 
   const [partial, complete] = left.isPartial ? [left, right] : [right, left];

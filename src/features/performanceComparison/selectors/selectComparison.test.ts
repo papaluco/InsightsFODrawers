@@ -26,8 +26,10 @@ describe('selectComparison', () => {
     expect(comparison.resultsByKpi.Lunch).toEqual(compareKpi(buildKpiComparisonInput('Lunch', priorYear, ytd)));
   });
 
-  it('passes partial info so descriptions carry the partial note', () => {
-    expect(comparison.resultsByKpi.Lunch.partialNote).toBe('All Sites · SY 2025–26 includes data through April 16, 2026.');
+  it('passes timeframes so sum KPIs carry the material partial note', () => {
+    expect(comparison.resultsByKpi.Revenue.partialNote).toBe('All Sites · SY 2025–26 includes data through April 16, 2026.');
+    expect(comparison.resultsByKpi.Lunch.partialNote).toBeNull(); // ratio KPI
+    expect(selectComparison(pytd, ytd, ALL_KPIS).resultsByKpi.Revenue.partialNote).toBeNull(); // like-for-like
   });
 
   it('applies the KPI filter without changing results', () => {

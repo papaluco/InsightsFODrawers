@@ -1,18 +1,24 @@
 import { describe, expect, it } from 'vitest';
+import { DEMO_AS_OF_DATE } from '../../../constants/demo';
 import { COMPARISON_KPI_KEYS, getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
+import { formatKpiValue } from '../../../utils/kpiFormatters';
+import { resolveTimeframe } from '../../../utils/timeframes';
 import { compareKpi, getTargetStatus, getTargetTransition, swapComparisonInput } from './compareKpi';
-import { Classification, KpiComparisonInput, SidePartialInfo, TargetTransition } from './types';
+import { Classification, KpiComparisonInput, SideTimeframe, TargetTransition } from './types';
 
 const LEFT_LABEL = 'High Schools · SY 2024–25';
 const RIGHT_LABEL = 'High Schools · SY 2025–26';
-const PARTIAL_THROUGH_APR_16: SidePartialInfo = { isPartial: true, throughDate: '2026-04-16' };
+// Timeframes as of DEMO_AS_OF_DATE. YTD is partial through Apr 16, 2026.
+const PRIOR_YEAR = resolveTimeframe('prior_year', DEMO_AS_OF_DATE);
+const PRIOR_YTD = resolveTimeframe('prior_ytd', DEMO_AS_OF_DATE);
+const YTD = resolveTimeframe('ytd', DEMO_AS_OF_DATE);
 
 interface SideSpec {
   actual: number | null;
   target?: number | null;
   label?: string;
-  partial?: SidePartialInfo;
+  timeframe?: SideTimeframe;
   secondaryActual?: number | null;
 }
 
@@ -48,8 +54,9 @@ describe('spec §5.9 description fixtures', () => {
       'Improved — Revenue increased by $4,000 (4.0%).'],
     ['Lunch 58% (target 55%) → 58.4% (target 65%)', 'Lunch', { actual: 58, target: 55 }, { actual: 58.4, target: 65 },
       'Comparable — Lunch participation increased by 0.4 percentage points; High Schools · SY 2025–26 is below its 65% target.'],
+    // The partial note is material here: a sum KPI, and a full year vs a partial year (spec §5.9).
     ['Revenue +8,420 (6.3%), right side partial through Apr 16', 'Revenue',
-      { actual: 133651 }, { actual: 142071, partial: PARTIAL_THROUGH_APR_16 },
+      { actual: 133651, timeframe: PRIOR_YEAR }, { actual: 142071, timeframe: YTD },
       'Improved — Revenue increased by $8,420 (6.3%). High Schools · SY 2025–26 includes data through April 16, 2026.'],
     ['Lunch no data on left', 'Lunch', { actual: null, label: 'High Schools · SY 2022–23' }, { actual: 60, target: 60 },
       'No Data — Lunch participation could not be compared because data is unavailable for High Schools · SY 2022–23.'],
@@ -198,7 +205,7 @@ describe('orientation and swap (spec §5.3)', () => {
 
   it('for every KPI, swapping exchanges the side results and negates the delta', () => {
     for (const kpi of COMPARISON_KPI_KEYS) {
-      const original = input(kpi, { actual: 40, target: 45 }, { actual: 50, target: 45, partial: PARTIAL_THROUGH_APR_16 });
+      const original = input(kpi, { actual: 40, target: 45, timeframe: PRIOR_YEAR }, { actual: 50, target: 45, timeframe: YTD });
       const forward = compareKpi(original);
       const swapped = compareKpi(swapComparisonInput(original));
       expect(swapped.delta, kpi).toBeCloseTo(-(forward.delta ?? 0), 10);
@@ -230,7 +237,7 @@ describe('floating-point guard (spec §5.4)', () => {
     expect(run('Waste', { actual: 10000 }, { actual: 9800 }).classification).toBe('Improved');
   });
 
-  it('target status compares after the same rounding', () => {
+  it('target status is unaffected by float error', () => {
     expect(getTargetStatus('Lunch', 0.1 + 0.2, 0.3)).toBe('Met');
     expect(getTargetStatus('PNA', 0.1 + 0.2, 0.3)).toBe('Met');
   });
@@ -247,6 +254,27 @@ describe('target status (spec §5.6)', () => {
   it('lower is favorable → Met when actual ≤ target', () => {
     expect(getTargetStatus('Waste', 9000, 9000)).toBe('Met');
     expect(getTargetStatus('Waste', 9001, 9000)).toBe('NotMet');
+  });
+
+  it('uses display precision, so the status agrees with what users see (59.97% shows as 60.0%)', () => {
+    expect(formatKpiValue('Lunch', 59.97)).toBe('60.0%');
+    expect(getTargetStatus('Lunch', 59.97, 60)).toBe('Met');
+    expect(formatKpiValue('Lunch', 59.94)).toBe('59.9%');
+    expect(getTargetStatus('Lunch', 59.94, 60)).toBe('NotMet');
+  });
+
+  it('applies display precision for every format', () => {
+    expect(getTargetStatus('Waste', 9000.4, 9000)).toBe('Met'); //   shows $9,000
+    expect(getTargetStatus('Waste', 9000.6, 9000)).toBe('NotMet'); // shows $9,001
+    expect(getTargetStatus('MPLH', 18.496, 18.5)).toBe('Met'); //   shows 18.50
+    expect(getTargetStatus('Meals', 2499.5, 2500)).toBe('Met'); //  shows 2,500
+    expect(getTargetStatus('PNA', 10.04, 10)).toBe('Met'); //       shows 10.0% (lower is favorable)
+  });
+
+  it('the engine result shows the same status as its formatted value', () => {
+    const result = run('Lunch', { actual: 58, target: 60 }, { actual: 59.97, target: 60 });
+    expect(result.right).toMatchObject({ actualFormatted: '60.0%', targetFormatted: '60.0%', targetStatus: 'Met' });
+    expect(result.targetTransition).toBe('NotMetToMet');
   });
 
   it('no target or no data → NotAvailable, never a missed target', () => {
@@ -405,21 +433,44 @@ describe('informational KPIs (spec §3, §5.4)', () => {
 
 // ─── Partial notes, formatting, and favorability ─────────────────────────────
 
-describe('partial-period notes', () => {
-  it('both sides partial on the same date → one combined sentence', () => {
-    const result = run('Lunch', { actual: 58, partial: PARTIAL_THROUGH_APR_16, label: 'All Sites · This Month' },
-      { actual: 60, partial: PARTIAL_THROUGH_APR_16, label: 'All Sites · This Week' });
-    expect(result.partialNote).toBe('All Sites · This Month and All Sites · This Week include data through April 16, 2026.');
+describe('partial-period notes are appended only when material (spec §5.9)', () => {
+  const SUM_KPIS: ComparisonKpiKey[] = ['Revenue', 'Meals', 'MEQs', 'A La Carte', 'Reimbursement', 'Waste'];
+  const NOTE = 'High Schools · SY 2025–26 includes data through April 16, 2026.';
+
+  it('every sum KPI gets the note when the period-length notice applies (full year vs partial year)', () => {
+    for (const kpi of SUM_KPIS) {
+      const result = run(kpi, { actual: 1000, timeframe: PRIOR_YEAR }, { actual: 1100, timeframe: YTD });
+      expect(result.partialNote, kpi).toBe(NOTE);
+      expect(result.description.endsWith(` ${NOTE}`), kpi).toBe(true);
+    }
   });
 
-  it('is omitted for No Data and when neither side is partial', () => {
-    expect(run('Lunch', { actual: null }, { actual: 60, partial: PARTIAL_THROUGH_APR_16 }).partialNote).toBeNull();
-    expect(run('Lunch', { actual: 58 }, { actual: 60 }).partialNote).toBeNull();
+  it('names the partial side whichever side it is on', () => {
+    expect(run('Revenue', { actual: 1000, timeframe: YTD, label: 'All Sites · SY 2025–26' }, { actual: 1100, timeframe: PRIOR_YEAR }).partialNote)
+      .toBe('All Sites · SY 2025–26 includes data through April 16, 2026.');
   });
 
-  it('applies to informational descriptions too', () => {
-    expect(run('Inventory Turnover Rate', { actual: 16 }, { actual: 14, partial: PARTIAL_THROUGH_APR_16 }).description)
-      .toBe('Inventory turnover changed from 16 days to 14 days. High Schools · SY 2025–26 includes data through April 16, 2026.');
+  it('sum KPIs over like-for-like periods (Prior Year to Date vs Year to Date) get no note', () => {
+    const result = run('Revenue', { actual: 1000, timeframe: PRIOR_YTD }, { actual: 1100, timeframe: YTD });
+    expect(result.partialNote).toBeNull();
+    expect(result.description).toBe('Improved — Revenue increased by $100 (10.0%).');
+  });
+
+  it('ratio KPIs never get the note, even when period lengths differ', () => {
+    for (const kpi of ['Lunch', 'PNA', 'MPLH', 'Eco Dis'] as ComparisonKpiKey[]) {
+      expect(run(kpi, { actual: 10, timeframe: PRIOR_YEAR }, { actual: 12, timeframe: YTD }).partialNote, kpi).toBeNull();
+    }
+  });
+
+  it('informational KPIs never get the note', () => {
+    expect(run('Inventory Turnover Rate', { actual: 16, timeframe: PRIOR_YEAR }, { actual: 14, timeframe: YTD }).description)
+      .toBe('Inventory turnover changed from 16 days to 14 days.');
+    expect(run('Inventory Value', { actual: 1, timeframe: PRIOR_YEAR }, { actual: 2, timeframe: YTD }).partialNote).toBeNull();
+  });
+
+  it('is omitted for No Data and when timeframes are not provided', () => {
+    expect(run('Revenue', { actual: null, timeframe: PRIOR_YEAR }, { actual: 60, timeframe: YTD }).partialNote).toBeNull();
+    expect(run('Revenue', { actual: 58 }, { actual: 60 }).partialNote).toBeNull();
   });
 });
 
@@ -454,8 +505,8 @@ describe('descriptions never name sides except by generated label (spec §2, §5
       const subject = getKpiDefinition(kpi).descriptionSubject;
       for (const l of values) for (const r of values) for (const lt of targets) for (const rt of targets) {
         const result = run(kpi,
-          { actual: l, target: lt, label: labels[0] },
-          { actual: r, target: rt, label: labels[(checked % 2) + 1], partial: checked % 3 === 0 ? PARTIAL_THROUGH_APR_16 : undefined });
+          { actual: l, target: lt, label: labels[0], timeframe: PRIOR_YEAR },
+          { actual: r, target: rt, label: labels[(checked % 2) + 1], timeframe: checked % 3 === 0 ? YTD : PRIOR_YTD });
         // Generated labels and KPI names (e.g. "A La Carte") are allowed to contain anything.
         const text = [...labels, subject].reduce((t, allowed) => t.split(allowed).join('<>'), result.description);
         expect(text, result.description).not.toMatch(FORBIDDEN_WORDS);

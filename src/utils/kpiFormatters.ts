@@ -108,19 +108,39 @@ export function formatSignedDays(delta: number, options: NumberFormatOptions = {
 
 // ─── By KPI ──────────────────────────────────────────────────────────────────
 
+/** Decimal places each display format shows. formatKpiValue and roundToDisplayPrecision both use it. */
+export const DISPLAY_DECIMALS: Record<KpiDisplayFormat, number> = {
+  percent: 1,
+  percentOfInventoryValue: 1,
+  currency: 0,
+  count: 0,
+  mplh: 2,
+  days: 1,
+};
+
+/**
+ * A KPI value rounded exactly as formatKpiValue displays it (e.g. 59.97% → 60.0).
+ * Target status uses this so the status always agrees with what users see (spec §5.6).
+ */
+export function roundToDisplayPrecision(key: ComparisonKpiKey, value: number): number {
+  const { rounded } = formatMagnitude(value, DISPLAY_DECIMALS[getKpiDefinition(key).displayFormat], false);
+  return value < 0 ? -rounded : rounded;
+}
+
 function formatByDisplayFormat(format: KpiDisplayFormat, value: number): string {
+  const decimals = DISPLAY_DECIMALS[format];
   switch (format) {
     case 'percent':
     case 'percentOfInventoryValue':
-      return formatPercent(value);
+      return formatPercent(value, { decimals });
     case 'currency':
-      return formatCurrency(value);
+      return formatCurrency(value, { decimals });
     case 'count':
-      return formatCount(value);
+      return formatCount(value, { decimals });
     case 'mplh':
       return formatMplh(value);
     case 'days':
-      return formatDays(value);
+      return formatDays(value, { decimals });
   }
 }
 

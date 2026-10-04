@@ -1,6 +1,7 @@
 import { KpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { formatLongDate } from '../../../utils/dateOnly';
+import { getPeriodLengthNotice } from '../../../utils/timeframes';
 import {
   formatCount,
   formatCurrency,
@@ -21,7 +22,7 @@ import { roundForComparison } from './rounding';
 /**
  * Deterministic descriptions (NXT-77217 spec §5.9).
  *
- * Format: "<Classification> — <sentence>." plus an optional partial-period sentence.
+ * Format: "<Classification> — <sentence>." plus a partial-period sentence when it's material.
  * Factual only: no causes, recommendations, "better/worse", temporal words
  * ("previous", "current", "now"), or side names other than generated labels.
  */
@@ -53,20 +54,24 @@ export interface DescriptionContext {
 // ─── Partial-period note ─────────────────────────────────────────────────────
 
 /**
- * "High Schools · SY 2025–26 includes data through April 16, 2026." for each partial side
- * that has data. Null when neither side is partial.
+ * The partial note is material only for sum KPIs (cumulative totals) when the two periods
+ * cover noticeably different lengths of time, i.e. the period-length notice applies
+ * (spec §5.9, §6). Ratio and informational KPIs never get it.
+ */
+export function isPartialNoteMaterial(definition: KpiDefinition, left: SideKpiInput, right: SideKpiInput): boolean {
+  if (definition.aggregation !== 'sum' || !left.timeframe || !right.timeframe) return false;
+  return getPeriodLengthNotice(left.timeframe, right.timeframe) !== null;
+}
+
+/**
+ * "High Schools · SY 2025–26 includes data through April 16, 2026." for the partial side.
+ * When the note is material exactly one side is partial (the period-length notice requires
+ * it). Null when no side with data is partial. Callers check isPartialNoteMaterial first.
  */
 export function buildPartialNote(left: SideKpiInput, right: SideKpiInput): string | null {
-  const partialSides = [left, right].filter(s => s.partial?.isPartial && s.partial.throughDate);
-  if (partialSides.length === 0) return null;
-
-  const [first, second] = partialSides;
-  const through = (side: SideKpiInput) => formatLongDate(side.partial?.throughDate ?? '');
-  if (!second || second.label === first.label) return `${first.label} includes data through ${through(first)}.`;
-  if (first.partial?.throughDate === second.partial?.throughDate) {
-    return `${first.label} and ${second.label} include data through ${through(first)}.`;
-  }
-  return `${first.label} includes data through ${through(first)}; ${second.label} includes data through ${through(second)}.`;
+  const partialSide = [right, left].find(s => s.timeframe?.isPartial && s.timeframe.throughDate);
+  if (!partialSide?.timeframe?.throughDate) return null;
+  return `${partialSide.label} includes data through ${formatLongDate(partialSide.timeframe.throughDate)}.`;
 }
 
 // ─── Number phrasing ─────────────────────────────────────────────────────────
@@ -241,7 +246,7 @@ function describeDirectional(ctx: DescriptionContext, classification: 'Improved'
   return `${prefix} ${change} ${row.connective} ${describeOutcome(row.outcome, definition, targetText, 'the')}.`;
 }
 
-/** The full description: main sentence plus the partial-period note, if any. */
+/** The full description: main sentence plus the partial-period note when it's material. */
 export function buildDescription(ctx: DescriptionContext): string {
   let main: string;
   switch (ctx.classification) {

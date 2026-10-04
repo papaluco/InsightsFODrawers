@@ -149,6 +149,7 @@ Once material: higher-is-favorable → increase = Improved, decrease = Declined.
 - Target null → `NotAvailable`.
 - No data on that side → `NotAvailable`.
 - Higher-is-favorable → Met when actual ≥ target. Lower-is-favorable → Met when actual ≤ target.
+- **Compare at display precision.** Round both the actual and the target to the KPI's display precision (the same rounding the formatter uses: 1 dp for %, whole dollars and counts, 2 dp for MPLH) before comparing, so the status always agrees with what users see. Example: 59.97% displays as 60.0% and is Met against a 60% target. (Materiality in §5.4 still uses the raw values with the 4 dp float guard.)
 - Each side uses its own target. Never copy one side's target to the other.
 - Target transition only when both sides have a status of Met or NotMet.
 
@@ -167,7 +168,7 @@ Directional KPIs only. `needsAttention = right.targetStatus === 'NotMet' || clas
 - Informational KPIs never qualify.
 
 ### 5.9 Deterministic descriptions (§10, §11, §20, §21)
-Format: `<Classification> — <sentence>.` Optionally a second short sentence for partial-period context. One or two sentences, factual, no causes, no recommendations, no "better/worse", no temporal words ("previous", "current", "now") unless chronology is explicit, no A/B, no "left/right side". When a side must be named, use its generated label.
+Format: `<Classification> — <sentence>.` Optionally a second short sentence for partial-period context, appended **only when it is material**: the KPI is a sum KPI (Revenue, Meals, MEQs, A La Carte, Reimbursement, Waste) **and** the period-length notice applies (§6: exactly one side is partial and the other covers at least 10% more days). It is never appended to ratio or informational KPIs, or to No Data results. The note names the partial side by its generated label, e.g. "High Schools · SY 2025–26 includes data through April 16, 2026." One or two sentences, factual, no causes, no recommendations, no "better/worse", no temporal words ("previous", "current", "now") unless chronology is explicit, no A/B, no "left/right side". When a side must be named, use its generated label.
 
 Decision matrix (all 12 classification × transition combinations, plus the missing-target row):
 
@@ -200,7 +201,7 @@ These examples are **test fixtures**; the engine must reproduce them (wording ma
 | Lunch 59.8% → 60.2%, target 60% | Comparable — Lunch participation changed by less than the materiality threshold but meets the 60% target. |
 | Revenue $100,000 → $104,000, no target | Improved — Revenue increased by $4,000 (4.0%). |
 | Lunch 58% (target 55%) → 58.4% (target 65%), right label "High Schools · SY 2025–26" | Comparable — Lunch participation increased by 0.4 percentage points; High Schools · SY 2025–26 is below its 65% target. |
-| Revenue +$8,420 (6.3%), right side partial through Apr 16 | Improved — Revenue increased by $8,420 (6.3%). High Schools · SY 2025–26 includes data through April 16, 2026. |
+| Revenue +$8,420 (6.3%), left side a full school year, right side partial through Apr 16 | Improved — Revenue increased by $8,420 (6.3%). High Schools · SY 2025–26 includes data through April 16, 2026. |
 | Lunch no data on left (label "High Schools · SY 2022–23") | No Data — Lunch participation could not be compared because data is unavailable for High Schools · SY 2022–23. |
 | Inventory Value $167,224 → $181,750 | Inventory value increased from $167,224 to $181,750, a change of $14,526. |
 | Inventory Turnover 16 → 14 days | Inventory turnover changed from 16 days to 14 days. |
