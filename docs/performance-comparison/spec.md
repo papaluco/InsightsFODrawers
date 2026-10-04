@@ -345,9 +345,20 @@ This is the contract developers will replace with the production API. UI compone
 ## 10. Copy & Download (NXT-77213)
 
 Reuse `CopyMenu`, `CSVRenderer`/`ICSVReportData`, `ExportMenu`, `html-to-image`, `file-saver`, and the dashboard PDF flow.
-- **KPI table:** Copy (TSV) and Download (CSV) of exactly the rows in scope, with generated labels in headers, formatted values, classification, target statuses, and description. No Data and missing targets export as "No Data" / "—", never 0.
-- **Trend:** Copy data (TSV) and Copy image; Download as CSV and PNG. Includes KPI, labels, interval, actuals, targets, partial note. Disabled when the trend is unavailable or no KPI is focused.
-- **Page PDF:** header Download action → a new adapter producing `IPDFDashReportData`: title, both generated labels, site scopes, timeframes, current filters, Summary, KPI table (with compact Site Drivers summaries), and the focused KPI's trend image when available. No interactive controls, no Schoolie. Filename `Performance_Comparison_<YYYY-MM-DD>.pdf`. District/user names come from `MOCK_CURRENT_USER`, not hardcoded strings.
+
+**Prototype scope.** Only the KPI table's Copy data and Download CSV are real; they are the prototype reference for the column layout. Trend exports and the page PDF are **UI only**: the controls, menus, and disabled states are in place, and selecting an item shows a "Not implemented in prototype." toast. Production's existing implementation (the dashboard's chart copy, `html-to-image` PNG, and PDF flow) provides the behavior.
+
+- **KPI table (real):** Copy menu → "Copy data" (TSV to the clipboard); Download menu → "Download CSV" (`CSVRenderer`, UTF-8 with BOM so "—" and "−" display correctly in Excel). Both contain exactly the rows in scope (KPI filter + Needs Attention), in the current orientation and KPI display order. Columns:
+  `KPI | <left label> Actual | <left label> Target | <left label> Target Status | <right label> Actual | <right label> Target | <right label> Target Status | Change | Performance | Needs Attention | Needs Attention Reasons | Description | Site Drivers`
+  - Values are the engine's formatted text, exactly as the table shows them. No Data exports as "No Data"; a missing target as "—"; never 0.
+  - Target Status is the table's text: Met, Not Met, No target, No Data, or Not evaluated (informational KPIs).
+  - Description is the full engine description, with its classification prefix (informational descriptions have none).
+  - Site Drivers is the row summary text (lines joined with "; "), or blank when no side has more than one site.
+  - Filename `Performance_Comparison_KPIs_<YYYY-MM-DD>.csv` (local date of the download).
+  - Builder: `ui/kpiTableExport.ts` (pure, unit tested).
+- **Trend (UI only):** Copy menu ("Copy data", "Copy image") and Download menu ("Download CSV", "Download PNG") in the panel title row. Both icons are disabled, with a tooltip saying why, when no KPI is focused or the trend is unavailable. Production should include KPI, labels, interval, actuals, targets, and the partial note.
+- **Page PDF (UI only):** header Download → "Download PDF". Production should produce `IPDFDashReportData`: title, both generated labels, site scopes, timeframes, current filters, Summary, KPI table (with compact Site Drivers summaries), and the focused KPI's trend image when available. No interactive controls, no Schoolie. Filename `Performance_Comparison_<YYYY-MM-DD>.pdf`. District/user names come from the current user, not hardcoded strings.
+- Copy and Download icons follow the dashboard's placement and styling, sit in the panel title rows, and hide while a panel is collapsed. Menus layer above the overlay.
 - Exports always reflect current orientation and filters.
 
 ---

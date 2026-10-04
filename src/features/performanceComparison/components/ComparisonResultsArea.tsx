@@ -9,6 +9,7 @@ import { useSideShortNames } from '../hooks/useSideShortNames';
 import { TREND_UNAVAILABLE_MESSAGE } from '../trend/trendRules';
 import { TREND_INTERVAL_LABELS } from '../trend/trendView';
 import { useComparisonStore } from '../store/useComparisonStore';
+import { KpiTableExportControls, TrendExportControls } from './ComparisonExportControls';
 import { ComparisonKpiTable } from './ComparisonKpiTable';
 import { ComparisonSummary } from './ComparisonSummary';
 import { ComparisonTrendChart } from './ComparisonTrendChart';
@@ -19,6 +20,10 @@ export const COMPARISON_EMPTY_STATE_TEXT = 'Select sites and a timeframe for bot
 
 /** NXT-77211 §7 trend empty state copy. */
 const TREND_EMPTY_STATE_TEXT = 'Select a KPI from the KPI Comparison table to view its trend.';
+
+/** NXT-77213 §10: trend exports are disabled until a KPI is focused and its trend is available. */
+const TREND_EXPORT_NO_KPI_REASON = 'Select a KPI in the KPI Comparison table to copy or download its trend';
+const TREND_EXPORT_UNAVAILABLE_REASON = 'The trend is unavailable for the current comparison';
 
 const TrendMessage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">{children}</div>
@@ -74,6 +79,11 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
   }
 
   const focusedName = focusedKpi ? getKpiDefinition(focusedKpi).name : null;
+  const trendExportDisabledReason = !focusedKpi
+    ? TREND_EXPORT_NO_KPI_REASON
+    : !trend.interval || !trend.chartData || trend.chartData.rows.length === 0
+      ? TREND_EXPORT_UNAVAILABLE_REASON
+      : null;
 
   return (
     <div aria-busy={isLoading} className="relative">
@@ -97,20 +107,23 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
           isExpanded={expandedSections.kpiTable}
           onToggle={() => toggleSection('kpiTable')}
           actions={
-            focusedName && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 pl-3 pr-1 py-0.5 text-xs font-semibold text-indigo-700">
-                Focused: {focusedName}
-                <button
-                  type="button"
-                  onClick={() => onFocusKpi(null)}
-                  aria-label="Clear focused KPI"
-                  title="Clear focus"
-                  className="p-0.5 rounded-full hover:bg-indigo-100"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </span>
-            )
+            <>
+              {focusedName && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 pl-3 pr-1 py-0.5 text-xs font-semibold text-indigo-700">
+                  Focused: {focusedName}
+                  <button
+                    type="button"
+                    onClick={() => onFocusKpi(null)}
+                    aria-label="Clear focused KPI"
+                    title="Clear focus"
+                    className="p-0.5 rounded-full hover:bg-indigo-100"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              )}
+              <KpiTableExportControls results={results} sideShortNames={sideShortNames} />
+            </>
           }
         >
           <ComparisonKpiTable
@@ -130,7 +143,12 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
           title="Performance Trend"
           isExpanded={expandedSections.trend}
           onToggle={() => toggleSection('trend')}
-          actions={<TrendIntervalSelector options={trend.intervalOptions} value={trend.interval} onChange={setTrendInterval} />}
+          actions={
+            <>
+              <TrendIntervalSelector options={trend.intervalOptions} value={trend.interval} onChange={setTrendInterval} />
+              <TrendExportControls disabledReason={trendExportDisabledReason} />
+            </>
+          }
         >
           {!focusedKpi ? (
             // spec §7: never auto-select a KPI.

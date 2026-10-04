@@ -5,19 +5,24 @@ interface CopyMenuProps {
   onCopyData?: () => Promise<void> | void;
   onCopyImage?: () => Promise<void> | void;
   disableImageCopy?: boolean;
+  /** Disables the whole menu; disabledReason becomes the tooltip. */
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export const CopyMenu: React.FC<CopyMenuProps> = ({
   onCopyData,
   onCopyImage,
   disableImageCopy = false,
+  disabled = false,
+  disabledReason,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleEvents = (event: any) => {
+    const handleEvents = (event: MouseEvent) => {
       if (
         menuRef.current &&
         !menuRef.current.contains(event.target as Node)
@@ -32,6 +37,22 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
       document.removeEventListener('mousedown', handleEvents);
     };
   }, []);
+
+  if (disabled) {
+    // The tooltip sits on a wrapper because disabled buttons don't show tooltips in every browser.
+    return (
+      <span title={disabledReason ?? 'Copy'} className="relative inline-block">
+        <button
+          type="button"
+          disabled
+          aria-label={disabledReason ? `Copy: ${disabledReason}` : 'Copy'}
+          className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-lg border-none opacity-40 cursor-not-allowed"
+        >
+          <CopyIcon size={24} className="text-gray-500" />
+        </button>
+      </span>
+    );
+  }
 
   return (
     <div className="relative inline-block" ref={menuRef}>

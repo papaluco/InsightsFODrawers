@@ -3,9 +3,14 @@ import { DownloadIcon } from '../../Common/Icons';
 
 interface ExportMenuProps {
   children: React.ReactNode;
+  /** Optional tooltip for the download button. */
+  title?: string;
+  /** Disables the menu; disabledReason becomes the tooltip. */
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
-export const ExportMenu: React.FC<ExportMenuProps> = ({ children }) => {
+export const ExportMenu: React.FC<ExportMenuProps> = ({ children, title, disabled = false, disabledReason }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -27,10 +32,28 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ children }) => {
     }, 150); // 150ms is the "sweet spot" for PDF generation to trigger
   };
 
+  if (disabled) {
+    // The tooltip sits on a wrapper because disabled buttons don't show tooltips in every browser.
+    return (
+      <span title={disabledReason ?? title} className="relative inline-block text-left">
+        <button
+          type="button"
+          disabled
+          aria-label={disabledReason ? `${title ?? 'Download'}: ${disabledReason}` : title ?? 'Download'}
+          className="flex items-center justify-center px-3 py-1.5 rounded-full opacity-40 cursor-not-allowed"
+        >
+          <DownloadIcon size={20} className="text-gray-500" />
+        </button>
+      </span>
+    );
+  }
+
   return (
     <div className="relative inline-block text-left" ref={menuRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)} 
+        title={title}
+        aria-label={title}
         className="flex items-center justify-center px-3 py-1.5 rounded-full hover:bg-gray-100 transition-all group"
       >
         <DownloadIcon 

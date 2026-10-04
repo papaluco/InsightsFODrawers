@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ChevronLeft, Download, GitCompareArrows } from 'lucide-react';
+import { ChevronLeft, GitCompareArrows } from 'lucide-react';
 import { SchoolieIcon } from '../../../components/Common/Icons';
-import { MOCK_CURRENT_USER } from '../../../data/mockCurrentUser';
+import { ToastProvider } from '../../../components/Common/Toast';
 import type { SiteSelection } from '../../../data/siteRegistry';
 import type { TimeframeSelection } from '../../../services/comparisonDataService';
-import { trackInsightsEvent } from '../../../services/insightsUsageService';
-import type { InsightsEventContext, InsightsEventType } from '../../../types/insightsUsageTypes';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { useComparison } from '../hooks/useComparison';
 import { ComparisonSideKey, useComparisonStore } from '../store/useComparisonStore';
+import { trackComparisonEvent } from '../telemetry';
+import { PageDownloadMenu } from './ComparisonExportControls';
 import { ComparisonFilters } from './ComparisonFilters';
 import { ComparisonResultsArea } from './ComparisonResultsArea';
 import { ComparisonSetup } from './ComparisonSetup';
@@ -18,15 +18,6 @@ import { SiteDriversDrawer } from './SiteDriversDrawer';
 const MATERIALITY_NOTE =
   'Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. ' +
   'Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified.';
-
-const trackComparisonEvent = (eventType: InsightsEventType, context: InsightsEventContext = {}) =>
-  trackInsightsEvent({
-    eventType,
-    userId: MOCK_CURRENT_USER.userId,
-    districtId: MOCK_CURRENT_USER.districtId,
-    platform: 'SchoolCafe',
-    context: { entryPoint: 'PerformanceComparison', ...context },
-  });
 
 /** Page body: Setup → Filters → Summary / KPI Comparison / Performance Trend → materiality note (spec §6). */
 const PerformanceComparisonContent: React.FC = () => {
@@ -128,49 +119,49 @@ export const PerformanceComparisonOverlay: React.FC<PerformanceComparisonOverlay
   }, [handleKeyDown]);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="performance-comparison-title"
-      aria-hidden={!isOpen}
-      className={`fixed inset-0 bg-white z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
-    >
-      {/* Header */}
-      <div className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-200 flex items-center justify-between gap-3 shrink-0 shadow-sm">
-        <div className="flex items-center gap-3 min-w-0">
-          <button
-            type="button"
-            onClick={onClose}
-            title="Back to Insights"
-            aria-label="Back to Insights"
-            className="p-2 -ml-2 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl hidden sm:flex items-center justify-center shrink-0">
-            <GitCompareArrows size={20} className="text-indigo-600" />
+    <ToastProvider>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="performance-comparison-title"
+        aria-hidden={!isOpen}
+        className={`fixed inset-0 bg-white z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        {/* Header */}
+        <div className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-200 flex items-center justify-between gap-3 shrink-0 shadow-sm">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={onClose}
+              title="Back to Insights"
+              aria-label="Back to Insights"
+              className="p-2 -ml-2 hover:bg-gray-100 rounded-full text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl hidden sm:flex items-center justify-center shrink-0">
+              <GitCompareArrows size={20} className="text-indigo-600" />
+            </div>
+            <div className="min-w-0">
+              <h2 id="performance-comparison-title" className="text-xl font-bold text-gray-900 truncate">
+                Performance Comparison
+              </h2>
+              <p className="text-xs text-gray-500 truncate">Compare KPI performance across sites and timeframes</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h2 id="performance-comparison-title" className="text-xl font-bold text-gray-900 truncate">
-              Performance Comparison
-            </h2>
-            <p className="text-xs text-gray-500 truncate">Compare KPI performance across sites and timeframes</p>
+
+          {/* Schoolie (NXT-77214) arrives in a later phase. Download is the page PDF (NXT-77213, UI only). */}
+          <div className="flex items-center gap-1 shrink-0">
+            <DisabledHeaderAction title="Ask Schoolie (coming soon)">
+              <SchoolieIcon size={52} />
+            </DisabledHeaderAction>
+            <PageDownloadMenu />
           </div>
         </div>
 
-        {/* Schoolie (NXT-77214) and Download (NXT-77213) arrive in later phases */}
-        <div className="flex items-center gap-1 shrink-0">
-          <DisabledHeaderAction title="Ask Schoolie (coming soon)">
-            <SchoolieIcon size={52} />
-          </DisabledHeaderAction>
-          <DisabledHeaderAction title="Download (coming soon)">
-            <Download size={20} />
-          </DisabledHeaderAction>
-        </div>
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">{isOpen && <PerformanceComparisonContent />}</div>
       </div>
-
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">{isOpen && <PerformanceComparisonContent />}</div>
-    </div>
+    </ToastProvider>
   );
 };
