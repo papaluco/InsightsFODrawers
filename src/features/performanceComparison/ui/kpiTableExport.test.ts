@@ -171,10 +171,11 @@ describe('buildKpiTableExport', () => {
     expect(singleSite.rows.every(row => row[COLUMN.siteDrivers] === '')).toBe(true);
   });
 
-  it('names each side with its compact name when both sides have several sites', () => {
+  it('names each side with its compact name when both sides have several sites, in full "meeting target" wording', () => {
     const middleYtd = buildSideDataset([105], { optionId: 'ytd' });
     const { table } = exportFor(highYtd, middleYtd);
-    expect(rowFor(table.rows, 'Lunch')[COLUMN.siteDrivers]).toMatch(/^High Schools: .*; Middle Schools: /);
+    // The table cell uses the compact "meeting" lines; exports keep the full wording.
+    expect(rowFor(table.rows, 'Lunch')[COLUMN.siteDrivers]).toMatch(/^High Schools: \d+ of \d+ meeting target; Middle Schools: \d+ of \d+ meeting target$/);
   });
 });
 

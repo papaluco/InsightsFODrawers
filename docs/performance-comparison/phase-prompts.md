@@ -207,13 +207,39 @@ Run lint, typecheck, tests. Summarize and stop.
 ```
 Read CLAUDE.md and spec §10.
 
-Wire Copy/Download for the KPI table and the trend, and the page-level PDF via a
-new adapter on the existing dashboard PDF flow. Extract the copy-pasted clipboard
-helpers into a shared util as you go. Exports must use exactly the in-scope rows,
-current orientation, generated labels, "No Data"/"—" instead of zeros, and
-MOCK_CURRENT_USER instead of hardcoded district/user names.
+Only the KPI table's copy and CSV download are real; trend exports and the page
+PDF are UI only (production's existing implementation provides the behavior).
 
-Hand-check each export after a swap and with Needs Attention on. Run lint,
+1. KPI Comparison title row: the dashboard's CopyMenu and ExportMenu.
+   - "Copy data" copies the table as tab-separated text.
+   - "Download CSV" uses CSVExpButton/CSVRenderer (UTF-8 with BOM), filename
+     Performance_Comparison_KPIs_<YYYY-MM-DD>.csv.
+   Both contain exactly the rows in scope (KPI filter + Needs Attention), in the
+   current orientation and display order, with these columns:
+   KPI | <left label> Actual | <left label> Target | <left label> Target Status |
+   <right label> Actual | <right label> Target | <right label> Target Status |
+   Change | Performance | Needs Attention | Needs Attention Reasons | Description |
+   Site Drivers
+   Use the engine's formatted values as the table shows them; "No Data" and "—"
+   instead of zeros; the full engine description; the full-wording Site Drivers
+   summary, or blank when not applicable. Build the rows in a pure, unit-tested
+   module (ui/kpiTableExport.ts): scope, orientation after swap, No Data, missing
+   targets, informational KPIs.
+2. Performance Trend title row: Copy ("Copy data", "Copy image") and Download
+   ("Download CSV", "Download PNG") menus. Every item shows a toast: "Not
+   implemented in prototype." Disable both icons, with a tooltip saying why, when
+   no KPI is focused or the trend is unavailable.
+3. Overlay header Download: a menu with "Download PDF" that shows the same toast.
+4. Toast: the app has none, so add a minimal one that matches the app's styling
+   and auto-dismisses after a few seconds.
+5. Icons and menus follow the dashboard's placement, styling, tooltips, and
+   layering above the overlay; panel icons hide while a panel is collapsed.
+   Escape closes an open menu first and closes the overlay only when nothing is
+   open (opt-in on the shared menus; the dashboard's menus are unchanged).
+6. Update spec §10 to match.
+
+Hand-check in the browser at desktop and tablet width, including the downloaded
+CSV opened as text, a swapped comparison, and Needs Attention on. Run lint,
 typecheck, tests. Summarize and stop.
 ```
 

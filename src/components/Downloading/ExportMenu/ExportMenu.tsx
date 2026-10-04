@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { DownloadIcon } from '../../Common/Icons';
+import { useCloseOnEscape } from '../../Common/useFloatingDropdown';
 
 interface ExportMenuProps {
   children: React.ReactNode;
@@ -8,10 +9,17 @@ interface ExportMenuProps {
   /** Disables the menu; disabledReason becomes the tooltip. */
   disabled?: boolean;
   disabledReason?: string;
+  /**
+   * Opt-in: while open, Escape closes the menu and stops there, so a containing overlay
+   * only closes when no menu is open (same as the selectors). Off by default.
+   */
+  closeOnEscape?: boolean;
 }
 
-export const ExportMenu: React.FC<ExportMenuProps> = ({ children, title, disabled = false, disabledReason }) => {
+export const ExportMenu: React.FC<ExportMenuProps> = ({ children, title, disabled = false, disabledReason, closeOnEscape = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const close = useCallback(() => setIsOpen(false), []);
+  useCloseOnEscape(closeOnEscape && isOpen, close);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // standard click-outside logic

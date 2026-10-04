@@ -68,8 +68,8 @@ export const KpiTableExportControls: React.FC<KpiTableExportControlsProps> = ({ 
 
   return (
     <div className="flex items-center gap-1">
-      <CopyMenu onCopyData={handleCopyData} />
-      <ExportMenu title="Download">
+      <CopyMenu onCopyData={handleCopyData} closeOnEscape />
+      <ExportMenu title="Download" closeOnEscape>
         <CSVExpButton
           title="Download CSV"
           subtext={`KPI table as shown (${kpiCountText})`}
@@ -94,8 +94,8 @@ export const TrendExportControls: React.FC<TrendExportControlsProps> = ({ disabl
 
   return (
     <div className="flex items-center gap-1">
-      <CopyMenu onCopyData={notImplemented} onCopyImage={notImplemented} disabled={disabled} disabledReason={disabledReason ?? undefined} />
-      <ExportMenu title="Download" disabled={disabled} disabledReason={disabledReason ?? undefined}>
+      <CopyMenu onCopyData={notImplemented} onCopyImage={notImplemented} closeOnEscape disabled={disabled} disabledReason={disabledReason ?? undefined} />
+      <ExportMenu title="Download" closeOnEscape disabled={disabled} disabledReason={disabledReason ?? undefined}>
         <ExportMenuAction
           icon={<FileSpreadsheet size={18} className="text-emerald-600 group-hover:text-emerald-700" />}
           title="Download CSV"
@@ -117,7 +117,7 @@ export const TrendExportControls: React.FC<TrendExportControlsProps> = ({ disabl
 export const PageDownloadMenu: React.FC = () => {
   const { showToast } = useToast();
   return (
-    <ExportMenu title="Download">
+    <ExportMenu title="Download" closeOnEscape>
       <ExportMenuAction
         icon={<FileText size={18} className="text-indigo-500" />}
         title="Download PDF"

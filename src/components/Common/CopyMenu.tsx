@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CopyIcon, ImageIcon, DatabaseIcon } from './Icons';
+import { useCloseOnEscape } from './useFloatingDropdown';
 
 interface CopyMenuProps {
   onCopyData?: () => Promise<void> | void;
@@ -8,6 +9,11 @@ interface CopyMenuProps {
   /** Disables the whole menu; disabledReason becomes the tooltip. */
   disabled?: boolean;
   disabledReason?: string;
+  /**
+   * Opt-in: while open, Escape closes the menu and stops there, so a containing overlay
+   * only closes when no menu is open (same as the selectors). Off by default.
+   */
+  closeOnEscape?: boolean;
 }
 
 export const CopyMenu: React.FC<CopyMenuProps> = ({
@@ -16,8 +22,11 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
   disableImageCopy = false,
   disabled = false,
   disabledReason,
+  closeOnEscape = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const close = useCallback(() => setIsOpen(false), []);
+  useCloseOnEscape(closeOnEscape && isOpen, close);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
