@@ -58,18 +58,28 @@ describe('getTargetStatusDisplay', () => {
   });
 });
 
-describe('getSideShortNames', () => {
+describe('getSideShortNames (spec §8)', () => {
   const name = (siteLabel: string, timeframeLabel: string) => ({ siteLabel, timeframeLabel, label: `${siteLabel} · ${timeframeLabel}` });
 
-  it('uses the timeframe part when timeframes differ', () => {
-    expect(getSideShortNames(name('All Sites', 'SY 2024–25'), name('High Schools', 'SY 2025–26'))).toEqual(['SY 2024–25', 'SY 2025–26']);
+  it('only timeframes differ → timeframe part', () => {
+    expect(getSideShortNames(name('All Sites', 'Yesterday'), name('All Sites', 'Today'))).toEqual(['Yesterday', 'Today']);
   });
 
-  it('uses the site part when only the sites differ', () => {
-    expect(getSideShortNames(name('Middle Schools', 'SY 2025–26'), name('High Schools', 'SY 2025–26'))).toEqual(['Middle Schools', 'High Schools']);
+  it('only sites differ → site part', () => {
+    expect(getSideShortNames(name('Lincoln Elementary', 'This Month'), name('Jefferson Elementary', 'This Month'))).toEqual([
+      'Lincoln Elementary',
+      'Jefferson Elementary',
+    ]);
   });
 
-  it('falls back to full labels when both parts match', () => {
+  it('both differ → full labels', () => {
+    expect(getSideShortNames(name('All Sites', 'SY 2024–25'), name('High Schools', 'SY 2025–26'))).toEqual([
+      'All Sites · SY 2024–25',
+      'High Schools · SY 2025–26',
+    ]);
+  });
+
+  it('identical labels → full labels', () => {
     expect(getSideShortNames(name('All Sites', 'This Week'), name('All Sites', 'This Week'))).toEqual(['All Sites · This Week', 'All Sites · This Week']);
   });
 });

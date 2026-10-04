@@ -17,8 +17,8 @@ const COUNT_TONE: Record<TrendStatus, string> = {
 };
 
 const CountTile: React.FC<CountTileProps> = ({ label, count, direction, status }) => (
-  <div className="rounded-lg border border-gray-200 px-4 py-3">
-    <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide ${COUNT_TONE[status]}`}>
+  <div className="w-44 rounded-lg border border-gray-200 px-4 py-3 text-center">
+    <div className={`flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide ${COUNT_TONE[status]}`}>
       <TrendIndicator direction={direction} status={status} size="small" />
       {label}
     </div>
@@ -56,7 +56,8 @@ export const ComparisonSummary: React.FC<ComparisonSummaryProps> = ({ summary, k
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Fixed-width cards, centered as a group; they wrap on narrow screens. */}
+      <div className="flex flex-wrap justify-center gap-3">
         <CountTile label="Improved" count={summary.improved} direction="up" status="favorable" />
         <CountTile label="Comparable" count={summary.comparable} direction="flat" status="neutral" />
         <CountTile label="Declined" count={summary.declined} direction="down" status="unfavorable" />

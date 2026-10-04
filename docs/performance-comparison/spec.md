@@ -83,19 +83,21 @@ That has three consequences for how the code should be written:
 | Lunch | % | Directional | Higher | Percentage-point | 0.5 pts | ratio of sums | Configured benchmark |
 | Snack | % | Directional | Higher | Percentage-point | 0.5 pts | ratio of sums | Configured benchmark |
 | Supper | % | Directional | Higher | Percentage-point | 0.5 pts | ratio of sums | Configured benchmark |
-| Revenue | $ | Directional | Higher | Relative % | 2% | sum | Configured benchmark |
 | Meals | count | Directional | Higher | Relative % | 2% | sum | Configured benchmark |
 | MEQs | count | Directional | Higher | Relative % | 2% | sum | Configured benchmark |
 | Eco Dis | % | Directional | Higher | Percentage-point | 0.5 pts | ratio of sums | Configured benchmark |
 | PNA | % | Directional | Lower | Percentage-point | 0.5 pts | ratio of sums | Configured benchmark |
 | ENP | % | Directional | Lower | Percentage-point | 0.5 pts | ratio of sums | Configured benchmark |
 | MPLH | number (2 dp) | Directional | Higher | Relative % | 2% | ratio of sums (MEQs ÷ labor hours) | Configured benchmark |
+| Revenue | $ | Directional | Higher | Relative % | 2% | sum | Configured benchmark |
 | A La Carte | $ | Directional | Higher | Relative % | 2% | sum | Configured benchmark |
 | Reimbursement | $ | Directional | Higher | Relative % | 2% | sum | Configured benchmark |
 | Waste | $ | Directional | Lower | Relative % | 2% | sum | Configured benchmark |
 | Inventory Value | $ | Informational | None | None | — | point-in-time (last snapshot in period) | No target |
 | Inventory Turnover Rate | days | Informational | None | None | — | point-in-time (last snapshot in period) | Site benchmark as context only |
 | Physical Inventory Discrepancy | $ + % of total inventory value | Informational | None | None | — | point-in-time (last snapshot in period) | Benchmark as context only |
+
+Rows are in display order: the KPI registry, KPI picker, KPI Comparison table, and exports all list KPIs in this order.
 
 For **sum** KPIs, the side value is the total over the side's sites and period. Ratio KPIs must aggregate as **ratio of sums** across sites and days, never as an average of site ratios.
 
@@ -124,7 +126,8 @@ For one KPI: KPI key, left actual (number | null), right actual (number | null),
   targetTransition: 'MetToMet' | 'NotMetToMet' | 'MetToNotMet' | 'NotMetToNotMet' | null,
   needsAttention: boolean,
   needsAttentionReasons: Array<'Declined' | 'BelowTarget'>,
-  description: string,                  // deterministic, user-facing
+  description: string,                  // deterministic, user-facing (exports, Schoolie)
+  descriptionBody: string,              // description without "<Classification> — " (KPI table, next to the badge)
   partialNote: string | null,
 }
 ```
@@ -169,6 +172,8 @@ Directional KPIs only. `needsAttention = right.targetStatus === 'NotMet' || clas
 
 ### 5.9 Deterministic descriptions (§10, §11, §20, §21)
 Format: `<Classification> — <sentence>.` Optionally a second short sentence for partial-period context, appended **only when it is material**: the KPI is a sum KPI (Revenue, Meals, MEQs, A La Carte, Reimbursement, Waste) **and** the period-length notice applies (§6: exactly one side is partial and the other covers at least 10% more days). It is never appended to ratio or informational KPIs, or to No Data results. The note names the partial side by its generated label, e.g. "High Schools · SY 2025–26 includes data through April 16, 2026." One or two sentences, factual, no causes, no recommendations, no "better/worse", no temporal words ("previous", "current", "now") unless chronology is explicit, no A/B, no "left/right side". When a side must be named, use its generated label.
+
+**Target formatting.** A target is written the same way everywhere it appears: the KPI table, descriptions, and the trend tooltip. Percentage targets drop a trailing ".0" ("Target 35%", "meets the 35% target") but keep real decimals ("Target 62.5%"). Other formats use the KPI's display format. A missing target shows "—".
 
 Decision matrix (all 12 classification × transition combinations, plus the missing-target row):
 
@@ -264,6 +269,7 @@ The engine also evaluates **site-level** results for Site Drivers using the same
   - Quarter: buckets remain school-year quarters (Q1 = Jul–Sep), but positions count from the quarter the period starts in. For school years this is identical to the quarter number.
 - **Compatibility (prototype rule):** a trend is available when (a) both timeframes are the same kind (both school years, both months, both weeks, both single days) or are custom ranges whose lengths differ by ≤ 10%, and (b) the selected interval is finer than the period (no Quarter for a month, no Week for a single day; a custom range's grain is set by its length: ≤ 1 day = day, ≤ 7 days = week, ≤ 31 days = month, ≤ 92 days = quarter, longer = year), and (c) each side produces at least 2 buckets. Otherwise show: **"Trend comparison unavailable. Select comparable timeframes to view performance trends."** The rest of the page stays available.
 - **Partial periods:** show only buckets that have occurred; never draw zero or extrapolated bars for the future; show the partial-period note under the chart.
+- **Empty intervals:** drop an interval when neither side has data in it (e.g. July and June summer months by Month). When only one side lacks data, keep the interval and show a gap for that side (never a zero bar).
 - Non-serving days (weekends, breaks) are excluded from Day buckets, not shown as No Data.
 
 ---
@@ -278,7 +284,8 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 
 ### KPI Comparison table (NXT-77210)
 - One row per KPI in scope. Columns: KPI · left (actual, target) · right (actual, target) · Change · Target Status · Performance (classification badge + description) · Site Drivers summary.
-- Column headers are the generated labels. Target Status names sides by their timeframe/label part.
+- Column headers are the generated labels.
+- **Compact side names** (Target Status, and anywhere else a side is named in compact form): name each side by the part of its generated label that differs. Only the timeframes differ → timeframe ("Today: Met"). Only the sites differ → site ("Lincoln Elementary: Met"). Both differ → full label. Identical labels → full labels.
 - Classification badges use the `insightsFavorable` / `insightsNeutral` / `insightsUnfavorable` tokens **plus** text and an icon (`TrendIndicator`). Informational rows use a neutral "Informational" badge.
 - Needs Attention rows show their reason(s): "Declined", "Below Target", or both.
 - Clicking a row focuses that KPI (highlighted); a clear control removes focus.

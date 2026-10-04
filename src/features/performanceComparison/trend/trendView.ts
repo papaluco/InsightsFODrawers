@@ -137,8 +137,8 @@ const sameTarget = (a: number | null, b: number | null) =>
   a === null || b === null ? a === b : Math.abs(a - b) < 1e-9;
 
 /**
- * Pairs both sides' series by position (alignTrendBuckets) into chart rows.
- * Targets are merged into one line when, at every position both sides have, their targets are
+ * Pairs both sides' series by position (alignTrendBuckets) into chart rows, dropping positions
+ * where neither side has data. Targets are merged into one line when, at every position both sides have, their targets are
  * identical (and at least one exists). `showTargets` is false for informational KPIs.
  */
 export function buildTrendChartData(
@@ -147,7 +147,11 @@ export function buildTrendChartData(
   interval: TrendInterval,
   showTargets: boolean,
 ): TrendChartData {
-  const aligned = alignTrendBuckets(leftSeries, rightSeries);
+  // spec §7: drop intervals where neither side has data (e.g. July and June summer months);
+  // an interval where only one side lacks data stays, drawn as a gap on that side.
+  const aligned = alignTrendBuckets(leftSeries, rightSeries).filter(
+    r => (r.left?.actual ?? null) !== null || (r.right?.actual ?? null) !== null,
+  );
   const leftTargets = aligned.map(r => (showTargets ? r.left?.target ?? null : null));
   const rightTargets = aligned.map(r => (showTargets ? r.right?.target ?? null : null));
   const hasLeftTarget = leftTargets.some(t => t !== null);

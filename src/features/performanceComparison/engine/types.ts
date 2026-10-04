@@ -91,6 +91,11 @@ export interface KpiComparisonResult {
   /** Deterministic, user-facing description (spec §5.9), including the partial note when it's material. */
   description: string;
   /**
+   * The same description without its leading "<Classification> — " prefix, for UIs that show the
+   * classification as a badge next to it. Exports and Schoolie use `description`.
+   */
+  descriptionBody: string;
+  /**
    * The partial-period sentence on its own, e.g. "High Schools · SY 2025–26 includes data through April 16, 2026."
    * Only for sum KPIs when the period-length notice applies; otherwise null (spec §5.9).
    */

@@ -7,6 +7,7 @@ import {
   formatInventoryDiscrepancy,
   formatKpiDelta,
   formatKpiAxisValue,
+  formatKpiTarget,
   formatKpiValue,
   formatMplh,
   formatPercent,
@@ -167,5 +168,21 @@ describe('formatKpiAxisValue', () => {
     ['Inventory Turnover Rate', 14, '14 days'],
   ])('%s %d → %s', (kpi, value, expected) => {
     expect(formatKpiAxisValue(kpi, value)).toBe(expected);
+  });
+});
+
+describe('formatKpiTarget (spec §5.9 target formatting)', () => {
+  it.each<[ComparisonKpiKey, number | null, string]>([
+    ['Lunch', 35, '35%'],
+    ['Lunch', 60.0, '60%'],
+    ['Lunch', 62.5, '62.5%'],
+    ['Lunch', 59.97, '60%'],
+    ['Physical Inventory Discrepancy', 0, '0%'],
+    ['Revenue', 9446400, '$9,446,400'],
+    ['MPLH', 18.5, '18.50'],
+    ['Inventory Turnover Rate', 15, '15 days'],
+    ['Lunch', null, '—'],
+  ])('%s %s → %s', (kpi, target, expected) => {
+    expect(formatKpiTarget(kpi, target)).toBe(expected);
   });
 });

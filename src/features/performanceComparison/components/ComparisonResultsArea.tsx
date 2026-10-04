@@ -139,6 +139,9 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
             <TrendMessage>{TREND_EMPTY_STATE_TEXT}</TrendMessage>
           ) : !trend.interval || !trend.chartData ? (
             <TrendMessage>{TREND_UNAVAILABLE_MESSAGE}</TrendMessage>
+          ) : trend.chartData.rows.length === 0 ? (
+            // Every interval was dropped because neither side has data in it (spec §7).
+            <TrendMessage>{`Neither timeframe has data for ${focusedName}.`}</TrendMessage>
           ) : (
             <div className="flex flex-col gap-3">
               <p className="text-sm font-semibold text-gray-900">

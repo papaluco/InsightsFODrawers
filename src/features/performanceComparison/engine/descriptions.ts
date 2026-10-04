@@ -6,6 +6,7 @@ import {
   formatCount,
   formatCurrency,
   formatDays,
+  formatKpiTarget,
   formatKpiValue,
   formatMplh,
   formatPercent,
@@ -98,10 +99,8 @@ function formatAmount(kpi: ComparisonKpiKey, definition: KpiDefinition, magnitud
   }
 }
 
-/** Target as written in a sentence: "60%", "$9,000", "18.50". */
-function formatTarget(kpi: ComparisonKpiKey, definition: KpiDefinition, target: number): string {
-  return definition.displayFormat === 'percent' ? formatPercent(target, { trimZeros: true }) : formatKpiValue(kpi, target);
-}
+/** Target as written in a sentence: "60%", "62.5%", "$9,000", "18.50" — identical to the table (formatKpiTarget). */
+const formatTarget = (kpi: ComparisonKpiKey, target: number): string => formatKpiTarget(kpi, target);
 
 /**
  * The explicit change: "increased by 2 percentage points", "decreased by $500",
@@ -185,7 +184,7 @@ function describeRightTargetByLabel(ctx: DescriptionContext): string {
   const { right, input, definition } = ctx;
   if (right.target === null || right.targetStatus === 'NotAvailable') return '';
   const outcome: TargetOutcome = right.targetStatus === 'Met' ? 'meets' : 'doesNotMeet';
-  return `; ${input.right.label} ${describeOutcome(outcome, definition, formatTarget(input.kpi, definition, right.target), 'its')}`;
+  return `; ${input.right.label} ${describeOutcome(outcome, definition, formatTarget(input.kpi, right.target), 'its')}`;
 }
 
 // ─── Sentences by classification ─────────────────────────────────────────────
@@ -233,7 +232,7 @@ function describeDirectional(ctx: DescriptionContext, classification: 'Improved'
   }
 
   const row = DECISION_MATRIX[classification][targetTransition];
-  const targetText = formatTarget(input.kpi, definition, right.target);
+  const targetText = formatTarget(input.kpi, right.target);
 
   // A Comparable result whose status changed while the targets differ: the change may come
   // from the target itself, so state the actual change and name the side with its own target.
@@ -245,6 +244,16 @@ function describeDirectional(ctx: DescriptionContext, classification: 'Improved'
 
   const change = row.comparablePhrase ?? describeChange(ctx, false);
   return `${prefix} ${change} ${row.connective} ${describeOutcome(row.outcome, definition, targetText, 'the')}.`;
+}
+
+/**
+ * The description without its leading "<Classification> — " prefix, for UIs that already show
+ * the classification as a badge (NXT-77210 table). Informational descriptions have no prefix
+ * and are returned unchanged. The full description stays the engine's canonical text.
+ */
+export function stripClassificationPrefix(description: string, classification: Classification): string {
+  const prefix = `${CLASSIFICATION_LABELS[classification]} ${EM_DASH} `;
+  return description.startsWith(prefix) ? description.slice(prefix.length) : description;
 }
 
 /** The full description: main sentence plus the partial-period note when it's material. */

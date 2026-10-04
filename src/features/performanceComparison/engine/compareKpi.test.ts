@@ -279,7 +279,7 @@ describe('target status (spec §5.6)', () => {
 
   it('the engine result shows the same status as its formatted value', () => {
     const result = run('Lunch', { actual: 58, target: 60 }, { actual: 59.97, target: 60 });
-    expect(result.right).toMatchObject({ actualFormatted: '60.0%', targetFormatted: '60.0%', targetStatus: 'Met' });
+    expect(result.right).toMatchObject({ actualFormatted: '60.0%', targetFormatted: '60%', targetStatus: 'Met' });
     expect(result.targetTransition).toBe('NotMetToMet');
   });
 
@@ -483,7 +483,7 @@ describe('partial-period notes are appended only when material (spec §5.9)', ()
 describe('formatted fields and favorability', () => {
   it('formats actuals, targets, and deltas', () => {
     const result = run('Lunch', { actual: 58, target: 60 }, { actual: 60, target: null });
-    expect(result.left).toMatchObject({ actualFormatted: '58.0%', targetFormatted: '60.0%' });
+    expect(result.left).toMatchObject({ actualFormatted: '58.0%', targetFormatted: '60%' });
     expect(result.right).toMatchObject({ actualFormatted: '60.0%', targetFormatted: '—' });
     expect(result.deltaFormatted).toBe('+2.0 pts');
   });
@@ -523,4 +523,35 @@ describe('descriptions never name sides except by generated label (spec §2, §5
     expect(checked).toBe(17 * values.length ** 2 * targets.length ** 2);
     // Exhaustive (~5s alone); a generous timeout keeps it from failing on a busy machine.
   }, 20_000);
+});
+
+describe('target formatting matches between targetFormatted and descriptions (spec §5.9)', () => {
+  it.each<[ComparisonKpiKey, number, string]>([
+    ['Lunch', 35, '35%'],
+    ['Lunch', 62.5, '62.5%'],
+    ['MPLH', 18.5, '18.50'],
+    ['Waste', 9000, '$9,000'],
+  ])('%s target %d → %s in both places', (kpi, target, text) => {
+    const result = run(kpi, { actual: target * 2, target }, { actual: target * 2, target });
+    expect(result.right.targetFormatted).toBe(text);
+    expect(result.description).toContain(`the ${text} target`);
+  });
+});
+
+describe('descriptionBody', () => {
+  it('drops the leading "<Classification> — " and keeps the rest', () => {
+    const result = run('Lunch', { actual: 58, target: 60 }, { actual: 60, target: 60 });
+    expect(result.description).toBe('Improved — Lunch participation increased by 2 percentage points and meets the 60% target.');
+    expect(result.descriptionBody).toBe('Lunch participation increased by 2 percentage points and meets the 60% target.');
+  });
+
+  it('works for No Data and baseline-zero prefixes', () => {
+    expect(run('Lunch', { actual: null }, { actual: 60 }).descriptionBody).toMatch(/^Lunch participation could not be compared/);
+    expect(run('Revenue', { actual: 0 }, { actual: 5000 }).descriptionBody).toMatch(/^Revenue increased by \$5,000 from \$0/);
+  });
+
+  it('leaves informational descriptions (no prefix) unchanged', () => {
+    const result = run('Inventory Turnover Rate', { actual: 16 }, { actual: 14 });
+    expect(result.descriptionBody).toBe(result.description);
+  });
 });

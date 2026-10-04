@@ -79,16 +79,37 @@ const point = (position: number, label: string, actual: number | null, target: n
 });
 
 describe('buildTrendChartData', () => {
-  it('pairs by position, keeps No Data as null, and labels months by name when both sides match', () => {
+  it('pairs by position and labels months by name when both sides match', () => {
     const { rows } = buildTrendChartData(
-      [point(1, 'Jul 24', null, 60), point(2, 'Aug 24', 55, 60), point(3, 'Sep 24', 58, 60)],
+      [point(2, 'Aug 24', 55, 60), point(3, 'Sep 24', 58, 60)],
+      [point(2, 'Aug 25', 57, 60), point(3, 'Sep 25', 59, 60)],
+      'month',
+      true,
+    );
+    expect(rows.map(r => r.axisLabel)).toEqual(['Aug', 'Sep']);
+    expect(rows[1]).toMatchObject({ leftActual: 58, rightActual: 59 });
+  });
+
+  it('drops intervals where neither side has data (summer months), whether null or missing', () => {
+    const { rows } = buildTrendChartData(
+      [point(1, 'Jul 24', null, 60), point(2, 'Aug 24', 55, 60), point(12, 'Jun 25', null, 60)],
       [point(1, 'Jul 25', null, 60), point(2, 'Aug 25', 57, 60)],
       'month',
       true,
     );
-    expect(rows.map(r => r.axisLabel)).toEqual(['Jul', 'Aug', 'Sep']);
-    expect(rows[0]).toMatchObject({ leftActual: null, rightActual: null });
-    expect(rows[2]).toMatchObject({ leftActual: 58, rightActual: null, rightPeriodLabel: null });
+    expect(rows.map(r => r.axisLabel)).toEqual(['Aug']);
+  });
+
+  it('keeps an interval where only one side lacks data, as a gap on that side', () => {
+    const { rows } = buildTrendChartData(
+      [point(2, 'Aug 24', 55, 60), point(3, 'Sep 24', 58, 60), point(4, 'Oct 24', null, 60)],
+      [point(2, 'Aug 25', 57, 60), point(4, 'Oct 25', 61, 60)],
+      'month',
+      true,
+    );
+    expect(rows.map(r => r.axisLabel)).toEqual(['Aug', 'Sep', 'Oct']);
+    expect(rows[1]).toMatchObject({ leftActual: 58, rightActual: null, rightPeriodLabel: null });
+    expect(rows[2]).toMatchObject({ leftActual: null, rightActual: 61 });
   });
 
   it('merges identical targets into one shared line, including positions only one side has', () => {

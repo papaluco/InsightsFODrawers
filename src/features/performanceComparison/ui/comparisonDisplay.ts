@@ -73,12 +73,15 @@ interface SideNameSource {
 }
 
 /**
- * Short names for the Target Status column (spec §8 "names sides by their timeframe/label
- * part"): the timeframe part when the timeframes differ, else the site part when the sites
- * differ, else the full generated labels.
+ * Compact side names (spec §8), used wherever a side is named in compact form (e.g. Target
+ * Status). Each side is named by the part of its generated label that differs:
+ * only the timeframes differ → timeframe ("Today"); only the sites differ → site
+ * ("Lincoln Elementary"); both differ, or the labels are identical → the full labels.
  */
 export function getSideShortNames(left: SideNameSource, right: SideNameSource): [string, string] {
-  if (left.timeframeLabel !== right.timeframeLabel) return [left.timeframeLabel, right.timeframeLabel];
-  if (left.siteLabel !== right.siteLabel) return [left.siteLabel, right.siteLabel];
+  const timeframesDiffer = left.timeframeLabel !== right.timeframeLabel;
+  const sitesDiffer = left.siteLabel !== right.siteLabel;
+  if (timeframesDiffer && !sitesDiffer) return [left.timeframeLabel, right.timeframeLabel];
+  if (sitesDiffer && !timeframesDiffer) return [left.siteLabel, right.siteLabel];
   return [left.label, right.label];
 }

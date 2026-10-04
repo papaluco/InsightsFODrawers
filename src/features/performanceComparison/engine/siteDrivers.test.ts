@@ -25,7 +25,7 @@ describe('evaluateSiteAgainstTarget', () => {
       varianceFromTarget: -1,
       unfavorableVariance: 1, // 1 pt short
       actualFormatted: '54.0%',
-      targetFormatted: '55.0%',
+      targetFormatted: '55%',
     });
   });
 

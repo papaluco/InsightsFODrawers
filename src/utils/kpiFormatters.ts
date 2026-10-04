@@ -150,6 +150,23 @@ export function formatKpiValue(key: ComparisonKpiKey, value: number | null, null
   return formatByDisplayFormat(getKpiDefinition(key).displayFormat, value);
 }
 
+/** Text for a missing target. A missing benchmark is never a missed target (spec §1). */
+export const NO_TARGET_TEXT = '—';
+
+/**
+ * A KPI's target, formatted the same everywhere it appears (table, descriptions, trend
+ * tooltip; spec §5.9). Percentage targets drop a trailing ".0" ("35%") but keep real
+ * decimals ("62.5%"); other formats match formatKpiValue. `null` → "—" (or `nullText`).
+ */
+export function formatKpiTarget(key: ComparisonKpiKey, target: number | null, nullText = NO_TARGET_TEXT): string {
+  if (target === null) return nullText;
+  const format = getKpiDefinition(key).displayFormat;
+  if (format === 'percent' || format === 'percentOfInventoryValue') {
+    return formatPercent(target, { decimals: DISPLAY_DECIMALS[format], trimZeros: true });
+  }
+  return formatByDisplayFormat(format, target);
+}
+
 /** Absolute change (right − left) in the KPI's units: pts for % KPIs, $ for currency, etc. */
 export function formatKpiDelta(key: ComparisonKpiKey, delta: number): string {
   switch (getKpiDefinition(key).displayFormat) {

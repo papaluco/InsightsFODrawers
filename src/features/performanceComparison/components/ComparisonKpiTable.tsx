@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { AlertTriangle, CheckCircle2, MinusCircle, XCircle } from 'lucide-react';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { NO_DATA_TEXT } from '../../../utils/kpiFormatters';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
-import type { KpiComparisonResult, SideKpiResult } from '../engine/types';
+import type { KpiComparisonResult, NeedsAttentionReason, SideKpiResult } from '../engine/types';
 import { getTargetStatusDisplay, NEEDS_ATTENTION_REASON_LABELS, TargetStatusTone } from '../ui/comparisonDisplay';
 import { ClassificationBadge } from './ClassificationBadge';
 
@@ -41,6 +41,35 @@ const TargetStatusLine: React.FC<{ name: string; side: SideKpiResult; isInformat
         <span className={`whitespace-nowrap ${tone === 'none' ? 'text-gray-500' : 'font-semibold text-gray-800'}`}>{text}</span>
       </span>
     </div>
+  );
+};
+
+/**
+ * Needs Attention marker (NXT-77217 §5.8): one small warning icon next to the KPI name. The
+ * reasons ("Declined · Below Target") appear on hover or keyboard focus, and the marker has an
+ * accessible name so it isn't icon-only for screen readers. The tooltip opens to the right, so
+ * the table's scroll container never clips it.
+ */
+const NeedsAttentionMarker: React.FC<{ reasons: NeedsAttentionReason[] }> = ({ reasons }) => {
+  const tooltipId = useId();
+  const reasonText = reasons.map(r => NEEDS_ATTENTION_REASON_LABELS[r]).join(' · ');
+  return (
+    <span
+      tabIndex={0}
+      role="img"
+      aria-label={`Needs attention: ${reasonText}`}
+      aria-describedby={tooltipId}
+      className="group relative inline-flex align-[-3px] rounded outline-none focus-visible:ring-2 focus-visible:ring-insightsUnfavorable"
+    >
+      <AlertTriangle className="w-4 h-4 text-insightsUnfavorable" aria-hidden="true" />
+      <span
+        id={tooltipId}
+        role="tooltip"
+        className="invisible group-hover:visible group-focus-visible:visible absolute left-full top-1/2 -translate-y-1/2 ml-2 z-20 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[11px] font-semibold text-white shadow-lg"
+      >
+        Needs attention: {reasonText}
+      </span>
+    </span>
   );
 };
 
@@ -126,21 +155,16 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                     }`}
                   >
                     <td className="px-3 py-3 align-top">
-                      <div className={`text-sm font-medium ${isFocused ? 'text-indigo-700' : 'text-gray-900'}`}>{definition.name}</div>
-                      {/* NXT-77217 §5.8 Needs Attention reasons */}
-                      {result.needsAttention && (
-                        <div className="mt-1.5 flex flex-wrap gap-1">
-                          {result.needsAttentionReasons.map(reason => (
-                            <span
-                              key={reason}
-                              className="inline-flex items-center gap-1 rounded-full border border-insightsUnfavorable bg-white px-1.5 py-0.5 text-[11px] font-semibold text-insightsUnfavorable"
-                            >
-                              <AlertTriangle className="w-3 h-3" />
-                              {NEEDS_ATTENTION_REASON_LABELS[reason]}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      {/* Marker flows inline after the name, so it stays next to the last word when the name wraps. */}
+                      <div className={`text-sm font-medium ${isFocused ? 'text-indigo-700' : 'text-gray-900'}`}>
+                        {definition.name}
+                        {result.needsAttention && (
+                          <>
+                            {' '}
+                            <NeedsAttentionMarker reasons={result.needsAttentionReasons} />
+                          </>
+                        )}
+                      </div>
                     </td>
                     <SideValueCell side={result.left} isInformational={isInformational} />
                     <SideValueCell side={result.right} isInformational={isInformational} />
@@ -153,7 +177,8 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                     </td>
                     <td className="px-3 py-3 align-top">
                       <ClassificationBadge result={result} />
-                      <p className="mt-1.5 text-xs leading-relaxed text-gray-600">{result.description}</p>
+                      {/* The badge carries the classification, so the description drops its "<Classification> — " prefix. */}
+                      <p className="mt-1.5 text-xs leading-relaxed text-gray-600">{result.descriptionBody}</p>
                     </td>
                     {/* Site Drivers summary arrives with NXT-77212 (Phase 7). */}
                     <td className="px-3 py-3 align-top text-sm text-gray-300" title="Site Drivers coming soon">

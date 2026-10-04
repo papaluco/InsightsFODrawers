@@ -104,7 +104,6 @@ export const KPI_DEFINITIONS: readonly KpiDefinition[] = [
   participation('Lunch'),
   participation('Snack'),
   participation('Supper'),
-  dollars('Revenue', 'Revenue', 'higher'),
   {
     key: 'Meals',
     name: KPI_SHORT_TO_LONG['Meals'],
@@ -173,6 +172,7 @@ export const KPI_DEFINITIONS: readonly KpiDefinition[] = [
     ratio: { numerator: 'MEQs', denominator: 'labor hours' }, // spec §4
     targetPolicy: 'configured',
   },
+  dollars('Revenue', 'Revenue', 'higher'),
   dollars('A La Carte', 'A La Carte sales', 'higher'),
   dollars('Reimbursement', 'Reimbursement', 'higher'),
   dollars('Waste', 'Waste', 'lower'),

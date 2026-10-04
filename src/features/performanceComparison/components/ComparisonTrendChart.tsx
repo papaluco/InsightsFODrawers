@@ -6,7 +6,7 @@ import {
   TREND_TOOLTIP_CONTENT_STYLE,
   TREND_TOOLTIP_CURSOR,
 } from '../../../components/Common/charts/trendChartStyles';
-import { formatKpiAxisValue, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
+import { formatKpiAxisValue, formatKpiTarget, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import type { TrendChartData, TrendChartRow } from '../trend/trendView';
 
@@ -20,8 +20,6 @@ const SIDE_STYLES = {
   right: { bar: '#0284c7', hatchBackground: '#e0f2fe', target: '#0369a1', targetDash: '2 3' },
   shared: { target: '#334155' },
 } as const;
-
-const NO_TARGET_TEXT = '—';
 
 interface LegendSwatchProps {
   kind: 'solid' | 'hatched' | 'line';
@@ -79,7 +77,7 @@ const TooltipSide: React.FC<TooltipSideProps> = ({ kpi, label, periodLabel, actu
       <div className="pl-7 text-gray-600">
         <span className="text-gray-400">{periodLabel}:</span>{' '}
         <span className="font-semibold text-gray-900">{formatKpiValue(kpi, actual, NO_DATA_TEXT)}</span>
-        {showTarget && <span className="text-gray-500"> · Target {formatKpiValue(kpi, target, NO_TARGET_TEXT)}</span>}
+        {showTarget && <span className="text-gray-500"> · Target {formatKpiTarget(kpi, target)}</span>}
       </div>
     )}
   </div>

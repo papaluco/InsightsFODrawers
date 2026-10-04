@@ -3,12 +3,14 @@ import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import {
   formatInventoryDiscrepancy,
   formatKpiDelta,
+  formatKpiTarget,
   formatKpiValue,
   formatRelativeDelta,
   NO_DATA_TEXT,
   roundToDisplayPrecision,
+  NO_TARGET_TEXT,
 } from '../../../utils/kpiFormatters';
-import { buildDescription, buildPartialNote, isPartialNoteMaterial } from './descriptions';
+import { buildDescription, buildPartialNote, isPartialNoteMaterial, stripClassificationPrefix } from './descriptions';
 import { roundForComparison } from './rounding';
 import {
   Classification,
@@ -33,7 +35,7 @@ import {
  */
 
 /** Shown when a side has no target. */
-export const NO_TARGET_TEXT = '—';
+export { NO_TARGET_TEXT };
 
 // ─── Target status (spec §5.6) ───────────────────────────────────────────────
 
@@ -78,7 +80,7 @@ function buildSideResult(kpi: ComparisonKpiKey, definition: KpiDefinition, side:
     actual: side.actual,
     target,
     actualFormatted: formatSideActual(kpi, side),
-    targetFormatted: formatKpiValue(kpi, target, NO_TARGET_TEXT),
+    targetFormatted: formatKpiTarget(kpi, target, NO_TARGET_TEXT),
     hasData: side.actual !== null,
     targetStatus: getTargetStatus(kpi, side.actual, target),
   };
@@ -220,6 +222,7 @@ export function compareKpi(input: KpiComparisonInput): KpiComparisonResult {
     needsAttention: needsAttentionReasons.length > 0,
     needsAttentionReasons,
     description,
+    descriptionBody: stripClassificationPrefix(description, change.classification),
     partialNote,
   };
 }

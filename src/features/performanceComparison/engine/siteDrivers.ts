@@ -1,7 +1,7 @@
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import { compareKpi, getTargetStatus, NO_TARGET_TEXT } from './compareKpi';
-import { formatInventoryDiscrepancy, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
+import { formatInventoryDiscrepancy, formatKpiTarget, formatKpiValue, NO_DATA_TEXT } from '../../../utils/kpiFormatters';
 import { KpiComparisonResult, SideTimeframe, TargetStatus } from './types';
 
 /**
@@ -93,7 +93,7 @@ export function evaluateSiteAgainstTarget(kpi: ComparisonKpiKey, site: SiteValue
       kpi === 'Physical Inventory Discrepancy'
         ? formatInventoryDiscrepancy(site.actual, site.secondaryActual ?? null)
         : formatKpiValue(kpi, site.actual, NO_DATA_TEXT),
-    targetFormatted: formatKpiValue(kpi, target, NO_TARGET_TEXT),
+    targetFormatted: formatKpiTarget(kpi, target, NO_TARGET_TEXT),
     hasData: site.actual !== null,
     targetStatus,
     varianceFromTarget,
