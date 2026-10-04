@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Bot, ArrowRight, Settings2, Radio } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bot, ArrowRight, Settings2, Radio, Braces } from 'lucide-react';
 import { AIConfigDrawer } from '../components/Settings/AI/AIConfigDrawer';
 import { SystemSettingsDrawer } from '../components/Settings/System/SystemSettingsDrawer';
 import { TelemetrySettingsDrawer } from '../components/Settings/Telemetry/TelemetrySettingsDrawer';
@@ -8,6 +9,7 @@ const MOCK_USER_ROLE = 'customer_support';
 const SYSTEM_SETTINGS_ROLES = ['customer_support', 'technical_support'];
 
 const SettingPage = () => {
+  const navigate = useNavigate();
   const [isAIDrawerOpen,          setIsAIDrawerOpen]          = useState(false);
   const [isSystemDrawerOpen,      setIsSystemDrawerOpen]      = useState(false);
   const [isTelemetryDrawerOpen,   setIsTelemetryDrawerOpen]   = useState(false);
@@ -66,6 +68,21 @@ const SettingPage = () => {
           <p className="text-gray-500 text-sm mb-6">Configure error, usage, and performance tracking globally or by district.</p>
           <div className="text-indigo-600 font-semibold flex items-center gap-2">
             Configure <ArrowRight size={16} />
+          </div>
+        </div>
+
+        {/* Demo – JSON Payload Template Card */}
+        <div
+          onClick={() => navigate('/settings/json-payload-demo')}
+          className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all cursor-pointer"
+        >
+          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-4">
+            <Braces size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">Demo – JSON Payload Template</h3>
+          <p className="text-gray-500 text-sm mb-6">Preview how MV and PBI report configurations display to users.</p>
+          <div className="text-amber-600 font-semibold flex items-center gap-2">
+            View Demo <ArrowRight size={16} />
           </div>
         </div>
       </div>

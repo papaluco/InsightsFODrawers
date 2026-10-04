@@ -6,6 +6,7 @@ import ReportsPage from '../../pages/ReportsPage';
 import UsagePage from '../../pages/UsagePage';
 import AppHealthPage from '../../pages/AppHealthPage';
 import PreferencesPage from '../../pages/PreferencesPage';
+import JsonPayloadDemoPage from '../../pages/JsonPayloadDemoPage';
 
 export default function RoutesProvider() {
   return (
@@ -18,6 +19,7 @@ export default function RoutesProvider() {
         <Route path="insights" element={<InsightsPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="settings/json-payload-demo" element={<JsonPayloadDemoPage />} />
         <Route path="usage" element={<UsagePage />} />
         <Route path="app-health" element={<AppHealthPage />} />
         <Route path="preferences" element={<PreferencesPage />} />

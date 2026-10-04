@@ -38,6 +38,7 @@ interface PerformanceTrendsProps {
 
 export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolieClick }) => {
   const [selectedKPI, setSelectedKPI] = useState('MEQs');
+  const [selectedGranularity, setSelectedGranularity] = useState('Monthly');
 
   // Logic to determine bar color based on value vs benchmark (from your screenshot)
   const getBarColor = (value: number, benchmark: number) => {
@@ -111,6 +112,19 @@ export const PerformanceTrends: React.FC<PerformanceTrendsProps> = ({ onSchoolie
               />
             </button>
           )}
+
+          {/* Chart Granularity Section (NXT-74485) — visual placement only, does not affect chart data */}
+          <select
+            value={selectedGranularity}
+            onChange={(e) => setSelectedGranularity(e.target.value)}
+            title="Chart Granularity"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+
           <select
             value={selectedKPI}
             onChange={(e) => setSelectedKPI(e.target.value)}
