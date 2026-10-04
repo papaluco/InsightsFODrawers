@@ -11,6 +11,7 @@ import { resolveBenchmark } from '../data/mockComparisonBenchmarks';
 import { getComparisonMockData } from '../data/mockComparisonData';
 import { isServingDay } from '../data/mockSchoolCalendar';
 import {
+  getSiteById,
   getSiteScopeLabel,
   getSiteScopeType,
   resolveSiteScope,
@@ -80,6 +81,8 @@ export interface SideDataset {
   siteLabel: string;
   timeframeLabel: string;
   siteIds: number[];
+  /** Display name for each site in scope (for Site Drivers). */
+  siteNames: Record<number, string>;
   scopeType: SiteScopeKind;
   /** Full period plus partial info (isPartial, throughDate). */
   timeframe: ResolvedTimeframe;
@@ -218,6 +221,7 @@ export function buildSideDataset(
     siteLabel,
     timeframeLabel,
     siteIds,
+    siteNames: Object.fromEntries(siteIds.map(id => [id, getSiteById(id)?.siteName ?? `Site ${id}`])),
     scopeType,
     timeframe,
     kpis: computeKpiValues(siteIds, scopeType, schoolYear, facts, snapshots),

@@ -238,7 +238,7 @@ The engine also evaluates **site-level** results for Site Drivers using the same
   - Timeframe part: school-year options → "SY 2025–26" (YTD and Prior Year resolve to their SY); Prior Year to Date → "SY 2024–25 through Apr 16"; relative options use their name ("This Month", "Last Week"); Custom Range → "Aug 1 – Sep 30, 2025".
   - Joined with " · ".
   - Partial indicator when the timeframe extends past `DEMO_AS_OF_DATE`, e.g. a small badge "Partial · through Apr 16, 2026".
-- **Timeframe options:** the existing `TimeframeSelector` options plus **Prior Year to Date**, listed directly after Prior Year (see §3). Example generated label: "High Schools · SY 2024–25 through Apr 16".
+- **Timeframe options:** the existing `TimeframeSelector` options plus **Prior Year to Date** (option ID `prior_ytd`, matching the snake_case IDs such as `prior_year` and `this_week`), listed directly after Prior Year (see §3). Example generated label: "High Schools · SY 2024–25 through Apr 16".
 - **Period-length notice** (informational only; never changes a selection), shown below the setup when **exactly one side is partial** and the other side covers **at least 10% more days** (calendar days; the partial side counts days through its through date):
   - Default text: "These timeframes cover different lengths of time and cumulative totals may be difficult to compare directly."
   - When the pair is Year to Date and Prior Year (in either order), use instead: "These timeframes cover different lengths of time. For a like-for-like comparison, consider Prior Year to Date."

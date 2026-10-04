@@ -31,7 +31,7 @@ export type TimeframeOptionId =
   | 'last_month'
   | 'ytd'
   | 'prior_year'
-  | 'priorYearToDate'
+  | 'prior_ytd'
   | 'sy2324'
   | 'sy2223'
   | 'sy2122'
@@ -40,7 +40,7 @@ export type TimeframeOptionId =
 
 export const TIMEFRAME_OPTION_IDS: readonly TimeframeOptionId[] = [
   'today', 'yesterday', 'this_week', 'last_week', 'this_month', 'last_month',
-  'ytd', 'prior_year', 'priorYearToDate', 'sy2324', 'sy2223', 'sy2122', 'sy2021', 'custom',
+  'ytd', 'prior_year', 'prior_ytd', 'sy2324', 'sy2223', 'sy2122', 'sy2021', 'custom',
 ];
 
 /** Fixed school-year options → the calendar year the school year starts in. */
@@ -128,7 +128,7 @@ function getPeriod(
     }
     // Same elapsed portion of the prior school year as Year to Date (spec §3). Kind stays
     // 'schoolYear' so it trends against YTD; month positions count from Jul 1 on both sides.
-    case 'priorYearToDate': {
+    case 'prior_ytd': {
       const sy = getSchoolYearByStartYear(getSchoolYear(asOf).startYear - 1);
       return { kind: 'schoolYear', start: sy.start, end: sameDayOneYearEarlier(asOf) };
     }
@@ -182,7 +182,7 @@ export function formatDateRangeLabel(start: IsoDate, end: IsoDate): string {
  * relative options → their name; Custom Range → the date range.
  */
 export function getTimeframeLabel(timeframe: ResolvedTimeframe): string {
-  if (timeframe.optionId === 'priorYearToDate' && timeframe.schoolYear) {
+  if (timeframe.optionId === 'prior_ytd' && timeframe.schoolYear) {
     return `${timeframe.schoolYear.label} through ${formatMonthDay(timeframe.end)}`;
   }
   if (timeframe.kind === 'schoolYear' && timeframe.schoolYear) return timeframe.schoolYear.label;

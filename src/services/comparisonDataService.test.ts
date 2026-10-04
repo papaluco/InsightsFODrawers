@@ -38,6 +38,8 @@ describe('getSideDataset contract', () => {
     expect(side.timeframeLabel).toBe('SY 2025–26');
     expect(side.scopeType).toBe('siteType');
     expect(side.siteIds).toEqual(resolveSiteScope(HIGH));
+    expect(side.siteNames[12]).toBe('Roosevelt High');
+    expect(Object.keys(side.siteNames).map(Number)).toEqual(side.siteIds);
   });
 
   it('returns all 17 KPIs and per-site values for every site in scope', () => {
@@ -154,7 +156,7 @@ describe('partial SY 2025–26', () => {
 });
 
 describe('Prior Year to Date', () => {
-  const pytd = buildSideDataset(ALL, { optionId: 'priorYearToDate' });
+  const pytd = buildSideDataset(ALL, { optionId: 'prior_ytd' });
 
   it('resolves to Jul 1, 2024 – Apr 16, 2025, complete, with its own label', () => {
     expect(pytd.label).toBe('All Sites · SY 2024–25 through Apr 16');
