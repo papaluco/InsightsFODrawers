@@ -304,7 +304,7 @@ None of these is counted as a failure above. Devs should know they are deliberat
 - The merged target line is labeled "Target · both comparisons". Chart aria labels say "first/second comparison".
 
 **Summary and KPI table**
-- The Summary is one counts sentence under a "Target Attainment" heading (with an info icon for what the counts cover), plus "with a zero starting value" text and a "No KPIs match the current filters." state.
+- The Summary has two columns (spec §8 updated): "Performance change" (KPIs compared and one counts sentence) and "Target attainment" (per side by compact name, with a percent), each with an info icon. It adds "with a zero starting value" text and a "No KPIs match the current filters." state.
 - Performance descriptions are clamped to two lines, with the full text in a tooltip and shown in full on the focused row. Columns were rebalanced for row height.
 - The Site Drivers cell uses compact per-side lines ("High Schools: 3 of 5 meeting"), with the full wording in its tooltip. Exports keep the full wording.
 

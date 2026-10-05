@@ -29,6 +29,8 @@ export interface SideTargetAttainment {
 
 /** Facts for the Comparison Summary (spec §8). Counts cover KPIs in scope only. */
 export interface ComparisonSummary {
+  /** Directional KPIs in scope ("14 KPIs compared"). Informational KPIs are never counted. */
+  directional: number;
   improved: number;
   comparable: number;
   declined: number;
@@ -90,6 +92,7 @@ function summarize(results: KpiComparisonResult[], leftLabel: string, rightLabel
   });
 
   return {
+    directional: directional.length,
     improved: count(r => r.classification === 'Improved'),
     comparable: count(r => r.classification === 'Comparable'),
     declined: count(r => r.classification === 'Declined'),

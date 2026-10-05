@@ -106,7 +106,7 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
           isExpanded={expandedSections.summary}
           onToggle={() => toggleSection('summary')}
         >
-          <ComparisonSummary summary={results.summary} kpisInScope={results.results.length} />
+          <ComparisonSummary summary={results.summary} kpisInScope={results.results.length} sideShortNames={sideShortNames} />
         </CollapsiblePanel>
 
         <CollapsiblePanel

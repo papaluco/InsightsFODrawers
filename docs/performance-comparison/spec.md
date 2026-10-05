@@ -280,10 +280,14 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 ## 8. Summary, KPI table, Site Drivers
 
 ### Comparison Summary (NXT-77208)
-- Compact block above the KPI table, headed "Target Attainment" with an info icon whose hover/focus text says: "Counts cover directional KPIs in the current filters. Inventory KPIs are informational and are not counted."
-- Under the heading, one sentence with the counts of Improved / Comparable / Declined among directional KPIs in the current scope (KPI filter + Needs Attention), each with its color **and** icon: "6 ↗ Improved, 1 — Comparable, 7 ↘ Declined." (insights favorable / neutral / unfavorable). No count cards. No Data, RelativeNotApplicable, and Informational KPIs are excluded from those counts; No Data may follow as "N with no data."
-- Below the sentence, target attainment per side, using generated labels: "High Schools · SY 2025–26 — 11 of 15 KPIs meeting target" (real spaces around the "—", so copied text and screen readers read it correctly). Denominator = directional KPIs in scope with data and a target on that side.
-- No charts, gauges, scores, or winners.
+- Compact block above the KPI table, in two columns that use the panel width at desktop width and stack to one column at tablet width. Counts cover the current scope (KPI filter + Needs Attention).
+- **Left column, "Performance change"**, with an info icon whose hover/focus text says: "Counts cover directional KPIs in the current filters. Inventory KPIs are informational and are not counted."
+  - A scope line: "14 KPIs compared", the number of directional KPIs in scope ("1 KPI compared" for one).
+  - One sentence with the counts of Improved / Comparable / Declined, each with its color **and** icon: "6 ↗ Improved, 1 — Comparable, 7 ↘ Declined." (insights favorable / neutral / unfavorable). No Data, RelativeNotApplicable, and Informational KPIs are excluded from those counts; No Data may follow as "N with no data."
+- **Right column, "Target attainment"**, with an info icon whose hover/focus text says: "KPIs without a target or without data aren't counted."
+  - One row per side, named by its compact side name (below), with the count in bold and the share meeting target as a whole percent: "This Month — **8 of 13** KPIs meeting target · 62%". Singular when the denominator is 1: "1 of 1 KPI meeting target · 100%". Real spaces around the "—", so copied text and screen readers read it correctly.
+  - Denominator = directional KPIs in scope with data and a target on that side. When it is 0, the row says "No KPIs with data and a target" (no count or percent).
+- No cards, charts, gauges, scores, or winners.
 
 ### KPI Comparison table (NXT-77210)
 - One row per KPI in scope. Columns: KPI · left (actual, target) · right (actual, target) · Change · Target Status · Performance (classification badge + description) · Site Drivers summary. The Site Drivers column is shown only when at least one side has more than one site; otherwise it is hidden entirely (table, CSV, and copy).

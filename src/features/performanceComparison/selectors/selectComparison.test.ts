@@ -49,6 +49,8 @@ describe('selectComparison', () => {
     const { summary } = comparison;
     const directional = comparison.results.filter(r => r.kind === 'directional');
     expect(summary.improved + summary.comparable + summary.declined + summary.noData + summary.relativeNotApplicable).toBe(directional.length);
+    expect(summary.directional).toBe(directional.length);
+    expect(summary.directional).toBe(14); // 17 KPIs minus the 3 informational inventory KPIs
     expect(summary.left.label).toBe('All Sites · SY 2024–25');
     expect(summary.right.kpisWithTarget).toBe(directional.filter(r => r.right.targetStatus !== 'NotAvailable').length);
   });

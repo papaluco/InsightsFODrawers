@@ -43,7 +43,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Position the portal dropdown under the trigger button
-  const openDropdown = () => {
+  const positionDropdown = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       // Open upward when the menu won't fit below the trigger and there's more room above
@@ -60,6 +60,14 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
         zIndex: 9999,
       });
     }
+  };
+
+  // Latest positioner for the scroll listener, which is only registered while the menu is open.
+  const positionDropdownRef = useRef(positionDropdown);
+  positionDropdownRef.current = positionDropdown;
+
+  const openDropdown = () => {
+    positionDropdown();
     setIsOpen(true);
   };
 
@@ -85,13 +93,27 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
         closeDropdown();
       }
     };
-    const handleScroll = () => closeDropdown();
+    const isInsideMenu = (e: Event) => e.target instanceof Node && !!dropdownRef.current?.contains(e.target);
+    // The user scrolling the page (wheel or touch outside the menu) closes it, as before.
+    // Scrolling inside the menu's own option list never does.
+    const handleUserScroll = (e: Event) => {
+      if (!isInsideMenu(e)) closeDropdown();
+    };
+    // Any other scroll outside the menu (e.g. the page shortening after Clear, which moves its
+    // scroll position) keeps the menu open and moves it with its trigger.
+    const handleScroll = (e: Event) => {
+      if (!isInsideMenu(e)) positionDropdownRef.current();
+    };
     document.addEventListener('mousedown', handleOutside);
     document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('wheel', handleUserScroll, { capture: true, passive: true });
+    document.addEventListener('touchmove', handleUserScroll, { capture: true, passive: true });
     window.addEventListener('scroll', handleScroll, true);
     return () => {
       document.removeEventListener('mousedown', handleOutside);
       document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('wheel', handleUserScroll, { capture: true });
+      document.removeEventListener('touchmove', handleUserScroll, { capture: true });
       window.removeEventListener('scroll', handleScroll, true);
     };
   }, [isOpen]);
@@ -163,7 +185,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
       </div>
 
       {/* Option list */}
-      <div className="min-h-0 overflow-y-auto" style={{ maxHeight: maxListHeight }}>
+      <div className="min-h-0 overflow-y-auto overscroll-contain" style={{ maxHeight: maxListHeight }}>
         {filtered.length === 0 ? (
           <div className="px-3 py-4 text-xs text-gray-400 italic text-center">
             No matches
