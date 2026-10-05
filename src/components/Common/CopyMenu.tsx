@@ -14,6 +14,13 @@ interface CopyMenuProps {
    * only closes when no menu is open (same as the selectors). Off by default.
    */
   closeOnEscape?: boolean;
+  /** Button tooltip. Defaults to "Copy". */
+  title?: string;
+  /**
+   * Optional download items (e.g. CSVExpButton), listed under the copy options in the same
+   * menu, headed "Available Exports" as in ExportMenu. Selecting one closes the menu.
+   */
+  children?: React.ReactNode;
 }
 
 export const CopyMenu: React.FC<CopyMenuProps> = ({
@@ -23,6 +30,8 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
   disabled = false,
   disabledReason,
   closeOnEscape = false,
+  title = 'Copy',
+  children,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const close = useCallback(() => setIsOpen(false), []);
@@ -50,11 +59,11 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
   if (disabled) {
     // The tooltip sits on a wrapper because disabled buttons don't show tooltips in every browser.
     return (
-      <span title={disabledReason ?? 'Copy'} className="relative inline-block">
+      <span title={disabledReason ?? title} className="relative inline-block">
         <button
           type="button"
           disabled
-          aria-label={disabledReason ? `Copy: ${disabledReason}` : 'Copy'}
+          aria-label={disabledReason ? `${title}: ${disabledReason}` : title}
           className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-lg border-none opacity-40 cursor-not-allowed"
         >
           <CopyIcon size={24} className="text-gray-500" />
@@ -67,7 +76,8 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
     <div className="relative inline-block" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        title="Copy"
+        title={title}
+        aria-label={title}
         className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-lg hover:shadow-sm transition-all group border-none"
       >
         <CopyIcon
@@ -77,7 +87,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className={`absolute right-0 mt-2 ${children ? 'w-64' : 'w-52'} rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-100`}>
           <div className="bg-slate-50 px-4 py-2 border-b border-slate-100">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Copy Options
@@ -141,6 +151,20 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
               </button>
             )}
           </div>
+
+          {children && (
+            <>
+              <div className="bg-slate-50 px-4 py-2 border-y border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Available Exports
+                </p>
+              </div>
+              {/* Same short delay as ExportMenu, so a download triggers before the menu unmounts. */}
+              <div className="py-1" onClick={() => setTimeout(() => setIsOpen(false), 150)}>
+                {children}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

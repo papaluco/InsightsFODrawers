@@ -10,13 +10,20 @@ import { TREND_UNAVAILABLE_MESSAGE } from '../trend/trendRules';
 import { TREND_INTERVAL_LABELS } from '../trend/trendView';
 import { useComparisonStore } from '../store/useComparisonStore';
 import { KpiTableExportControls, TrendExportControls } from './ComparisonExportControls';
+import { ComparisonFilters } from './ComparisonFilters';
 import { ComparisonKpiTable } from './ComparisonKpiTable';
 import { ComparisonSummary } from './ComparisonSummary';
 import { ComparisonTrendChart } from './ComparisonTrendChart';
+import { InfoTip } from './InfoTip';
 import { TrendIntervalSelector } from './TrendIntervalSelector';
 
 /** NXT-77202 §6 empty state copy. */
 export const COMPARISON_EMPTY_STATE_TEXT = 'Select sites and a timeframe for both sides to compare.';
+
+/** NXT-77202 §6 materiality note, shown from the info icon next to the KPI Comparison title. */
+export const MATERIALITY_NOTE =
+  'Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. ' +
+  'Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified.';
 
 /** NXT-77211 §7 trend empty state copy. */
 const TREND_EMPTY_STATE_TEXT = 'Select a KPI from the KPI Comparison table to view its trend.';
@@ -104,9 +111,11 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
 
         <CollapsiblePanel
           title="KPI Comparison"
+          titleAddon={<InfoTip text={MATERIALITY_NOTE} label="How changes are classified" />}
           isExpanded={expandedSections.kpiTable}
           onToggle={() => toggleSection('kpiTable')}
           actions={
+            // Filters set the comparison scope: the table, Summary, Site Drivers, exports and Schoolie all follow them.
             <>
               {focusedName && (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 pl-3 pr-1 py-0.5 text-xs font-semibold text-indigo-700">
@@ -122,6 +131,7 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
                   </button>
                 </span>
               )}
+              <ComparisonFilters />
               <KpiTableExportControls results={results} sideShortNames={sideShortNames} />
             </>
           }
@@ -135,6 +145,7 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
             onFocusKpi={onFocusKpi}
             needsAttentionOnly={needsAttentionOnly}
             siteDrivers={results.siteDrivers}
+            showSiteDrivers={results.siteDriversAvailable}
             onViewSites={onViewSites}
           />
         </CollapsiblePanel>
@@ -171,8 +182,9 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
                 showTargets={getKpiDefinition(focusedKpi).kind === 'directional'}
               />
               {/* spec §7 partial periods: only buckets that have occurred are drawn */}
-              {trend.partialNotes.map(note => (
-                <p key={note} className="text-xs italic text-gray-500">
+              {/* At most one note per side, in left → right order; keyed by position since two labels can match. */}
+              {trend.partialNotes.map((note, index) => (
+                <p key={index} className="text-xs italic text-gray-500">
                   {note}
                 </p>
               ))}

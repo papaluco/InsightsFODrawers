@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronLeft, GitCompareArrows } from 'lucide-react';
 import { SchoolieIcon } from '../../../components/Common/Icons';
-import { SchoolieDrawer } from '../../../components/InsightsDashboard/SchoolieDrawer';
+import { SCHOOLIE_PANEL_RESERVED_SPACE_CLASS, SchoolieDrawer } from '../../../components/InsightsDashboard/SchoolieDrawer';
 import { ToastProvider } from '../../../components/Common/Toast';
 import type { SiteSelection } from '../../../data/siteRegistry';
 import type { TimeframeSelection } from '../../../services/comparisonDataService';
@@ -13,22 +13,16 @@ import { useSchoolieComparisonContext } from '../hooks/useSchoolieComparisonCont
 import { ComparisonSideKey, isSideComplete, useComparisonStore } from '../store/useComparisonStore';
 import { trackComparisonEvent } from '../telemetry';
 import { PageDownloadMenu } from './ComparisonExportControls';
-import { ComparisonFilters } from './ComparisonFilters';
 import { ComparisonResultsArea } from './ComparisonResultsArea';
 import { ComparisonSetup } from './ComparisonSetup';
 import { SiteDriversDrawer } from './SiteDriversDrawer';
-
-/** NXT-77202 §6 materiality note. */
-const MATERIALITY_NOTE =
-  'Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. ' +
-  'Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified.';
 
 interface PerformanceComparisonContentProps {
   isSchoolieOpen: boolean;
   onCloseSchoolie: () => void;
 }
 
-/** Page body: Setup → Filters → Summary / KPI Comparison / Performance Trend → materiality note (spec §6). */
+/** Page body: Setup → Summary / KPI Comparison (with the filters) / Performance Trend (spec §6). */
 const PerformanceComparisonContent: React.FC<PerformanceComparisonContentProps> = ({ isSchoolieOpen, onCloseSchoolie }) => {
   const comparison = useComparison();
   const { contextKey, analysisContext } = useSchoolieComparisonContext(comparison);
@@ -81,11 +75,10 @@ const PerformanceComparisonContent: React.FC<PerformanceComparisonContentProps> 
         onTimeframeChange={handleTimeframeChange}
         onSwap={handleSwap}
       />
-      <ComparisonFilters />
       <ComparisonResultsArea comparison={comparison} onFocusKpi={handleFocusKpi} onViewSites={handleViewSites} />
-      <p className="text-xs italic text-gray-500">{MATERIALITY_NOTE}</p>
-      <SiteDriversDrawer kpi={siteDriversKpi} comparison={comparison} onClose={closeSiteDrivers} onSwap={handleSwap} />
-      {/* NXT-77214 §11: a z-[60] panel beside the comparison, which stays visible and usable behind it. */}
+      <SiteDriversDrawer kpi={siteDriversKpi} comparison={comparison} onClose={closeSiteDrivers} isSchoolieOpen={isSchoolieOpen} />
+      {/* NXT-77214 §11: a z-[60] panel beside the comparison. On desktop the overlay reserves its width, so
+          every page control stays visible and clickable; at tablet width it overlays the page. */}
       {createPortal(
         <SchoolieDrawer
           isOpen={isSchoolieOpen}
@@ -182,7 +175,9 @@ export const PerformanceComparisonOverlay: React.FC<PerformanceComparisonOverlay
         aria-modal="true"
         aria-labelledby="performance-comparison-title"
         aria-hidden={!isOpen}
-        className={`fixed inset-0 bg-white z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed inset-0 bg-white z-50 flex flex-col transform transition-[transform,padding] duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} ${
+          isSchoolieOpen ? SCHOOLIE_PANEL_RESERVED_SPACE_CLASS : ''
+        }`}
       >
         {/* Header */}
         <div className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-200 flex items-center justify-between gap-3 shrink-0 shadow-sm">
@@ -210,7 +205,7 @@ export const PerformanceComparisonOverlay: React.FC<PerformanceComparisonOverlay
           {/* Schoolie (NXT-77214). Download is the page PDF (NXT-77213, UI only). */}
           <div className="flex items-center gap-1 shrink-0">
             <SchoolieHeaderAction disabled={!bothSidesSet} onClick={handleOpenSchoolie} />
-            <PageDownloadMenu />
+            <PageDownloadMenu disabled={!bothSidesSet} />
           </div>
         </div>
 

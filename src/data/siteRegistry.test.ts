@@ -97,11 +97,12 @@ describe('getSiteScopeLabel (spec §6)', () => {
     expect(getSiteScopeLabel([SITE_TYPE_IDS.centralOffice])).toBe('District Central Office');
   });
 
-  it('anything else → "Multiple Sites"', () => {
-    expect(getSiteScopeLabel([1, 2])).toBe('Multiple Sites');
-    expect(getSiteScopeLabel([SITE_TYPE_IDS.high, 1])).toBe('Multiple Sites');
-    expect(getSiteScopeLabel([SITE_TYPE_IDS.high, SITE_TYPE_IDS.middle])).toBe('Multiple Sites');
-    expect(getSiteScopeLabel([12, 13])).toBe('Multiple Sites'); // part of a type
+  it('anything else → "Multiple Sites (N)" with the resolved site count', () => {
+    expect(getSiteScopeLabel([1, 2])).toBe('Multiple Sites (2)');
+    expect(getSiteScopeLabel([SITE_TYPE_IDS.high, 1])).toBe(`Multiple Sites (${HIGH_SCHOOL_IDS.length + 1})`);
+    expect(getSiteScopeLabel([SITE_TYPE_IDS.high, SITE_TYPE_IDS.middle])).toMatch(/^Multiple Sites \(\d+\)$/);
+    expect(getSiteScopeLabel([12, 13])).toBe('Multiple Sites (2)'); // part of a type
+    expect(getSiteScopeLabel([12, 12, 13])).toBe('Multiple Sites (2)'); // counts resolved sites, not picks
   });
 
   it('is null when nothing is selected', () => {

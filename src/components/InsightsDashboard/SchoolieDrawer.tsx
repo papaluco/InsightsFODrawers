@@ -17,6 +17,17 @@ export interface SchoolieAnalysisContext {
   facts: unknown;
 }
 
+/**
+ * Panel mode's desktop (lg+) width, and the space a host reserves for it so the panel never covers
+ * the host's controls (NXT-77214 §11). Tailwind needs literal class names, so these three are kept
+ * together and must change together. Below lg the panel overlays the page (no reserved space).
+ */
+export const SCHOOLIE_PANEL_DESKTOP_WIDTH_CLASS = 'lg:w-[33.3333%]';
+/** Right padding for a full-width host while the panel is open. */
+export const SCHOOLIE_PANEL_RESERVED_SPACE_CLASS = 'lg:pr-[33.3333%]';
+/** Right offset for a host's own right-anchored drawer while the panel is open. */
+export const SCHOOLIE_PANEL_OFFSET_CLASS = 'lg:right-[33.3333%]';
+
 export interface SchoolieDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,8 +37,10 @@ export interface SchoolieDrawerProps {
   sourceEntryPoint: SchoolieSourceEntryPoint;
   /**
    * 'default': max-w-4xl with a dimming backdrop. 'panel': a third of the screen on desktop (half at
-   * tablet width, full width on phones) with no backdrop, so the page behind stays visible and usable (NXT-77214 §11).
-   * Panel mode also handles Escape before any other listener, so it closes before its host.
+   * tablet width, full width on phones) with no backdrop, so the page behind stays visible; on desktop the
+   * host reserves the panel's width (SCHOOLIE_PANEL_RESERVED_SPACE_CLASS) so nothing is covered (NXT-77214 §11).
+   * Panel mode stays mounted and slides in and out, and closes on Escape before its host does, after any
+   * open dropdown.
    */
   width?: 'default' | 'panel';
   /** Loading message; defaults to "Schoolie is analyzing your data...". */
@@ -189,17 +202,23 @@ export const SchoolieDrawer: React.FC<SchoolieDrawerProps> = ({
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      // Panel mode sits on top of another overlay: handle Escape first (window capture) and stop it,
-      // so the overlay underneath stays open.
+      // Panel mode sits on top of another overlay, whose Escape listener is on window. Stop the event
+      // here so that overlay stays open.
       if (width === 'panel') e.stopImmediatePropagation();
       onClose();
     };
-    const capture = width === 'panel';
-    window.addEventListener('keydown', handleKeyDown, capture);
-    return () => window.removeEventListener('keydown', handleKeyDown, capture);
+    if (width === 'panel') {
+      // Document, bubble phase: open dropdowns and menus close first (they listen on document in the
+      // capture phase and stop the event), and this still runs before the host's window listener.
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, width]);
 
-  if (!isOpen) return null;
+  // Panel mode stays mounted so it can slide out; the default drawer unmounts when closed.
+  if (!isOpen && width !== 'panel') return null;
 
   const formattedDate = generatedAt
     ? new Date(generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -209,10 +228,13 @@ export const SchoolieDrawer: React.FC<SchoolieDrawerProps> = ({
   const isOutOfDate =
     usesContext && drawerState !== 'loading' && analyzedContext !== null && analyzedContext.key !== contextKey;
 
+  // tailwindcss-animate isn't installed, so panel mode slides with transition-transform (spec §12).
   const panelClasses =
     width === 'panel'
-      ? 'w-full sm:w-[400px] md:w-1/2 lg:w-1/3 max-w-full border-l border-gray-200'
-      : 'w-full max-w-4xl';
+      ? `w-full sm:w-[400px] md:w-1/2 ${SCHOOLIE_PANEL_DESKTOP_WIDTH_CLASS} max-w-full border-l border-gray-200 transition-[transform,visibility] duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0 visible' : 'translate-x-full invisible'
+        }`
+      : 'w-full max-w-4xl animate-in slide-in-from-right duration-300';
 
   return (
     <>
@@ -220,7 +242,8 @@ export const SchoolieDrawer: React.FC<SchoolieDrawerProps> = ({
       <div
         role="dialog"
         aria-label={title}
-        className={`fixed inset-y-0 right-0 ${panelClasses} bg-white shadow-2xl z-[60] flex flex-col animate-in slide-in-from-right duration-300`}
+        aria-hidden={!isOpen}
+        className={`fixed inset-y-0 right-0 ${panelClasses} bg-white shadow-2xl z-[60] flex flex-col`}
       >
 
         {/* Header */}

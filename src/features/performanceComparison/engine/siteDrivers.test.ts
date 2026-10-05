@@ -24,7 +24,7 @@ describe('evaluateSiteAgainstTarget', () => {
       targetStatus: 'NotMet',
       varianceFromTarget: -1,
       unfavorableVariance: 1, // 1 pt short
-      varianceFormatted: '−1.0 pts',
+      varianceFormatted: '−1.0%',
       actualFormatted: '54.0%',
       targetFormatted: '55%',
     });

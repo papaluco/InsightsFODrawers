@@ -73,9 +73,9 @@ describe('spec §5.9 description fixtures', () => {
 
 describe('spec §5.9 materiality fixtures', () => {
   it.each<[string, ComparisonKpiKey, number, number, Classification, string]>([
-    ['Lunch 60% → 60.4%', 'Lunch', 60, 60.4, 'Comparable', '+0.4 pts'],
-    ['Lunch 60% → 60.5%', 'Lunch', 60, 60.5, 'Improved', '+0.5 pts'],
-    ['Lunch 60% → 59.5%', 'Lunch', 60, 59.5, 'Declined', '−0.5 pts'],
+    ['Lunch 60% → 60.4%', 'Lunch', 60, 60.4, 'Comparable', '+0.4%'],
+    ['Lunch 60% → 60.5%', 'Lunch', 60, 60.5, 'Improved', '+0.5%'],
+    ['Lunch 60% → 59.5%', 'Lunch', 60, 59.5, 'Declined', '−0.5%'],
     ['Revenue 100,000 → 101,500', 'Revenue', 100000, 101500, 'Comparable', '+1.5% (+$1,500)'],
     ['Revenue 100,000 → 102,000', 'Revenue', 100000, 102000, 'Improved', '+2.0% (+$2,000)'],
     ['Meals 12,500 → 12,625', 'Meals', 12500, 12625, 'Comparable', '+1.0% (+125)'],
@@ -485,7 +485,7 @@ describe('formatted fields and favorability', () => {
     const result = run('Lunch', { actual: 58, target: 60 }, { actual: 60, target: null });
     expect(result.left).toMatchObject({ actualFormatted: '58.0%', targetFormatted: '60%' });
     expect(result.right).toMatchObject({ actualFormatted: '60.0%', targetFormatted: '—' });
-    expect(result.deltaFormatted).toBe('+2.0 pts');
+    expect(result.deltaFormatted).toBe('+2.0%');
   });
 
   it('maps classification to favorability', () => {

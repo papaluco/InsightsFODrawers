@@ -52,6 +52,8 @@ export interface ComparisonResults {
   resultsByKpi: Record<ComparisonKpiKey, KpiComparisonResult>;
   /** Site-level evaluation per KPI for Site Drivers. */
   siteDrivers: Record<ComparisonKpiKey, SiteDriversResult>;
+  /** Site Drivers applies: at least one side has more than one site (spec §8). Otherwise the column is hidden. */
+  siteDriversAvailable: boolean;
   summary: ComparisonSummary;
 }
 
@@ -119,6 +121,7 @@ export function selectComparison(left: SideDataset, right: SideDataset, filters:
     results,
     resultsByKpi,
     siteDrivers,
+    siteDriversAvailable: left.siteIds.length > 1 || right.siteIds.length > 1,
     summary: summarize(results, left.label, right.label),
   };
 }

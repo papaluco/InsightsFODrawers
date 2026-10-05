@@ -43,21 +43,62 @@ describe('side definitions', () => {
     expect(store().left.sites).toBeNull();
   });
 
-  it('sets each side independently', () => {
-    store().setSideSites('left', [1]);
+  it('sets the right side without touching the left', () => {
+    store().setSideSites('right', [1]);
     store().setSideTimeframe('right', { optionId: 'this_week' });
-    expect(store().left).toEqual({ sites: [1], timeframe: null });
-    expect(store().right).toEqual({ sites: null, timeframe: { optionId: 'this_week' } });
+    expect(store().left).toEqual(EMPTY_SIDE);
+    expect(store().right).toEqual({ sites: [1], timeframe: { optionId: 'this_week' } });
+  });
+});
+
+describe('auto-fill (left → right, per field)', () => {
+  it('copies a left-side choice into the same right-side field while it is empty', () => {
+    store().setSideSites('left', [SITE_TYPE_IDS.high]);
+    expect(store().right).toEqual({ sites: [SITE_TYPE_IDS.high], timeframe: null });
+    store().setSideTimeframe('left', { optionId: 'prior_year' });
+    expect(store().right).toEqual({ sites: [SITE_TYPE_IDS.high], timeframe: { optionId: 'prior_year' } });
+  });
+
+  it('fills each field separately: a set right timeframe still lets the sites fill', () => {
+    store().setSideTimeframe('right', { optionId: 'ytd' });
+    store().setSideTimeframe('left', { optionId: 'prior_year' });
+    store().setSideSites('left', [1]);
+    expect(store().right).toEqual({ sites: [1], timeframe: { optionId: 'ytd' } });
+  });
+
+  it('never overwrites a right-side field that already has a value', () => {
+    store().setSideSites('left', [1]);
+    store().setSideSites('left', [2]);
+    expect(store().right.sites).toEqual([1]);
+    store().setSideTimeframe('right', { optionId: 'ytd' });
+    store().setSideTimeframe('left', { optionId: 'this_week' });
+    expect(store().right.timeframe).toEqual({ optionId: 'ytd' });
+  });
+
+  it('never copies right → left', () => {
+    store().setSideSites('right', [1]);
+    store().setSideTimeframe('right', { optionId: 'ytd' });
+    expect(store().left).toEqual(EMPTY_SIDE);
+  });
+
+  it('does not copy a cleared site selection', () => {
+    store().setSideSites('left', []);
+    expect(store().right.sites).toBeNull();
+  });
+
+  it('gives the right side its own copy of the site list', () => {
+    store().setSideSites('left', [1, 2]);
+    expect(store().right.sites).not.toBe(store().left.sites);
   });
 });
 
 describe('swapSides (spec §6 Swap)', () => {
   it('does nothing until both sides are set', () => {
-    store().setSideSites('left', [1]);
-    store().setSideTimeframe('left', { optionId: 'ytd' });
+    store().setSideSites('right', [1]);
+    store().setSideTimeframe('right', { optionId: 'ytd' });
     store().swapSides();
-    expect(store().left).toEqual({ sites: [1], timeframe: { optionId: 'ytd' } });
-    expect(store().right).toEqual(EMPTY_SIDE);
+    expect(store().left).toEqual(EMPTY_SIDE);
+    expect(store().right).toEqual({ sites: [1], timeframe: { optionId: 'ytd' } });
   });
 
   it('exchanges the complete definitions, including custom ranges', () => {

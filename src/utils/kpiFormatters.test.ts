@@ -64,14 +64,14 @@ describe('value formatters', () => {
 
 describe('delta formatters', () => {
   it('percentage points', () => {
-    expect(formatPointsDelta(4.3)).toBe('+4.3 pts');
-    expect(formatPointsDelta(-0.5)).toBe(`${MINUS_SIGN}0.5 pts`);
-    expect(formatPointsDelta(60.5 - 60)).toBe('+0.5 pts');
-    expect(formatPointsDelta(0)).toBe('0.0 pts');
+    expect(formatPointsDelta(4.3)).toBe('+4.3%');
+    expect(formatPointsDelta(-0.5)).toBe(`${MINUS_SIGN}0.5%`);
+    expect(formatPointsDelta(60.5 - 60)).toBe('+0.5%');
+    expect(formatPointsDelta(0)).toBe('0.0%');
   });
 
   it('never shows a signed zero after rounding', () => {
-    expect(formatPointsDelta(-0.04)).toBe('0.0 pts');
+    expect(formatPointsDelta(-0.04)).toBe('0.0%');
     expect(formatSignedCurrency(-0.4)).toBe('$0');
     expect(formatRelativeChange(0.0004)).toBe('0.0%');
   });
@@ -121,13 +121,13 @@ describe('formatKpiValue', () => {
 
 describe('formatKpiDelta / formatRelativeDelta', () => {
   it('formats the absolute change in KPI units', () => {
-    expect(formatKpiDelta('Lunch', 2)).toBe('+2.0 pts');
-    expect(formatKpiDelta('PNA', -1.5)).toBe(`${MINUS_SIGN}1.5 pts`);
+    expect(formatKpiDelta('Lunch', 2)).toBe('+2.0%');
+    expect(formatKpiDelta('PNA', -1.5)).toBe(`${MINUS_SIGN}1.5%`);
     expect(formatKpiDelta('Waste', -500)).toBe(`${MINUS_SIGN}$500`);
     expect(formatKpiDelta('Meals', 125)).toBe('+125');
     expect(formatKpiDelta('MPLH', 0.37)).toBe('+0.37');
     expect(formatKpiDelta('Inventory Turnover Rate', -2)).toBe(`${MINUS_SIGN}2 days`);
-    expect(formatKpiDelta('Physical Inventory Discrepancy', -0.6)).toBe(`${MINUS_SIGN}0.6 pts`);
+    expect(formatKpiDelta('Physical Inventory Discrepancy', -0.6)).toBe(`${MINUS_SIGN}0.6%`);
   });
 
   it('formats relative change with the absolute change alongside', () => {

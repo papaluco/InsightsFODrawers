@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-// Added ChevronUp to the imports below
-import { ChevronDown, ChevronUp, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SchoolMPLHData } from '../../../data/mockMPLHData';
+import { SortIcon } from '../../Common/SortIcon';
 import { MPLHOtherMeals } from './MPLHOtherMeals';
 
 interface MPLHSchoolTableProps {
@@ -12,13 +12,6 @@ interface MPLHSchoolTableProps {
   targetMPLH: number;
 }
 
-// Helper component moved outside for better performance/cleanliness
-const SortIcon = ({ column, config }: { column: string, config: any }) => {
-  if (config?.key !== column) return <div className="w-4 h-4 opacity-0" />;
-  return config.direction === 'asc' 
-    ? <ChevronUp className="w-4 h-4 text-blue-600" /> 
-    : <ChevronDown className="w-4 h-4 text-blue-600" />;
-};
 
 export const MPLHSchoolTable: React.FC<MPLHSchoolTableProps> = ({
   schoolData,

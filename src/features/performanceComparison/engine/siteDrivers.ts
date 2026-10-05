@@ -41,7 +41,7 @@ export interface SiteTargetEvaluation {
   targetStatus: TargetStatus;
   /** actual − target in KPI units. Null without data or a target, and for informational KPIs. */
   varianceFromTarget: number | null;
-  /** Variance from target in the KPI's delta format ("−1.0 pts", "+$200"); null when there is no variance. */
+  /** Variance from target in the KPI's delta format ("−1.0%" for percentage points, "+$200"); null when there is no variance. */
   varianceFormatted: string | null;
   /** How far the site falls short of its target (positive = unfavorable), respecting direction. */
   unfavorableVariance: number | null;

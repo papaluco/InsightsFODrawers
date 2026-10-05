@@ -1,13 +1,19 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeftRight, ChevronDown, ChevronUp, ChevronsUpDown, Loader2, School, X } from 'lucide-react';
+import { Loader2, School, X } from 'lucide-react';
+import { CopyIcon } from '../../../components/Common/Icons';
+import { SortIcon } from '../../../components/Common/SortIcon';
+import { useToast } from '../../../components/Common/toastContext';
 import { useCloseOnEscape } from '../../../components/Common/useFloatingDropdown';
+import { SCHOOLIE_PANEL_OFFSET_CLASS } from '../../../components/InsightsDashboard/SchoolieDrawer';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import type { MatchedSiteResult, SiteDriversResult, SiteDriversSide, SiteTargetEvaluation } from '../engine/siteDrivers';
 import type { ComparisonView } from '../hooks/useComparison';
 import { useSideShortNames } from '../hooks/useSideShortNames';
 import { getTargetStatusDisplay } from '../ui/comparisonDisplay';
+import { toTsv, type KpiTableExport } from '../ui/kpiTableExport';
+import { buildMatchedSitesExport, buildSideSitesExport, getSiteTableColumns } from '../ui/siteDriversExport';
 import {
   getSideAttainmentText,
   nextSiteSort,
@@ -17,7 +23,7 @@ import {
   sortSiteEvaluations,
 } from '../ui/siteDriversView';
 import { ClassificationBadge } from './ClassificationBadge';
-import { TargetStatusIndicator } from './TargetStatusIndicator';
+import { TargetStatusIcon, TargetStatusIndicator } from './TargetStatusIndicator';
 
 const TH = 'px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-bottom';
 const TD = 'px-3 py-2.5 align-top text-sm';
@@ -31,19 +37,23 @@ interface SortHeaderProps {
   onSort: (key: SiteSortKey) => void;
 }
 
-/** Sortable column header (spec §8 "Sortable columns"). */
+/**
+ * Sortable column header (spec §8 "Sortable columns"), styled like MPLHSchoolTable: one chevron on
+ * the active sort column only. A button inside the header keeps it keyboard accessible.
+ */
 const SortHeader: React.FC<SortHeaderProps> = ({ label, sortKey, sort, onSort }) => {
   const active = sort?.key === sortKey;
-  const Icon = !active ? ChevronsUpDown : sort.direction === 'asc' ? ChevronUp : ChevronDown;
   return (
-    <th className={TH} aria-sort={active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>
+    <th className={`${TH} cursor-pointer hover:bg-gray-100`} aria-sort={active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>
       <button
         type="button"
         onClick={() => onSort(sortKey)}
-        className="inline-flex items-end gap-1 text-left uppercase tracking-wider rounded hover:text-gray-800 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="flex items-end gap-1 text-left uppercase tracking-wider rounded outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
       >
         {label}
-        <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-indigo-600' : 'text-gray-300'}`} aria-hidden="true" />
+        <span className="shrink-0" aria-hidden="true">
+          <SortIcon column={sortKey} config={sort} />
+        </span>
       </button>
     </th>
   );
@@ -56,23 +66,78 @@ const ActualText: React.FC<{ site: SiteTargetEvaluation }> = ({ site }) => (
   <span className={site.hasData ? 'font-semibold text-gray-900' : 'italic text-gray-400'}>{site.actualFormatted}</span>
 );
 
-/** Section header: title, per-side summary, and a way back to the default order once a column is sorted. */
-const SectionHeader: React.FC<{ title: React.ReactNode; summaries: React.ReactNode; sorted: boolean; onResetSort: () => void }> = ({
-  title,
-  summaries,
-  sorted,
-  onResetSort,
-}) => (
+const VARIANCE_TONE = {
+  met: 'text-insightsFavorable',
+  notMet: 'text-insightsUnfavorable',
+  none: 'text-gray-800',
+} as const;
+
+/**
+ * Variance from target, colored by the site's own target status (engine fact): green when it meets
+ * its target, red when it doesn't, neutral without a target. The status icon and screen-reader
+ * text carry the same meaning, so color is never alone (spec §12).
+ */
+const VarianceCell: React.FC<{ site: SiteTargetEvaluation }> = ({ site }) => {
+  if (site.varianceFormatted === null) return <td className={`${TD} whitespace-nowrap text-gray-400`}>—</td>;
+  const display = getTargetStatusDisplay(site, false);
+  return (
+    <td className={`${TD} whitespace-nowrap`}>
+      <span className={`inline-flex items-center gap-1.5 font-semibold ${VARIANCE_TONE[display.tone]}`}>
+        <TargetStatusIcon tone={display.tone} />
+        {site.varianceFormatted}
+        <span className="sr-only">({display.text})</span>
+      </span>
+    </td>
+  );
+};
+
+/** Copies one drawer table, as shown, to the clipboard (tab-separated). Copy only; no download. */
+const CopyTableButton: React.FC<{ getTable: () => KpiTableExport; label: string }> = ({ getTable, label }) => {
+  const { showToast } = useToast();
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(toTsv(getTable()));
+      showToast('Copied to clipboard', 'success');
+    } catch {
+      showToast('Could not copy to the clipboard.');
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title="Copy table"
+      aria-label={`Copy ${label} table`}
+      className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-gray-100 transition-colors"
+    >
+      <CopyIcon size={18} />
+    </button>
+  );
+};
+
+interface SectionHeaderProps {
+  title: string;
+  summaries: React.ReactNode;
+  sorted: boolean;
+  onResetSort: () => void;
+  getTable: () => KpiTableExport;
+}
+
+/** Section header: title, per-side summary, a way back to the default order once a column is sorted, and Copy. */
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, summaries, sorted, onResetSort, getTable }) => (
   <div className="px-4 py-3 border-b border-gray-200 flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
     <div className="min-w-0">
       <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
       <div className="mt-0.5 text-xs text-gray-500">{summaries}</div>
     </div>
-    {sorted && (
-      <button type="button" onClick={onResetSort} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
-        Default order
-      </button>
-    )}
+    <div className="flex items-center gap-2">
+      {sorted && (
+        <button type="button" onClick={onResetSort} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+          Default order
+        </button>
+      )}
+      <CopyTableButton getTable={getTable} label={title} />
+    </div>
   </div>
 );
 
@@ -137,9 +202,11 @@ interface MatchedSitesTableProps {
 /** Identical site sets: one row per site with both sides side by side (spec §8 Matched). */
 const MatchedSitesTable: React.FC<MatchedSitesTableProps> = ({ drivers, sideShortNames, siteLabel }) => {
   const { sort, onSort, resetSort } = useSiteSort();
-  const isInformational = getKpiDefinition(drivers.kpi).kind === 'informational';
   const sites = sortMatchedSites(drivers.matchedSites ?? [], sort);
-  const showTarget = !isInformational || sites.some(s => s.left.target !== null || s.right.target !== null);
+  const { isInformational, showTarget, targetHeader } = getSiteTableColumns(
+    drivers.kpi,
+    sites.some(s => s.left.target !== null || s.right.target !== null),
+  );
   const [leftName, rightName] = sideShortNames;
 
   return (
@@ -148,6 +215,7 @@ const MatchedSitesTable: React.FC<MatchedSitesTableProps> = ({ drivers, sideShor
         title={`${siteLabel} · ${sites.length} sites`}
         sorted={sort !== null}
         onResetSort={resetSort}
+        getTable={() => buildMatchedSitesExport(drivers.kpi, sites, sideShortNames)}
         summaries={
           <>
             <div>
@@ -167,7 +235,7 @@ const MatchedSitesTable: React.FC<MatchedSitesTableProps> = ({ drivers, sideShor
               <SortHeader label={<SideName>{leftName}</SideName>} sortKey="leftActual" sort={sort} onSort={onSort} />
               <SortHeader label={<SideName>{rightName}</SideName>} sortKey="rightActual" sort={sort} onSort={onSort} />
               <SortHeader label="Change" sortKey="change" sort={sort} onSort={onSort} />
-              {showTarget && <SortHeader label={isInformational ? 'Context' : 'Target'} sortKey="target" sort={sort} onSort={onSort} />}
+              {showTarget && <SortHeader label={targetHeader} sortKey="target" sort={sort} onSort={onSort} />}
               {!isInformational && (
                 <SortHeader
                   label={
@@ -196,7 +264,7 @@ const MatchedSitesTable: React.FC<MatchedSitesTableProps> = ({ drivers, sideShor
                 </td>
                 <td className={`${TD} whitespace-nowrap text-gray-800`}>{site.result.deltaFormatted ?? '—'}</td>
                 {showTarget && <MatchedTargetCell site={site} sideShortNames={sideShortNames} />}
-                {!isInformational && <td className={`${TD} whitespace-nowrap text-gray-800`}>{site.right.varianceFormatted ?? '—'}</td>}
+                {!isInformational && <VarianceCell site={site.right} />}
                 {!isInformational && <MatchedStatusCell site={site} />}
               </tr>
             ))}
@@ -217,20 +285,25 @@ interface SideSitesTableProps {
 /** One side's sites, listed independently and headed by its generated label (spec §8 Unmatched). */
 const SideSitesTable: React.FC<SideSitesTableProps> = ({ drivers, side }) => {
   const { sort, onSort, resetSort } = useSiteSort();
-  const isInformational = getKpiDefinition(drivers.kpi).kind === 'informational';
   const sites = sortSiteEvaluations(side.sites, sort);
-  const showTarget = !isInformational || sites.some(s => s.target !== null);
+  const { isInformational, showTarget, targetHeader } = getSiteTableColumns(drivers.kpi, sites.some(s => s.target !== null));
 
   return (
     <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <SectionHeader title={side.label} summaries={getSideAttainmentText(drivers, side)} sorted={sort !== null} onResetSort={resetSort} />
+      <SectionHeader
+        title={side.label}
+        summaries={getSideAttainmentText(drivers, side)}
+        sorted={sort !== null}
+        onResetSort={resetSort}
+        getTable={() => buildSideSitesExport(drivers.kpi, sites)}
+      />
       <div className="overflow-x-auto">
         <table className="min-w-[560px] w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <SortHeader label="Site" sortKey="site" sort={sort} onSort={onSort} />
               <SortHeader label="Actual" sortKey="actual" sort={sort} onSort={onSort} />
-              {showTarget && <SortHeader label={isInformational ? 'Context' : 'Target'} sortKey="target" sort={sort} onSort={onSort} />}
+              {showTarget && <SortHeader label={targetHeader} sortKey="target" sort={sort} onSort={onSort} />}
               {!isInformational && <SortHeader label="Target Status" sortKey="status" sort={sort} onSort={onSort} />}
               {!isInformational && <SortHeader label="Variance from target" sortKey="variance" sort={sort} onSort={onSort} />}
             </tr>
@@ -248,7 +321,7 @@ const SideSitesTable: React.FC<SideSitesTableProps> = ({ drivers, side }) => {
                     <TargetStatusIndicator display={getTargetStatusDisplay(site, false)} />
                   </td>
                 )}
-                {!isInformational && <td className={`${TD} whitespace-nowrap text-gray-800`}>{site.varianceFormatted ?? '—'}</td>}
+                {!isInformational && <VarianceCell site={site} />}
               </tr>
             ))}
           </tbody>
@@ -265,8 +338,8 @@ interface SiteDriversDrawerProps {
   kpi: ComparisonKpiKey | null;
   comparison: ComparisonView;
   onClose: () => void;
-  /** Swap sides from inside the drawer; the drawer refreshes in place. */
-  onSwap: () => void;
+  /** Schoolie is open beside the page: on desktop the drawer sits to its left, so nothing is covered. */
+  isSchoolieOpen: boolean;
 }
 
 /**
@@ -277,7 +350,7 @@ interface SiteDriversDrawerProps {
  * It reads the engine's siteDrivers result for the KPI on every render, so it refreshes in place
  * when the comparison changes while open. The parent closes it when no side has more than one site.
  */
-export const SiteDriversDrawer: React.FC<SiteDriversDrawerProps> = ({ kpi, comparison, onClose, onSwap }) => {
+export const SiteDriversDrawer: React.FC<SiteDriversDrawerProps> = ({ kpi, comparison, onClose, isSchoolieOpen }) => {
   const isOpen = kpi !== null;
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -313,9 +386,9 @@ export const SiteDriversDrawer: React.FC<SiteDriversDrawerProps> = ({ kpi, compa
         aria-modal="true"
         aria-labelledby={titleId}
         aria-hidden={!isOpen}
-        className={`fixed inset-y-0 right-0 z-[55] w-full max-w-5xl bg-white shadow-2xl flex flex-col transition-[transform,visibility] duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-[55] w-full max-w-5xl bg-white shadow-2xl flex flex-col transition-[transform,visibility,right] duration-300 ease-in-out ${
           isOpen ? 'translate-x-0 visible' : 'translate-x-full invisible'
-        }`}
+        } ${isSchoolieOpen ? SCHOOLIE_PANEL_OFFSET_CLASS : ''}`}
       >
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-3 shrink-0">
@@ -342,15 +415,6 @@ export const SiteDriversDrawer: React.FC<SiteDriversDrawerProps> = ({ kpi, compa
               </span>
             )}
             <button
-              type="button"
-              onClick={onSwap}
-              title="Swap sides"
-              aria-label="Swap sides"
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-            >
-              <ArrowLeftRight size={18} />
-            </button>
-            <button
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
@@ -364,7 +428,8 @@ export const SiteDriversDrawer: React.FC<SiteDriversDrawerProps> = ({ kpi, compa
         </div>
 
         {/* Body */}
-        <div className={`flex-1 overflow-y-auto bg-gray-50 px-4 sm:px-6 py-5 transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
+        {/* Same body background as the MPLH Details drawer. */}
+        <div className={`flex-1 overflow-y-auto bg-gray-50/30 px-4 sm:px-6 py-5 transition-opacity ${isLoading ? 'opacity-50' : ''}`}>
           {drivers && (
             // Keyed by KPI so column sorting starts from the default order for each KPI.
             <div key={drivers.kpi} className="flex flex-col gap-5">

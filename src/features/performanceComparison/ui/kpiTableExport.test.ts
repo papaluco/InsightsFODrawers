@@ -161,14 +161,18 @@ describe('buildKpiTableExport', () => {
     expect(rowFor(table.rows, 'Inventory Value')[COLUMN.rightTarget]).toBe(EXPORT_EMPTY_TEXT);
   });
 
-  it('exports the Site Drivers summary text, or blank when no side has more than one site', () => {
+  it('exports the Site Drivers summary text', () => {
     const { table } = exportFor(allPriorYear, allYtd);
     expect(rowFor(table.rows, 'Lunch')[COLUMN.siteDrivers]).toMatch(/sites meeting target$/);
+  });
 
+  it('leaves out the Site Drivers column when no side has more than one site', () => {
     const roosevelt = buildSideDataset([12], { optionId: 'prior_year' });
     const rooseveltYtd = buildSideDataset([12], { optionId: 'ytd' });
-    const { table: singleSite } = exportFor(roosevelt, rooseveltYtd);
-    expect(singleSite.rows.every(row => row[COLUMN.siteDrivers] === '')).toBe(true);
+    const { table } = exportFor(roosevelt, rooseveltYtd);
+    expect(table.headers).not.toContain('Site Drivers');
+    expect(table.headers).toHaveLength(12);
+    expect(table.rows.every(row => row.length === 12)).toBe(true);
   });
 
   it('names each side with its compact name when both sides have several sites, in full "meeting target" wording', () => {
@@ -194,6 +198,12 @@ describe('toTsv', () => {
 describe('CSV data', () => {
   it('names the file Performance_Comparison_KPIs_<YYYY-MM-DD>.csv using the local date', () => {
     expect(getKpiTableCsvFileName(new Date(2026, 9, 4, 23, 30))).toBe('Performance_Comparison_KPIs_2026-10-04.csv');
+  });
+
+  it('dates the filename from the moment it is built, so building on click gives the download date', () => {
+    const { table } = exportFor(allPriorYear, allYtd);
+    expect(toKpiTableCsvData(table, new Date(2026, 9, 4, 23, 59)).fileName).toBe('Performance_Comparison_KPIs_2026-10-04.csv');
+    expect(toKpiTableCsvData(table, new Date(2026, 9, 5, 0, 1)).fileName).toBe('Performance_Comparison_KPIs_2026-10-05.csv');
   });
 
   it('passes the export headers and rows to CSVRenderer unchanged', () => {

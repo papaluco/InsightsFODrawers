@@ -112,6 +112,21 @@ const ClampedDescription: React.FC<{ text: string; expanded: boolean }> = ({ tex
   );
 };
 
+/**
+ * Change value. A combined change ("−6.8% (−$709,713)") may break only between the % and the
+ * parenthesized amount; neither part ever splits.
+ */
+const ChangeText: React.FC<{ text: string }> = ({ text }) => {
+  const split = text.indexOf(' (');
+  if (split === -1) return <span className="whitespace-nowrap">{text}</span>;
+  return (
+    <>
+      <span className="whitespace-nowrap">{text.slice(0, split)}</span>{' '}
+      <span className="whitespace-nowrap">{text.slice(split + 1)}</span>
+    </>
+  );
+};
+
 interface SiteDriversCellProps {
   lines: string[] | null;
   /** Full wording of the summary, shown as the cell's tooltip. */
@@ -127,16 +142,14 @@ interface SiteDriversCellProps {
  */
 const SiteDriversCell: React.FC<SiteDriversCellProps> = ({ lines, title, kpiName, onViewSites }) => {
   if (!lines) {
-    return (
-      <td className="px-3 py-3 align-top text-sm text-gray-300" title="Site Drivers apply when a side includes more than one site">
-        —
-      </td>
-    );
+    return <td className="px-3 py-3 align-top text-sm text-gray-300">—</td>;
   }
   return (
     <td className="px-3 py-3 align-top text-xs leading-snug text-gray-600" title={title ?? undefined}>
       {lines.map((line, index) => (
-        <div key={line}>
+        // One line per summarized side, in left → right order, so the position is a stable per-side key
+        // (two sides can have identical text).
+        <div key={index}>
           {line}
           {index === lines.length - 1 && (
             <>
@@ -174,6 +187,8 @@ interface ComparisonKpiTableProps {
   needsAttentionOnly: boolean;
   /** Site-level engine results per KPI (Site Drivers column). */
   siteDrivers: Record<ComparisonKpiKey, SiteDriversResult>;
+  /** False when neither side has more than one site: the Site Drivers column is hidden (spec §8). */
+  showSiteDrivers: boolean;
   onViewSites: (kpi: ComparisonKpiKey) => void;
 }
 
@@ -191,15 +206,17 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
   onFocusKpi,
   needsAttentionOnly,
   siteDrivers,
+  showSiteDrivers,
   onViewSites,
 }) => {
+  const columnCount = showSiteDrivers ? 7 : 6;
   const toggleFocus = (kpi: ComparisonKpiKey) => onFocusKpi(focusedKpi === kpi ? null : kpi);
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       {/* Tables scroll horizontally inside their own container (spec §12). */}
       <div className="overflow-x-auto">
-        <table className="min-w-[1280px] w-full divide-y divide-gray-200">
+        <table className={`${showSiteDrivers ? 'min-w-[1280px]' : 'min-w-[1070px]'} w-full divide-y divide-gray-200`}>
           <thead className="bg-gray-50">
             <tr>
               <th className={`${TH} w-48`}>KPI</th>
@@ -215,16 +232,16 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
               <th className={`${TH} w-[112px]`}>Change</th>
               <th className={`${TH} min-w-[160px]`}>Target Status</th>
               <th className={`${TH} min-w-[380px]`}>Performance</th>
-              <th className={`${TH} w-[210px] min-w-[210px]`}>Site Drivers</th>
+              {showSiteDrivers && <th className={`${TH} w-[210px] min-w-[210px]`}>Site Drivers</th>}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {results.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">
+                <td colSpan={columnCount} className="px-6 py-10 text-center text-sm text-gray-500">
                   {needsAttentionOnly
                     ? 'No KPIs in the current filters need attention.'
-                    : 'No KPIs selected. Choose KPIs in Filters to compare them.'}
+                    : 'No KPIs selected. Choose KPIs in the KPI filter to compare them.'}
                 </td>
               </tr>
             ) : (
@@ -263,8 +280,7 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                     </td>
                     <SideValueCell side={result.left} isInformational={isInformational} />
                     <SideValueCell side={result.right} isInformational={isInformational} />
-                    {/* A combined change ("+9.6% (+$31,240)") may wrap at its space; each part stays whole. */}
-                    <td className="px-3 py-3 align-top text-sm text-gray-800">{result.deltaFormatted ?? '—'}</td>
+                    <td className="px-3 py-3 align-top text-sm text-gray-800">{result.deltaFormatted ? <ChangeText text={result.deltaFormatted} /> : '—'}</td>
                     <td className="px-3 py-3 align-top">
                       <div className="flex flex-col gap-1">
                         <TargetStatusLine name={sideShortNames[0]} side={result.left} isInformational={isInformational} />
@@ -276,12 +292,14 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                       {/* The badge carries the classification, so the description drops its "<Classification> — " prefix. */}
                       <ClampedDescription text={result.descriptionBody} expanded={isFocused} />
                     </td>
-                    <SiteDriversCell
-                      lines={getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames, { compact: true })}
-                      title={getSiteDriversSummaryTitle(siteDrivers[result.kpi], sideShortNames)}
-                      kpiName={definition.name}
-                      onViewSites={() => onViewSites(result.kpi)}
-                    />
+                    {showSiteDrivers && (
+                      <SiteDriversCell
+                        lines={getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames, { compact: true })}
+                        title={getSiteDriversSummaryTitle(siteDrivers[result.kpi], sideShortNames)}
+                        kpiName={definition.name}
+                        onViewSites={() => onViewSites(result.kpi)}
+                      />
+                    )}
                   </tr>
                 );
               })

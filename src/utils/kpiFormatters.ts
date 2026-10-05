@@ -82,9 +82,12 @@ export function formatInventoryDiscrepancy(percentOfValue: number | null, dollar
 
 // ─── Deltas ──────────────────────────────────────────────────────────────────
 
-/** Percentage-point change: "+4.3 pts", "−0.5 pts", "0.0 pts". */
+/**
+ * Percentage-point change in compact form: "+4.3%", "−0.5%", "0.0%" (spec §5.9). Full description
+ * sentences still say "percentage points".
+ */
 export const formatPointsDelta = (delta: number, options: NumberFormatOptions = {}): string =>
-  formatWith(delta, options, 1, true, m => `${m} pts`);
+  formatWith(delta, options, 1, true, m => `${m}%`);
 
 /** Relative change from a fraction: 0.02 → "+2.0%", −0.063 → "−6.3%". */
 export const formatRelativeChange = (relativeChange: number, options: NumberFormatOptions = {}): string =>
@@ -167,7 +170,7 @@ export function formatKpiTarget(key: ComparisonKpiKey, target: number | null, nu
   return formatByDisplayFormat(format, target);
 }
 
-/** Absolute change (right − left) in the KPI's units: pts for % KPIs, $ for currency, etc. */
+/** Absolute change (right − left) in the KPI's units: percentage points (shown "+2.5%") for % KPIs, $ for currency, etc. */
 export function formatKpiDelta(key: ComparisonKpiKey, delta: number): string {
   switch (getKpiDefinition(key).displayFormat) {
     case 'percent':

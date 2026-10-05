@@ -119,7 +119,7 @@ For one KPI: KPI key, left actual (number | null), right actual (number | null),
   right: { actual, target, actualFormatted, targetFormatted, hasData, targetStatus },
   delta: number | null,                 // right − left (absolute, in KPI units; pts for % KPIs)
   relativeChange: number | null,        // (right − left) / left, relative-% KPIs only
-  deltaFormatted: string | null,        // "+4.3 pts", "−$500", "+2.0% (+$2,000)"
+  deltaFormatted: string | null,        // "+4.3%" (percentage points, §5.9), "−$500", "+2.0% (+$2,000)"
   materiality: 'Material' | 'NotMaterial' | 'NotApplicable' | null,
   classification: 'Improved' | 'Comparable' | 'Declined' | 'NoData' | 'RelativeNotApplicable' | 'Informational',
   favorability: 'favorable' | 'unfavorable' | 'neutral' | null,
@@ -173,6 +173,8 @@ Directional KPIs only. `needsAttention = right.targetStatus === 'NotMet' || clas
 ### 5.9 Deterministic descriptions (§10, §11, §20, §21)
 Format: `<Classification> — <sentence>.` Optionally a second short sentence for partial-period context, appended **only when it is material**: the KPI is a sum KPI (Revenue, Meals, MEQs, A La Carte, Reimbursement, Waste) **and** the period-length notice applies (§6: exactly one side is partial and the other covers at least 10% more days). It is never appended to ratio or informational KPIs, or to No Data results. The note names the partial side by its generated label, e.g. "High Schools · SY 2025–26 includes data through April 16, 2026." One or two sentences, factual, no causes, no recommendations, no "better/worse", no temporal words ("previous", "current", "now") unless chronology is explicit, no A/B, no "left/right side". When a side must be named, use its generated label.
 
+**Percentage-point display.** A percentage-point change in compact form is written with a percent sign: "+2.5%", "−0.5%", "0.0%" (not "+2.5 pts"). This applies to the KPI table's Change column, the Site Drivers drawer (change and variance from target), CSV/copy exports, and the Schoolie payload's formatted fields. Full description sentences keep the words "percentage points" ("increased by 2.5 percentage points"), so the two kinds of percentage change are never confused where it matters. Relative-% KPIs combine both forms as before: "+2.0% (+$2,000)".
+
 **Target formatting.** A target is written the same way everywhere it appears: the KPI table, descriptions, and the trend tooltip. Percentage targets drop a trailing ".0" ("Target 35%", "meets the 35% target") but keep real decimals ("Target 62.5%"). Other formats use the KPI's display format. A missing target shows "—".
 
 Decision matrix (all 12 classification × transition combinations, plus the missing-target row):
@@ -216,9 +218,9 @@ Materiality fixtures:
 
 | Input | Expected |
 |---|---|
-| Lunch 60% → 60.4% | Comparable (+0.4 pts) |
-| Lunch 60% → 60.5% | Improved (+0.5 pts) |
-| Lunch 60% → 59.5% | Declined (−0.5 pts) |
+| Lunch 60% → 60.4% | Comparable (+0.4%) |
+| Lunch 60% → 60.5% | Improved (+0.5%) |
+| Lunch 60% → 59.5% | Declined (−0.5%) |
 | Revenue $100,000 → $101,500 | Comparable (+1.5%) |
 | Revenue $100,000 → $102,000 | Improved (+2.0%) |
 | Meals 12,500 → 12,625 | Comparable (+1.0%) |
@@ -236,23 +238,24 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 ## 6. Overlay & Comparison Setup (NXT-77202)
 
 - **Entry point:** a Compare icon button in the Insights Dashboard header action group (`SimpleHeader`), using the existing icon-button class string, Lucide `GitCompareArrows`, and `title="Compare"`.
-- **Overlay:** full-screen, following the AppUsageDrawer pattern (`fixed inset-0 bg-white z-50`, sticky header, scrolling gray body). Header: back navigation to the dashboard, "Performance Comparison" title, and Schoolie + Download actions on the right (disabled until a comparison exists).
-- **Layout order:** Comparison Setup → Filters → Comparison Summary → KPI Comparison → Performance Trend → materiality note.
+- **Overlay:** full-screen, following the AppUsageDrawer pattern (`fixed inset-0 bg-white z-50`, sticky header, scrolling gray body). Header: back navigation to the dashboard, "Performance Comparison" title, and Schoolie + Download actions on the right. Both are disabled until both sides are set, each with a tooltip saying why ("Set both sides to analyze this comparison with Schoolie" / "Set both sides to download this comparison").
+- **Layout order:** Comparison Setup (with the period-length notice inside it) → Comparison Summary → KPI Comparison (with the filters in its title row) → Performance Trend. There is no separate Filters panel and no always-visible materiality note.
 - **Setup:** two side panels (left and right), each with a site selector and a timeframe selector, reusing `DemoSchoolSelector` and `TimeframeSelector` made controlled through optional `value`/`onChange` props. The dashboard's existing uncontrolled usage must keep working.
+- **Auto-fill:** when the user picks sites or a timeframe on the left and that same field on the right is still empty (placeholder), the left value is copied into it. Per field: sites and timeframe fill independently. A right-side field that already has a value is never overwritten, and nothing is ever copied right → left. Clearing a left field copies nothing.
 - **Generated label** shown below each side's selectors:
-  - Site part: single site → site name; one site type → plural type name ("High Schools"); All → "All Sites"; anything else → "Multiple Sites".
+  - Site part: single site → site name; one site type → plural type name ("High Schools"); All → "All Sites"; anything else → "Multiple Sites (N)", where N is the number of sites the selection resolves to (e.g. "Multiple Sites (3) · Last Month"), so two different multi-site selections can be told apart.
   - Timeframe part: school-year options → "SY 2025–26" (YTD and Prior Year resolve to their SY); Prior Year to Date → "SY 2024–25 through Apr 16"; relative options use their name ("This Month", "Last Week"); Custom Range → "Aug 1 – Sep 30, 2025".
   - Joined with " · ".
   - Partial indicator when the timeframe extends past `DEMO_AS_OF_DATE`, e.g. a small badge "Partial · through Apr 16, 2026".
 - **Timeframe options:** the existing `TimeframeSelector` options plus **Prior Year to Date** (option ID `prior_ytd`, matching the snake_case IDs such as `prior_year` and `this_week`), listed directly after Prior Year (see §3). Example generated label: "High Schools · SY 2024–25 through Apr 16".
-- **Period-length notice** (informational only; never changes a selection), shown below the setup when **exactly one side is partial** and the other side covers **at least 10% more days** (calendar days; the partial side counts days through its through date):
+- **Period-length notice** (informational only; never changes a selection), shown inside the Comparison Setup panel, below the two side panels, when **exactly one side is partial** and the other side covers **at least 10% more days** (calendar days; the partial side counts days through its through date):
   - Default text: "These timeframes cover different lengths of time and cumulative totals may be difficult to compare directly."
   - When the pair is Year to Date and Prior Year (in either order), use instead: "These timeframes cover different lengths of time. For a like-for-like comparison, consider Prior Year to Date."
 - **Swap:** exchanges the complete definitions and recalculates everything. Disabled until both sides are set.
 - **Empty state:** until both sides are set, the Summary/KPI/Trend areas show a single prompt: "Select sites and a timeframe for both sides to compare."
-- **Filters:** a KPI multi-select (`MultiSelectDropdown`; default all 17 KPIs), a Needs Attention toggle, and Clear Filters/Reset (resets the KPI filter and Needs Attention only, not the sides).
+- **Filters:** a KPI multi-select (`MultiSelectDropdown`; default all 17 KPIs), a Needs Attention toggle, and Clear Filters/Reset (resets the KPI filter and Needs Attention only, not the sides). They sit in the KPI Comparison panel's title row, next to its copy/download menu: compact, so the title row stays on one line at desktop width, wrapping below the title at tablet width, and hidden while the panel is collapsed (like other panel actions). They still set the scope for the KPI table, Comparison Summary, Site Drivers, CSV/copy, and the Schoolie payload.
 - **Focused KPI** (set by clicking a KPI row) is separate state from the KPI filter and never changes it. If a filter change removes the focused KPI from scope, clear the focus.
-- **Materiality note** (small italic, near the bottom): "Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified."
+- **Materiality note**, shown on hover or keyboard focus of an info icon next to the KPI Comparison title: "Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified."
 - **State:** a single comparison store (Zustand, matching `useInsightsPreferencesStore`) holding left/right definitions, KPI filter, Needs Attention toggle, focused KPI, and trend interval. Derived data comes from memoized selectors/hooks so every component reads the same engine results.
 
 ---
@@ -277,13 +280,14 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 ## 8. Summary, KPI table, Site Drivers
 
 ### Comparison Summary (NXT-77208)
-- Compact block above the KPI table.
-- Counts of Improved / Comparable / Declined among directional KPIs in the current scope (KPI filter + Needs Attention). No Data, RelativeNotApplicable, and Informational KPIs are excluded from those counts; No Data may be shown separately as "N with no data".
-- Target attainment per side, using generated labels: "High Schools · SY 2025–26 — 11 of 15 KPIs meeting target". Denominator = directional KPIs in scope with data and a target on that side.
+- Compact block above the KPI table, headed "Target Attainment" with an info icon whose hover/focus text says: "Counts cover directional KPIs in the current filters. Inventory KPIs are informational and are not counted."
+- Under the heading, one sentence with the counts of Improved / Comparable / Declined among directional KPIs in the current scope (KPI filter + Needs Attention), each with its color **and** icon: "6 ↗ Improved, 1 — Comparable, 7 ↘ Declined." (insights favorable / neutral / unfavorable). No count cards. No Data, RelativeNotApplicable, and Informational KPIs are excluded from those counts; No Data may follow as "N with no data."
+- Below the sentence, target attainment per side, using generated labels: "High Schools · SY 2025–26 — 11 of 15 KPIs meeting target" (real spaces around the "—", so copied text and screen readers read it correctly). Denominator = directional KPIs in scope with data and a target on that side.
 - No charts, gauges, scores, or winners.
 
 ### KPI Comparison table (NXT-77210)
-- One row per KPI in scope. Columns: KPI · left (actual, target) · right (actual, target) · Change · Target Status · Performance (classification badge + description) · Site Drivers summary.
+- One row per KPI in scope. Columns: KPI · left (actual, target) · right (actual, target) · Change · Target Status · Performance (classification badge + description) · Site Drivers summary. The Site Drivers column is shown only when at least one side has more than one site; otherwise it is hidden entirely (table, CSV, and copy).
+- A Change value never breaks mid-value. A combined change ("−6.8% (−$709,713)") may break only between the % and the parenthesized amount.
 - Column headers are the generated labels.
 - **Compact side names** (Target Status, and anywhere else a side is named in compact form): name each side by the part of its generated label that differs. Only the timeframes differ → timeframe ("Today: Met"). Only the sites differ → site ("Lincoln Elementary: Met"). Both differ → full label. Identical labels → full labels.
 - Classification badges use the `insightsFavorable` / `insightsNeutral` / `insightsUnfavorable` tokens **plus** text and an icon (`TrendIndicator`). Informational rows use a neutral "Informational" badge.
@@ -298,7 +302,10 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 - **View Sites** opens a side drawer (KPI drawer pattern, `z-[55]` above the overlay) titled with the KPI and both generated labels.
 - **Matched** sites (identical site sets): one row per site with left actual, right actual, change, each side's target where they differ, and status (classification · target status), all from the engine.
 - **Unmatched:** two independent lists, each headed by its generated label, each site with actual, target, target status, and variance from target.
-- Default sort: largest unfavorable variance from target first (right side for matched); sites with no target next; No Data last. Sortable columns.
+- Default sort: largest unfavorable variance from target first (right side for matched); sites with no target next; No Data last. Sortable columns, styled like the MPLH school table: a single up/down chevron on the active sort column only, nothing on unsorted columns.
+- Variance from target is green when the site meets its own target, red when it doesn't, and neutral with no target, always with the status icon and text, so color is never alone.
+- Each table in the drawer has a copy icon: the table as shown (columns, text, current sort order) goes to the clipboard as tab-separated text, with the toast "Copied to clipboard". No download in the drawer.
+- The drawer body is white, matching the MPLH Details drawer. There is no Swap in the drawer (Swap lives in Comparison Setup).
 - Refresh in place if the comparison changes while the drawer is open.
 
 ---
@@ -349,16 +356,18 @@ Reuse `CopyMenu`, `CSVRenderer`/`ICSVReportData`, `ExportMenu`, `html-to-image`,
 
 **Prototype scope.** Only the KPI table's Copy data and Download CSV are real; they are the prototype reference for the column layout. Trend exports and the page PDF are **UI only**: the controls, menus, and disabled states are in place, and selecting an item shows a "Not implemented in prototype." toast. Production's existing implementation (the dashboard's chart copy, `html-to-image` PNG, and PDF flow) provides the behavior.
 
-- **KPI table (real):** Copy menu → "Copy data" (TSV to the clipboard); Download menu → "Download CSV" (`CSVRenderer`, UTF-8 with BOM so "—" and "−" display correctly in Excel). Both contain exactly the rows in scope (KPI filter + Needs Attention), in the current orientation and KPI display order. Columns:
+- **One menu per panel, as on the Insights Dashboard.** The dashboard's School Performance grid and Performance Trends chart use one Copy icon (`CopyMenu`) that opens one dropdown. The comparison panels use the same pattern: one icon whose dropdown lists the copy options under "Copy Options" ("Copy Data" / "Excel Friendly", "Copy Image" / "PNG Clipboard", the dashboard's exact wording) and the download options under "Available Exports" (the dashboard `ExportMenu` heading). There are no separate copy and download buttons.
+- **KPI table (real):** menu → "Copy Data" (TSV to the clipboard) and "Download CSV" (`CSVRenderer`, UTF-8 with BOM so "—" and "−" display correctly in Excel). Both contain exactly the rows in scope (KPI filter + Needs Attention), in the current orientation and KPI display order. Columns:
   `KPI | <left label> Actual | <left label> Target | <left label> Target Status | <right label> Actual | <right label> Target | <right label> Target Status | Change | Performance | Needs Attention | Needs Attention Reasons | Description | Site Drivers`
   - Values are the engine's formatted text, exactly as the table shows them. No Data exports as "No Data"; a missing target as "—"; never 0.
   - Target Status is the table's text: Met, Not Met, No target, No Data, or Not evaluated (informational KPIs).
   - Description is the full engine description, with its classification prefix (informational descriptions have none).
-  - Site Drivers is the row summary text (lines joined with "; "), or blank when no side has more than one site.
-  - Filename `Performance_Comparison_KPIs_<YYYY-MM-DD>.csv` (local date of the download).
+  - Site Drivers is the row summary text (lines joined with "; "). The column is left out entirely when no side has more than one site (matching the table).
+  - Filename `Performance_Comparison_KPIs_<YYYY-MM-DD>.csv` (local date of the download, computed when the user clicks Download CSV).
   - Builder: `ui/kpiTableExport.ts` (pure, unit tested).
-- **Trend (UI only):** Copy menu ("Copy data", "Copy image") and Download menu ("Download CSV", "Download PNG") in the panel title row. Both icons are disabled, with a tooltip saying why, when no KPI is focused or the trend is unavailable. Production should include KPI, labels, interval, actuals, targets, and the partial note.
-- **Page PDF (UI only):** header Download → "Download PDF". Production should produce `IPDFDashReportData`: title, both generated labels, site scopes, timeframes, current filters, Summary, KPI table (with compact Site Drivers summaries), and the focused KPI's trend image when available. No interactive controls, no Schoolie. Filename `Performance_Comparison_<YYYY-MM-DD>.pdf`. District/user names come from the current user, not hardcoded strings.
+- **Trend (UI only):** one menu in the panel title row with "Copy Data", "Copy Image", "Download CSV", and "Download PNG". The icon is disabled, with a tooltip saying why, when no KPI is focused or the trend is unavailable.
+- **Site Drivers drawer (real):** a copy icon per table (tab-separated, client side, toast "Copied to clipboard"); no download. Production should include KPI, labels, interval, actuals, targets, and the partial note.
+- **Page PDF (UI only):** header Download → "Download PDF". Disabled, with a tooltip, until both sides are set. Production should produce `IPDFDashReportData`: title, both generated labels, site scopes, timeframes, current filters, Summary, KPI table (with compact Site Drivers summaries), and the focused KPI's trend image when available. No interactive controls, no Schoolie. Filename `Performance_Comparison_<YYYY-MM-DD>.pdf`. District/user names come from the current user, not hardcoded strings.
 - Copy and Download icons follow the dashboard's placement and styling, sit in the panel title rows, and hide while a panel is collapsed. Menus layer above the overlay.
 - Exports always reflect current orientation and filters.
 
@@ -367,6 +376,9 @@ Reuse `CopyMenu`, `CSVRenderer`/`ICSVReportData`, `ExportMenu`, `html-to-image`,
 ## 11. Schoolie (NXT-77214)
 
 - Schoolie action in the overlay header opens the existing `SchoolieDrawer`, extended with a width option so it occupies about one-quarter to one-third of the screen (`z-[60]`).
+  - **Desktop (lg and up):** the panel takes one-third of the screen and the comparison page reserves the same width as right padding while it is open (one shared width constant), so nothing is covered and every control (header actions, menus, the trend interval selector) stays clickable. An open Site Drivers drawer sits to the panel's left.
+  - **Tablet:** the panel overlays the page (half width at `md`); no padding change.
+  - It slides in and out with `transition-transform` (stays mounted while closed). Escape closes an open dropdown or menu first, then Schoolie, then the overlay.
 - Analysis runs automatically on open; the drawer states it is analyzing the current comparison, using generated labels.
 - **Structured facts payload:** built from the engine output and comparison state: generated labels, site scopes, timeframes, partial info, KPI filter, Needs Attention state, and per-KPI engine results (actuals, targets, delta, classification, target statuses, transition, Needs Attention reasons, description, informational flag), plus Site Drivers summaries. Only KPIs in the current scope are included.
 - **New prompt:** add a `performance_comparison` prompt to the mock Schoolie prompt data so it appears and versions in AI Config like the others. Leave `compare_sites` alone.

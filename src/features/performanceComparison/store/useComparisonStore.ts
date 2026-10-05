@@ -25,13 +25,12 @@ export interface ComparisonSideDefinition {
 }
 
 /** Collapsible page sections, in page order (NXT-77202 §6 layout order). */
-export const COMPARISON_SECTION_IDS = ['setup', 'filters', 'summary', 'kpiTable', 'trend'] as const;
+export const COMPARISON_SECTION_IDS = ['setup', 'summary', 'kpiTable', 'trend'] as const;
 export type ComparisonSectionId = (typeof COMPARISON_SECTION_IDS)[number];
 
 /** Every section starts expanded. */
 const ALL_SECTIONS_EXPANDED: Record<ComparisonSectionId, boolean> = {
   setup: true,
-  filters: true,
   summary: true,
   kpiTable: true,
   trend: true,
@@ -57,7 +56,9 @@ interface ComparisonState {
   /** Expanded/collapsed state per page section. */
   expandedSections: Record<ComparisonSectionId, boolean>;
 
+  /** Sets a side's sites. A left-side choice also fills the right side's sites while they're still empty. */
   setSideSites: (side: ComparisonSideKey, sites: SiteSelection) => void;
+  /** Sets a side's timeframe. A left-side choice also fills the right side's timeframe while it's still empty. */
   setSideTimeframe: (side: ComparisonSideKey, timeframe: TimeframeSelection) => void;
   /** Exchanges the complete side definitions. No-op until both sides are set (spec §6 Swap). */
   swapSides: () => void;
@@ -91,9 +92,21 @@ export const useComparisonStore = create<ComparisonState>()(set => ({
   ...INITIAL_STATE,
 
   setSideSites: (side, sites) =>
-    set(state => ({ [side]: { ...state[side], sites: sites.length > 0 ? [...sites] : null } })),
+    set(state => {
+      const value = sites.length > 0 ? [...sites] : null;
+      return {
+        [side]: { ...state[side], sites: value },
+        // Auto-fill: copy left → right per field, only into an empty right field; never right → left.
+        ...(side === 'left' && value !== null && state.right.sites === null ? { right: { ...state.right, sites: [...value] } } : {}),
+      };
+    }),
 
-  setSideTimeframe: (side, timeframe) => set(state => ({ [side]: { ...state[side], timeframe } })),
+  setSideTimeframe: (side, timeframe) =>
+    set(state => ({
+      [side]: { ...state[side], timeframe },
+      // Auto-fill, as for sites.
+      ...(side === 'left' && state.right.timeframe === null ? { right: { ...state.right, timeframe } } : {}),
+    })),
 
   swapSides: () =>
     set(state =>

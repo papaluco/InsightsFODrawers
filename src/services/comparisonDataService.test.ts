@@ -111,6 +111,23 @@ describe('No Data vs zero', () => {
     expect(thisMonth.kpis['Inventory Value'].actual).toBeNull();
     expect(thisMonth.kpis.Lunch.actual).not.toBeNull();
   });
+
+  it.each(['this_week', 'last_week', 'today'] as const)('inventory is No Data for %s (no month-end count in the period; spec §3)', optionId => {
+    const side = buildSideDataset(ALL, { optionId });
+    expect(side.kpis['Inventory Value'].actual).toBeNull();
+    expect(side.kpis['Inventory Turnover Rate'].actual).toBeNull();
+    expect(side.kpis['Physical Inventory Discrepancy'].actual).toBeNull();
+  });
+});
+
+describe('SCENARIO: sites within a type differ meaningfully (Site Drivers spread; spec §9)', () => {
+  it('High School Lunch participation spreads by at least 5 points across sites', () => {
+    const high = buildSideDataset(HIGH, { optionId: 'prior_year' });
+    const values = high.siteIds.map(id => high.sites[id].Lunch.actual).filter((v): v is number => v !== null);
+    expect(values.length).toBe(high.siteIds.length);
+    expect(new Set(values.map(v => v.toFixed(1))).size).toBe(values.length);
+    expect(Math.max(...values) - Math.min(...values)).toBeGreaterThanOrEqual(5);
+  });
 });
 
 describe('mid-year opening site', () => {
@@ -189,6 +206,19 @@ describe('Prior Year to Date', () => {
     expect(pytd.kpis.Revenue.actual).toBeCloseTo(rows.reduce((t, r) => t + r.revenue, 0), 6);
     expect(pytd.kpis.Revenue.target).toBe(3200 * rows.length);
     expect(pytd.kpis.Snack.target).toBeNull(); // Snack is missing only for SY 2024–25
+  });
+});
+
+describe('benchmark school year (spec §3)', () => {
+  it('a custom range that spans Jul 1 uses the benchmarks of the school year it starts in', () => {
+    const spansJul1 = buildSideDataset(HIGH, { optionId: 'custom', customRange: { start: '2025-06-01', end: '2025-08-31' } });
+    expect(spansJul1.kpis.Lunch.target).toBe(60); // SY 2024–25 High School target, not SY 2025–26's 62
+    expect(spansJul1.kpis.Snack.target).toBeNull(); // Snack is missing only for SY 2024–25
+  });
+
+  it('a custom range that starts on Jul 1 uses that new school year', () => {
+    const startsJul1 = buildSideDataset(HIGH, { optionId: 'custom', customRange: { start: '2025-07-01', end: '2025-09-30' } });
+    expect(startsJul1.kpis.Lunch.target).toBe(62);
   });
 });
 

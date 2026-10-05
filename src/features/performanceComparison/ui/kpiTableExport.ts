@@ -34,8 +34,9 @@ export interface KpiTableExport {
   rows: string[][];
 }
 
-export function getKpiTableExportHeaders(leftLabel: string, rightLabel: string): string[] {
-  return [
+/** Column headers. Site Drivers is left out when no side has more than one site (spec §8, §10). */
+export function getKpiTableExportHeaders(leftLabel: string, rightLabel: string, includeSiteDrivers = true): string[] {
+  const headers = [
     'KPI',
     `${leftLabel} Actual`,
     `${leftLabel} Target`,
@@ -48,8 +49,8 @@ export function getKpiTableExportHeaders(leftLabel: string, rightLabel: string):
     'Needs Attention',
     'Needs Attention Reasons',
     'Description',
-    'Site Drivers',
   ];
+  return includeSiteDrivers ? [...headers, 'Site Drivers'] : headers;
 }
 
 /** Actual, target, and target status for one side, as the table shows them. */
@@ -63,10 +64,11 @@ function sideColumns(side: SideKpiResult, isInformational: boolean): string[] {
 }
 
 export function buildKpiTableExport({ results, leftLabel, rightLabel, sideShortNames, siteDrivers }: KpiTableExportInput): KpiTableExport {
+  // Site Drivers applies to every KPI or to none: it depends only on how many sites each side has.
+  const includeSiteDrivers = Object.values(siteDrivers).some(drivers => drivers.available);
   const rows = results.map(result => {
     const isInformational = result.kind === 'informational';
-    const siteDriverLines = getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames);
-    return [
+    const row = [
       getKpiDefinition(result.kpi).name,
       ...sideColumns(result.left, isInformational),
       ...sideColumns(result.right, isInformational),
@@ -76,11 +78,11 @@ export function buildKpiTableExport({ results, leftLabel, rightLabel, sideShortN
       result.needsAttentionReasons.map(reason => NEEDS_ATTENTION_REASON_LABELS[reason]).join(' · '),
       // The full description, with its "<Classification> — " prefix (spec §5.2: exports use `description`).
       result.description,
-      // Blank when Site Drivers doesn't apply (no side has more than one site).
-      siteDriverLines ? siteDriverLines.join('; ') : '',
     ];
+    if (!includeSiteDrivers) return row;
+    return [...row, (getSiteDriversSummaryLines(siteDrivers[result.kpi], sideShortNames) ?? []).join('; ')];
   });
-  return { headers: getKpiTableExportHeaders(leftLabel, rightLabel), rows };
+  return { headers: getKpiTableExportHeaders(leftLabel, rightLabel, includeSiteDrivers), rows };
 }
 
 /** Tab-separated text for the clipboard (Excel friendly). Tabs and line breaks inside a cell become spaces. */
@@ -99,6 +101,7 @@ export function getKpiTableCsvFileName(now: Date = new Date()): string {
 }
 
 /** CSVRenderer input. CSVRenderer writes UTF-8 with a BOM, so "—" and "−" display correctly in Excel. */
+/** Call when the user downloads, so the filename has the download's date (spec §10). */
 export function toKpiTableCsvData(table: KpiTableExport, now: Date = new Date()): ICSVReportData {
   return { fileName: getKpiTableCsvFileName(now), headers: table.headers, rows: table.rows };
 }

@@ -77,7 +77,7 @@ export interface KpiComparisonResult {
   delta: number | null;
   /** (right − left) ÷ left as a fraction; relative-% KPIs only, null when left is 0. */
   relativeChange: number | null;
-  /** "+4.3 pts", "+2.0% (+$2,000)", "+$5,000" (baseline zero). */
+  /** "+4.3%" (percentage points), "+2.0% (+$2,000)", "+$5,000" (baseline zero). */
   deltaFormatted: string | null;
   /** null when there is no delta (No Data / one-sided). */
   materiality: Materiality | null;

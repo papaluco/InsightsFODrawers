@@ -55,7 +55,7 @@ export interface SiteBelowTargetFacts {
   siteName: string;
   actualFormatted: string;
   targetFormatted: string;
-  /** Variance from the site's own target in KPI delta format, e.g. "−3.1 pts". */
+  /** Variance from the site's own target in KPI delta format, e.g. "−3.1%" (percentage points). */
   varianceFormatted: string | null;
 }
 

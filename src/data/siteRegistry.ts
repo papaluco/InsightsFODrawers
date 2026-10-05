@@ -123,7 +123,8 @@ export function isAllSites(siteIds: number[], registry: SiteRegistry = DEMO_SITE
 /**
  * Site part of a side's generated label (spec §6), based on the sites the selection resolves to:
  * every site → "All Sites"; one site → its name; exactly one site type's members → plural type
- * name ("High Schools"); anything else → "Multiple Sites". Null when the selection resolves to no sites.
+ * name ("High Schools"); anything else → "Multiple Sites (N)" with the resolved site count, so two
+ * different multi-site selections are told apart. Null when the selection resolves to no sites.
  */
 export function getSiteScopeLabel(selection: SiteSelection, registry: SiteRegistry = DEMO_SITES): string | null {
   const siteIds = resolveSiteScope(selection, registry);
@@ -132,7 +133,7 @@ export function getSiteScopeLabel(selection: SiteSelection, registry: SiteRegist
   if (siteIds.length === 1) return getSiteById(siteIds[0], registry)?.siteName ?? null;
   const matchingType = findSiteTypeMatchingScope(siteIds, registry);
   if (matchingType) return matchingType.siteTypePluralName;
-  return 'Multiple Sites';
+  return `Multiple Sites (${siteIds.length})`;
 }
 
 /**

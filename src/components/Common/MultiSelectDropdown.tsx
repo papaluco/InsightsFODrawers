@@ -18,6 +18,8 @@ interface MultiSelectDropdownProps {
   allSelectedLabel?: string;
   /** Button text when nothing is selected. Defaults to "All {label}" (Usage filters treat empty as all). */
   emptyLabel?: string;
+  /** Keeps the label for screen readers only, for compact toolbars. Off by default. */
+  hideLabel?: boolean;
 }
 
 // Search, Select All/Clear and footer rows around the option list, for deciding whether to open upward.
@@ -32,6 +34,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
   maxListHeight = 240,
   allSelectedLabel,
   emptyLabel,
+  hideLabel = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -200,12 +203,13 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = React.mem
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+      <label className={hideLabel ? 'sr-only' : 'text-[10px] font-bold text-gray-400 uppercase tracking-widest'}>
         {label}
       </label>
       <button
         ref={triggerRef}
         type="button"
+        aria-label={hideLabel ? `${label}: ${displayLabel}` : undefined}
         onClick={() => isOpen ? closeDropdown() : openDropdown()}
         className={`w-full flex items-center justify-between text-sm border rounded-lg px-2 py-1.5 bg-white outline-none transition-colors
           ${isOpen ? 'border-indigo-400 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-gray-300'}

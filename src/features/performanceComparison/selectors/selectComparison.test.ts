@@ -100,4 +100,27 @@ describe('site drivers through the selector', () => {
     const littleLearners = selectComparison(priorYear, ytd, ALL_KPIS).siteDrivers['A La Carte'].matchedSites?.find(s => s.siteId === 18);
     expect(littleLearners?.result.classification).toBe('RelativeNotApplicable');
   });
+
+  it('SCENARIO: the engine returns RelativeNotApplicable for the real Little Learners mock data (spec §5.4)', () => {
+    const left = buildSideDataset([18], { optionId: 'prior_year' });
+    const right = buildSideDataset([18], { optionId: 'ytd' });
+    const result = compareKpi(buildKpiComparisonInput('A La Carte', left, right));
+    expect(left.kpis['A La Carte'].actual).toBe(0);
+    expect(result.classification).toBe('RelativeNotApplicable');
+    expect(result.relativeChange).toBeNull();
+    expect(result.delta).toBeGreaterThan(0);
+    // Absolute change only: no relative % and never ∞.
+    expect(result.deltaFormatted).toMatch(/^\+\$[\d,]+$/);
+    // Excluded from the Summary's counts.
+    const summary = selectComparison(left, right, ALL_KPIS).summary;
+    expect(summary.relativeNotApplicable).toBeGreaterThanOrEqual(1);
+  });
+
+  it('flags Site Drivers as available only when a side has more than one site (spec §8)', () => {
+    expect(selectComparison(priorYear, ytd, ALL_KPIS).siteDriversAvailable).toBe(true);
+    const roosevelt = buildSideDataset([12], { optionId: 'prior_year' });
+    const lincoln = buildSideDataset([1], { optionId: 'prior_year' });
+    expect(selectComparison(roosevelt, lincoln, ALL_KPIS).siteDriversAvailable).toBe(false);
+    expect(selectComparison(roosevelt, highYtd, ALL_KPIS).siteDriversAvailable).toBe(true);
+  });
 });
