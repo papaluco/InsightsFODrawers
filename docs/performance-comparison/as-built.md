@@ -1,9 +1,9 @@
 # Performance Comparison (NXT-77201): As-Built
 
 **Purpose:** a factual description of what the prototype does, organized by Jira story, for comparison against each story's acceptance criteria.
-**Branch:** `feature/performance-comparison-NXT-77201` @ `9a3261a` (after the acceptance review and final refinements) · **Date:** 2026-10-04
+**Branch:** `feature/performance-comparison-NXT-77201` @ `5e3b9ed` (after the acceptance review, final refinements, the dropdown scroll fix, and the two-column Comparison Summary) · **Date:** 2026-10-04
 **Related:** [spec.md](spec.md) (prototype source of truth), [acceptance-review.md](acceptance-review.md) (spec-by-spec review, issues, accepted deviations).
-**Tests at this commit:** `npm test`, 26 files, 559 tests, all passing.
+**Tests at this commit:** `npm test`, 27 files, 563 tests, all passing.
 
 Conventions in this document:
 - Quoted text in "double quotes" is the exact on-screen or exported wording.
@@ -34,7 +34,7 @@ Conventions in this document:
 
 **Page layout (top to bottom)**
 1. Comparison Setup, with the period-length notice inside it.
-2. Comparison Summary.
+2. Comparison Summary: two columns, "Performance change" and "Target attainment" (one column at tablet width; see NXT-77208).
 3. KPI Comparison, with the filters in its title row.
 4. Performance Trend.
 
@@ -347,23 +347,35 @@ There is no resource catalog, no resource-based permissions, no restricted users
 
 ### Behavior as built
 - A collapsible card titled "Comparison Summary", directly above KPI Comparison.
-- Inside, a small heading "TARGET ATTAINMENT" with a target icon and an info icon. On hover or focus the icon shows: "Counts cover directional KPIs in the current filters. Inventory KPIs are informational and are not counted."
-- **Counts sentence:** one line covering directional KPIs in scope (KPI filter + Needs Attention), e.g. "6 ↗ Improved, 1 — Comparable, 7 ↘ Declined."
+- **Two columns** that share the card's width from desktop width (`lg`, 1024px) up, divided by a thin vertical rule. Below that (tablet) they stack into one column, divided by a thin horizontal rule. No cards, charts, gauges, scores, or winners.
+- Everything counts the KPIs in scope (KPI filter + Needs Attention).
+
+**Left column: "PERFORMANCE CHANGE"**
+- Heading with an activity icon and an info icon. On hover or keyboard focus the info icon shows: "Counts cover directional KPIs in the current filters. Inventory KPIs are informational and are not counted."
+- **Scope line** (gray): "14 KPIs compared", the number of directional KPIs in scope. Singular for one: "1 KPI compared".
+- **Counts sentence**, e.g. "6 ↗ Improved, 1 — Comparable, 7 ↘ Declined."
   - Each part is colored with the insights favorable, neutral, or unfavorable token, **plus** its arrow icon and text.
   - Optional trailing text, in gray:
     - " N with no data." (directional KPIs classified No Data)
     - " N with a zero starting value (no relative change)." (RelativeNotApplicable)
   - No Data, RelativeNotApplicable, and Informational KPIs are not in the Improved/Comparable/Declined counts.
-- **Target attainment**, one line per side, in left-then-right order:
-  - "<generated label> — X of Y KPIs meeting target", with real spaces around the dash.
+
+**Right column: "TARGET ATTAINMENT"**
+- Heading with a target icon and an info icon. On hover or keyboard focus it shows: "KPIs without a target or without data aren't counted."
+- One row per side, in left-then-right order, named by the **compact side name** (the differing part of the generated label, the same names the KPI table's Target Status column uses):
+  - "<name> — **X of Y** KPIs meeting target · P%", e.g. "This Month — **8 of 13** KPIs meeting target · 62%". The count is bold. P is X ÷ Y as a whole percent. Real spaces around the dash.
+  - Singular when Y is 1: "1 of 1 KPI meeting target · 100%".
   - Y = directional KPIs in scope with data and a target on that side. X = those that are Met.
-  - When Y is 0: "<label> — No KPIs in scope have data and a target".
-- When no KPIs are in scope: "No KPIs match the current filters."
-- No charts, gauges, scores, or winners.
-- All numbers come from `selectComparison`'s summary. The component does no counting of its own.
+  - When Y is 0: "<name> — No KPIs with data and a target" (no count or percent). Example: a side set to SY 2022–23, which has no data.
+
+**Other states**
+- When no KPIs are in scope: "No KPIs match the current filters." (instead of both columns).
+- All numbers come from `selectComparison`'s summary (`directional`, `improved`, `comparable`, `declined`, `noData`, `relativeNotApplicable`, and per-side `meetingTarget` / `kpisWithTarget`). The component does no counting of its own; the wording (singulars, percent, empty row) comes from `ui/summaryDisplay.ts`.
 
 ### Decisions made during the prototype
-- **One counts sentence instead of count cards**, under a "Target Attainment" heading, with the "what the counts cover" note behind an info icon.
+- **Two-column layout** ("Performance change" and "Target attainment") instead of count cards, so the card uses the panel width. Each column's "what is counted" note sits behind an info icon.
+- **A "KPIs compared" scope line**, so the counts have a visible denominator.
+- **Attainment rows use compact side names** and add a percent, rather than repeating the full generated labels.
 - The "with a zero starting value (no relative change)" text was added for RelativeNotApplicable results.
 - A "No KPIs match the current filters." state.
 - The Summary follows the Needs Attention toggle as well as the KPI filter. With Needs Attention on, it counts only KPIs that need attention.
@@ -372,8 +384,10 @@ There is no resource catalog, no resource-based permissions, no restricted users
 - **Data:** counts come from mock data. There is nothing production-specific in the Summary logic itself.
 
 ### Key files
-- `src/features/performanceComparison/components/ComparisonSummary.tsx`
+- `src/features/performanceComparison/components/ComparisonSummary.tsx`: two-column layout
+- `.../ui/summaryDisplay.ts`: "KPIs compared" and attainment wording (singulars, percent, empty row); unit tested
 - `.../components/InfoTip.tsx`
+- `.../hooks/useSideShortNames.ts`: compact side names
 - `.../selectors/selectComparison.ts` (`summarize`)
 
 ---
