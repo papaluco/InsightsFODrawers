@@ -21,3 +21,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Local acceptance-review screenshots (not committed)
+docs/performance-comparison/screenshots/
