@@ -25,19 +25,20 @@ interface KPICardsProps {
   onOpenMPLH: () => void;
   onOpenPNA: () => void;
   onOpenENP: () => void;
+  onOpenWaste: () => void;
 }
 
 export const KPICards: React.FC<KPICardsProps> = ({
   actualMPLH, targetMPLH, actualPNA, targetPNA,
   districtENPActual, districtENPBenchmark,
-  onOpenMPLH, onOpenPNA, onOpenENP
+  onOpenMPLH, onOpenPNA, onOpenENP, onOpenWaste
 }) => {
   return (
     <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
       <MPLHCard actualMPLH={actualMPLH} targetMPLH={targetMPLH} onClick={onOpenMPLH} />
       <PNACard actualPNA={actualPNA} targetPNA={targetPNA} onClick={onOpenPNA} />
       <ENPCard actualENP={districtENPActual} benchmarkENP={districtENPBenchmark} onClick={onOpenENP} />
-      <WasteCard />
+      <WasteCard onClick={onOpenWaste} />
       
       <BreakfastCard />
       <LunchCard />
