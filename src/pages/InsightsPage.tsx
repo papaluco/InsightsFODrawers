@@ -32,6 +32,7 @@ const SingleSchoolMPLHDrawer = lazy(() => import('../components/InsightsDashboar
 const PNADrawer = lazy(() => import('../components/InsightsDashboard/PNA/PNADrawer').then(m => ({ default: m.PNADrawer })));
 const SingleSchoolPNADrawer = lazy(() => import('../components/InsightsDashboard/PNA/SingleSchoolPNADrawer').then(m => ({ default: m.SingleSchoolPNADrawer })));
 const ENPDrawer = lazy(() => import('../components/InsightsDashboard/ENP/ENPDrawer').then(m => ({ default: m.ENPDrawer })));
+const WasteDrawer = lazy(() => import('../components/InsightsDashboard/Waste/WasteDrawer').then(m => ({ default: m.WasteDrawer })));
 const SingleSchoolENPDrawer = lazy(() => import('../components/InsightsDashboard/ENP/SingleSchoolENPDrawer').then(m => ({ default: m.SingleSchoolENPDrawer })));
 
 // Types for navigation tracking
@@ -57,6 +58,7 @@ function InsightsPage() {
   const [isPNADrawerOpen, setIsPNADrawerOpen] = useState(false);
   const [isSingleSchoolPNADrawerOpen, setIsSingleSchoolPNADrawerOpen] = useState(false);
   const [isENPDrawerOpen, setIsENPDrawerOpen] = useState(false);
+  const [isWasteDrawerOpen, setIsWasteDrawerOpen] = useState(false); // DEMO: Waste % + $ drawer
   const [isSingleSchoolENPDrawerOpen, setIsSingleSchoolENPDrawerOpen] = useState(false);
   
   // AI State
@@ -232,6 +234,7 @@ function InsightsPage() {
             setIsPNADrawerOpen(true);
             trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'PNA', isDistrictDrawer: true } });
           }}
+          onOpenWaste={() => setIsWasteDrawerOpen(true)}
           onOpenENP={() => {
             setIsENPDrawerOpen(true);
             trackInsightsEvent({ eventType: 'KPI_DRAWER_OPENED', userId: MOCK_CURRENT_USER.userId, districtId: MOCK_CURRENT_USER.districtId, platform: 'SchoolCafe', context: { kpi: 'ENP', isDistrictDrawer: true } });
@@ -291,6 +294,10 @@ function InsightsPage() {
             schoolData={schoolData.find(s => s.schoolName === selectedSchool)}
             onBack={navOrigin !== 'DASHBOARD' ? handleBack : undefined}
           />
+        )}
+
+        {isWasteDrawerOpen && (
+          <WasteDrawer isOpen={isWasteDrawerOpen} onClose={() => setIsWasteDrawerOpen(false)} />
         )}
 
         {/* PNA Drawers */}
