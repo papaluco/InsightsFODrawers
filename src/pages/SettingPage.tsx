@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, ArrowRight, Settings2, Radio, Braces } from 'lucide-react';
+import { Bot, ArrowRight, Settings2, Radio, Braces, BarChart3 } from 'lucide-react';
 import { AIConfigDrawer } from '../components/Settings/AI/AIConfigDrawer';
 import { SystemSettingsDrawer } from '../components/Settings/System/SystemSettingsDrawer';
 import { TelemetrySettingsDrawer } from '../components/Settings/Telemetry/TelemetrySettingsDrawer';
@@ -67,6 +67,21 @@ const SettingPage = () => {
           <h3 className="text-xl font-bold mb-2">Telemetry Settings</h3>
           <p className="text-gray-500 text-sm mb-6">Configure error, usage, and performance tracking globally or by district.</p>
           <div className="text-indigo-600 font-semibold flex items-center gap-2">
+            Configure <ArrowRight size={16} />
+          </div>
+        </div>
+
+        {/* Insights Settings Card */}
+        <div
+          onClick={() => navigate('/settings/insights')}
+          className="group bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all cursor-pointer"
+        >
+          <div className="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center mb-4">
+            <BarChart3 size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">Insights Settings</h3>
+          <p className="text-gray-500 text-sm mb-6">Configure how Insights displays data across the system.</p>
+          <div className="text-sky-600 font-semibold flex items-center gap-2">
             Configure <ArrowRight size={16} />
           </div>
         </div>
