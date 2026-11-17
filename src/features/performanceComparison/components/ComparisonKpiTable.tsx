@@ -1,5 +1,5 @@
-import React, { useId, useLayoutEffect, useRef, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { AlertTriangle, ChevronDown, LineChart } from 'lucide-react';
 import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { NO_DATA_TEXT } from '../../../utils/kpiFormatters';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
@@ -95,7 +95,7 @@ const ClampedDescription: React.FC<{ text: string; expanded: boolean }> = ({ tex
   }, [text, expanded]);
 
   return (
-    // title="" stops the row's "Click to focus" tooltip from stacking on top of this one.
+    // title="" stops the row's "Click to show trend" tooltip from stacking on top of this one.
     <div className="group/desc relative mt-1.5" title={isClamped ? '' : undefined}>
       <p ref={ref} className={`text-xs leading-relaxed text-gray-600 ${expanded ? '' : 'line-clamp-2'}`}>
         {text}
@@ -190,12 +190,51 @@ interface ComparisonKpiTableProps {
   /** False when neither side has more than one site: the Site Drivers column is hidden (spec §8). */
   showSiteDrivers: boolean;
   onViewSites: (kpi: ComparisonKpiKey) => void;
+  /** Content shown inline under the focused KPI's row (its Performance Trend). */
+  renderExpanded: (kpi: ComparisonKpiKey) => React.ReactNode;
 }
+
+/**
+ * Show/Hide trend control next to the Performance badge, so it's visible that a row opens its trend.
+ * The whole row toggles too; this button only makes that discoverable.
+ */
+const TrendToggle: React.FC<{ isOpen: boolean; kpiName: string; panelId: string; onToggle: () => void }> = ({
+  isOpen,
+  kpiName,
+  panelId,
+  onToggle,
+}) => (
+  <button
+    type="button"
+    aria-expanded={isOpen}
+    aria-controls={isOpen ? panelId : undefined}
+    aria-label={`${isOpen ? 'Hide' : 'Show'} ${kpiName} trend`}
+    onClick={e => {
+      e.stopPropagation();
+      onToggle();
+    }}
+    // Keep Enter/Space on the button from also toggling through the row.
+    onKeyDown={e => {
+      if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+    }}
+    className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+      isOpen ? 'bg-indigo-100 text-indigo-700' : 'text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800'
+    }`}
+  >
+    <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+    {isOpen ? 'Hide trend' : 'Show trend'}
+    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+  </button>
+);
 
 /**
  * KPI Comparison table (NXT-77210, spec §8), modeled on MPLHSchoolTable. One row per KPI in
  * scope; every value, status, classification, and description comes from the engine result.
- * Clicking a row focuses that KPI (clicking it again clears focus); focus never changes the filter.
+ *
+ * Clicking a row (or its Show trend control) focuses that KPI and opens its trend inline, right
+ * under the row (NXT-77211 §7). Clicking it again, the panel's close button, or Escape (while
+ * focus is in the row or its panel) closes it. One row is open at a time; the other rows dim but
+ * stay clickable, so switching KPIs is one click. Focus never changes the filter.
  */
 export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
   results,
@@ -208,9 +247,30 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
   siteDrivers,
   showSiteDrivers,
   onViewSites,
+  renderExpanded,
 }) => {
   const columnCount = showSiteDrivers ? 7 : 6;
   const toggleFocus = (kpi: ComparisonKpiKey) => onFocusKpi(focusedKpi === kpi ? null : kpi);
+  const panelIdPrefix = useId();
+  const rowRefs = useRef(new Map<ComparisonKpiKey, HTMLTableRowElement>());
+  const panelRef = useRef<HTMLTableRowElement>(null);
+
+  // Bring a newly opened trend into view; 'nearest' doesn't move the page when it already fits.
+  useEffect(() => {
+    if (focusedKpi) panelRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [focusedKpi]);
+
+  /**
+   * Escape closes the open trend while focus is in its row or panel. stopPropagation keeps the
+   * overlay's own Escape (a window listener) from also closing the page. Open menus and the Site
+   * Drivers drawer handle Escape first in the capture phase, so they still close before this.
+   */
+  const handleEscape = (e: React.KeyboardEvent, kpi: ComparisonKpiKey) => {
+    if (e.key !== 'Escape' || focusedKpi !== kpi) return;
+    e.stopPropagation();
+    onFocusKpi(null);
+    rowRefs.current.get(kpi)?.focus();
+  };
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -249,22 +309,31 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                 const definition = getKpiDefinition(result.kpi);
                 const isInformational = result.kind === 'informational';
                 const isFocused = focusedKpi === result.kpi;
+                // Other rows dim while a trend is open; hover or keyboard focus brings one back to full strength.
+                const isDimmed = focusedKpi !== null && !isFocused;
+                const panelId = `${panelIdPrefix}-trend-${result.kpi}`;
                 return (
+                  <React.Fragment key={result.kpi}>
                   <tr
-                    key={result.kpi}
+                    ref={el => {
+                      if (el) rowRefs.current.set(result.kpi, el);
+                      else rowRefs.current.delete(result.kpi);
+                    }}
                     tabIndex={0}
                     aria-current={isFocused ? 'true' : undefined}
-                    title={isFocused ? 'Click to clear focus' : 'Click to focus this KPI'}
+                    aria-expanded={isFocused}
+                    title={isFocused ? 'Click to hide trend' : 'Click to show trend'}
                     onClick={() => toggleFocus(result.kpi)}
                     onKeyDown={e => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         toggleFocus(result.kpi);
                       }
+                      handleEscape(e, result.kpi);
                     }}
-                    className={`group/row cursor-pointer transition-colors outline-none focus-visible:bg-indigo-50/60 ${
+                    className={`group/row cursor-pointer transition-[background-color,opacity] outline-none focus-visible:bg-indigo-50/60 ${
                       isFocused ? 'bg-indigo-50 shadow-[inset_4px_0_0_0_#6366f1]' : 'hover:bg-blue-50/50'
-                    }`}
+                    } ${isDimmed ? 'opacity-50 hover:opacity-100 focus-visible:opacity-100' : ''}`}
                   >
                     <td className="px-3 py-3 align-top">
                       {/* Marker flows inline after the name, so it stays next to the last word when the name wraps. */}
@@ -288,7 +357,11 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                       </div>
                     </td>
                     <td className="px-3 py-3 align-top">
-                      <ClassificationBadge result={result} />
+                      {/* Show trend sits right after the classification badge, where people read the outcome. */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <ClassificationBadge result={result} />
+                        <TrendToggle isOpen={isFocused} kpiName={definition.name} panelId={panelId} onToggle={() => toggleFocus(result.kpi)} />
+                      </div>
                       {/* The badge carries the classification, so the description drops its "<Classification> — " prefix. */}
                       <ClampedDescription text={result.descriptionBody} expanded={isFocused} />
                     </td>
@@ -301,6 +374,15 @@ export const ComparisonKpiTable: React.FC<ComparisonKpiTableProps> = ({
                       />
                     )}
                   </tr>
+                  {isFocused && (
+                    // NXT-77211 §7 (inline): the trend opens directly under its KPI row; the left bar continues the row's highlight.
+                    <tr ref={panelRef} id={panelId} onKeyDown={e => handleEscape(e, result.kpi)} className="bg-indigo-50 shadow-[inset_4px_0_0_0_#6366f1]">
+                      <td colSpan={columnCount} className="px-4 pb-4 pt-1">
+                        {renderExpanded(result.kpi)}
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 );
               })
             )}

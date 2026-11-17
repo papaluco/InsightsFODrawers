@@ -1,21 +1,17 @@
 import React from 'react';
-import { GitCompareArrows, Loader2, X } from 'lucide-react';
+import { GitCompareArrows, Loader2 } from 'lucide-react';
 import { CollapsiblePanel } from '../../../components/Common/CollapsiblePanel';
-import { getKpiDefinition } from '../../../constants/kpiDefinitions';
 import { ComparisonKpiKey } from '../../../types/kpiTypes';
 import type { ComparisonView } from '../hooks/useComparison';
 import { useComparisonTrend } from '../hooks/useComparisonTrend';
 import { useSideShortNames } from '../hooks/useSideShortNames';
-import { TREND_UNAVAILABLE_MESSAGE } from '../trend/trendRules';
-import { TREND_INTERVAL_LABELS } from '../trend/trendView';
 import { useComparisonStore } from '../store/useComparisonStore';
-import { KpiTableExportControls, TrendExportControls } from './ComparisonExportControls';
+import { KpiTableExportControls } from './ComparisonExportControls';
 import { ComparisonFilters } from './ComparisonFilters';
 import { ComparisonKpiTable } from './ComparisonKpiTable';
 import { ComparisonSummary } from './ComparisonSummary';
-import { ComparisonTrendChart } from './ComparisonTrendChart';
 import { InfoTip } from './InfoTip';
-import { TrendIntervalSelector } from './TrendIntervalSelector';
+import { InlineTrendPanel } from './InlineTrendPanel';
 
 /** NXT-77202 §6 empty state copy. */
 export const COMPARISON_EMPTY_STATE_TEXT = 'Select sites and a timeframe for both sides to compare.';
@@ -25,17 +21,6 @@ export const MATERIALITY_NOTE =
   'Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. ' +
   'Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified.';
 
-/** NXT-77211 §7 trend empty state copy. */
-const TREND_EMPTY_STATE_TEXT = 'Select a KPI from the KPI Comparison table to view its trend.';
-
-/** NXT-77213 §10: trend exports are disabled until a KPI is focused and its trend is available. */
-const TREND_EXPORT_NO_KPI_REASON = 'Select a KPI in the KPI Comparison table to copy or download its trend';
-const TREND_EXPORT_UNAVAILABLE_REASON = 'The trend is unavailable for the current comparison';
-
-const TrendMessage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">{children}</div>
-);
-
 interface ComparisonResultsAreaProps {
   comparison: ComparisonView;
   onFocusKpi: (kpi: ComparisonKpiKey | null) => void;
@@ -44,7 +29,8 @@ interface ComparisonResultsAreaProps {
 }
 
 /**
- * Comparison Summary → KPI Comparison → Performance Trend (spec §6 layout order). Shows one
+ * Comparison Summary → KPI Comparison, with the Performance Trend opening inline under the
+ * focused KPI's row (spec §6 layout order, §7). Shows one
  * empty-state prompt until both sides are set, and a light loading state while either side is
  * fetching. Every section reads engine results only from `comparison.results`.
  */
@@ -85,13 +71,6 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
     );
   }
 
-  const focusedName = focusedKpi ? getKpiDefinition(focusedKpi).name : null;
-  const trendExportDisabledReason = !focusedKpi
-    ? TREND_EXPORT_NO_KPI_REASON
-    : !trend.interval || !trend.chartData || trend.chartData.rows.length === 0
-      ? TREND_EXPORT_UNAVAILABLE_REASON
-      : null;
-
   return (
     <div aria-busy={isLoading} className="relative">
       {isLoading && (
@@ -117,20 +96,6 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
           actions={
             // Filters set the comparison scope: the table, Summary, Site Drivers, exports and Schoolie all follow them.
             <>
-              {focusedName && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 pl-3 pr-1 py-0.5 text-xs font-semibold text-indigo-700">
-                  Focused: {focusedName}
-                  <button
-                    type="button"
-                    onClick={() => onFocusKpi(null)}
-                    aria-label="Clear focused KPI"
-                    title="Clear focus"
-                    className="p-0.5 rounded-full hover:bg-indigo-100"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </span>
-              )}
               <ComparisonFilters />
               <KpiTableExportControls results={results} sideShortNames={sideShortNames} />
             </>
@@ -147,50 +112,19 @@ export const ComparisonResultsArea: React.FC<ComparisonResultsAreaProps> = ({ co
             siteDrivers={results.siteDrivers}
             showSiteDrivers={results.siteDriversAvailable}
             onViewSites={onViewSites}
+            renderExpanded={kpi => (
+              <InlineTrendPanel
+                kpi={kpi}
+                trend={trend}
+                leftLabel={results.leftLabel}
+                rightLabel={results.rightLabel}
+                onIntervalChange={setTrendInterval}
+                onClose={() => onFocusKpi(null)}
+              />
+            )}
           />
         </CollapsiblePanel>
 
-        <CollapsiblePanel
-          title="Performance Trend"
-          isExpanded={expandedSections.trend}
-          onToggle={() => toggleSection('trend')}
-          actions={
-            <>
-              <TrendIntervalSelector options={trend.intervalOptions} value={trend.interval} onChange={setTrendInterval} />
-              <TrendExportControls disabledReason={trendExportDisabledReason} />
-            </>
-          }
-        >
-          {!focusedKpi ? (
-            // spec §7: never auto-select a KPI.
-            <TrendMessage>{TREND_EMPTY_STATE_TEXT}</TrendMessage>
-          ) : !trend.interval || !trend.chartData ? (
-            <TrendMessage>{TREND_UNAVAILABLE_MESSAGE}</TrendMessage>
-          ) : trend.chartData.rows.length === 0 ? (
-            // Every interval was dropped because neither side has data in it (spec §7).
-            <TrendMessage>{`Neither timeframe has data for ${focusedName}.`}</TrendMessage>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-semibold text-gray-900">
-                {focusedName} <span className="font-normal text-gray-500">by {TREND_INTERVAL_LABELS[trend.interval].toLowerCase()}</span>
-              </p>
-              <ComparisonTrendChart
-                kpi={focusedKpi}
-                data={trend.chartData}
-                leftLabel={results.leftLabel}
-                rightLabel={results.rightLabel}
-                showTargets={getKpiDefinition(focusedKpi).kind === 'directional'}
-              />
-              {/* spec §7 partial periods: only buckets that have occurred are drawn */}
-              {/* At most one note per side, in left → right order; keyed by position since two labels can match. */}
-              {trend.partialNotes.map((note, index) => (
-                <p key={index} className="text-xs italic text-gray-500">
-                  {note}
-                </p>
-              ))}
-            </div>
-          )}
-        </CollapsiblePanel>
       </div>
     </div>
   );

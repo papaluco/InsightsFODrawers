@@ -25,7 +25,7 @@ export interface ComparisonSideDefinition {
 }
 
 /** Collapsible page sections, in page order (NXT-77202 §6 layout order). */
-export const COMPARISON_SECTION_IDS = ['setup', 'summary', 'kpiTable', 'trend'] as const;
+export const COMPARISON_SECTION_IDS = ['setup', 'summary', 'kpiTable'] as const;
 export type ComparisonSectionId = (typeof COMPARISON_SECTION_IDS)[number];
 
 /** Every section starts expanded. */
@@ -33,7 +33,6 @@ const ALL_SECTIONS_EXPANDED: Record<ComparisonSectionId, boolean> = {
   setup: true,
   summary: true,
   kpiTable: true,
-  trend: true,
 };
 
 export const EMPTY_SIDE: ComparisonSideDefinition = { sites: null, timeframe: null };
