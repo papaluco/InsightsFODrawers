@@ -239,7 +239,7 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 
 - **Entry point:** a Compare icon button in the Insights Dashboard header action group (`SimpleHeader`), using the existing icon-button class string, Lucide `GitCompareArrows`, and `title="Compare"`.
 - **Overlay:** full-screen, following the AppUsageDrawer pattern (`fixed inset-0 bg-white z-50`, sticky header, scrolling gray body). Header: back navigation to the dashboard, "Performance Comparison" title, and Schoolie + Download actions on the right. Both are disabled until both sides are set, each with a tooltip saying why ("Set both sides to analyze this comparison with Schoolie" / "Set both sides to download this comparison").
-- **Layout order:** Comparison Setup (with the period-length notice inside it) → Comparison Summary → KPI Comparison (with the filters in its title row) → Performance Trend. There is no separate Filters panel and no always-visible materiality note.
+- **Layout order:** Comparison Setup (with the period-length notice inside it) → Comparison Summary → KPI Comparison (with the filters in its title row). The Performance Trend opens inline under the focused KPI's row (§7); there is no separate Performance Trend panel. There is no separate Filters panel and no always-visible materiality note.
 - **Setup:** two side panels (left and right), each with a site selector and a timeframe selector, reusing `DemoSchoolSelector` and `TimeframeSelector` made controlled through optional `value`/`onChange` props. The dashboard's existing uncontrolled usage must keep working.
 - **Auto-fill:** when the user picks sites or a timeframe on the left and that same field on the right is still empty (placeholder), the left value is copied into it. Per field: sites and timeframe fill independently. A right-side field that already has a value is never overwritten, and nothing is ever copied right → left. Clearing a left field copies nothing.
 - **Generated label** shown below each side's selectors:
@@ -254,7 +254,7 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 - **Swap:** exchanges the complete definitions and recalculates everything. Disabled until both sides are set.
 - **Empty state:** until both sides are set, the Summary/KPI/Trend areas show a single prompt: "Select sites and a timeframe for both sides to compare."
 - **Filters:** a KPI multi-select (`MultiSelectDropdown`; default all 17 KPIs), a Needs Attention toggle, and Clear Filters/Reset (resets the KPI filter and Needs Attention only, not the sides). They sit in the KPI Comparison panel's title row, next to its copy/download menu: compact, so the title row stays on one line at desktop width, wrapping below the title at tablet width, and hidden while the panel is collapsed (like other panel actions). They still set the scope for the KPI table, Comparison Summary, Site Drivers, CSV/copy, and the Schoolie payload.
-- **Focused KPI** (set by clicking a KPI row) is separate state from the KPI filter and never changes it. If a filter change removes the focused KPI from scope, clear the focus.
+- **Focused KPI** (set by clicking a KPI row or its "Show trend" control; it is the row whose trend is open) is separate state from the KPI filter and never changes it. If a filter change removes the focused KPI from scope, clear the focus.
 - **Materiality note**, shown on hover or keyboard focus of an info icon next to the KPI Comparison title: "Percentage-based KPIs are classified as Improved or Declined when they change by at least 0.5 percentage points. Dollar, count, and MPLH KPIs use a 2% relative-change threshold. Inventory KPIs are informational and are not classified."
 - **State:** a single comparison store (Zustand, matching `useInsightsPreferencesStore`) holding left/right definitions, KPI filter, Needs Attention toggle, focused KPI, and trend interval. Derived data comes from memoized selectors/hooks so every component reads the same engine results.
 
@@ -262,7 +262,13 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 
 ## 7. Performance Trend (NXT-77211)
 
-- One KPI at a time: the focused KPI. Empty state when none is focused: "Select a KPI from the KPI Comparison table to view its trend." Never auto-select a KPI.
+- One KPI at a time: the focused KPI. Never auto-select a KPI.
+- **Inline, under its row** (changed from a separate panel below the table after user feedback: people missed that rows were clickable, and the chart appeared far from the row). Each KPI row shows a "Show trend" control (chart icon + chevron) in the Performance column, right after the classification badge; clicking it or anywhere on the row opens a full-width panel directly under that row, continuing the row's highlight. The panel holds the chart, the interval selector, the trend copy/download menu, the partial-period notes, and a close (×) button.
+  - One row open at a time: opening another row moves the trend there.
+  - Close: click the row or "Hide trend" again, the × button, or press Escape while focus is in the row or its panel (open menus and the Site Drivers drawer close first; Escape never also closes the overlay here).
+  - While a trend is open, the other rows are dimmed (about 50% opacity) but stay clickable; hover or keyboard focus restores a row to full strength. No page-wide overlay or modal.
+  - A newly opened panel scrolls into view if it isn't already visible.
+  - Nothing is shown when no KPI is focused (no empty-state message).
 - One Recharts `ComposedChart`: paired bars per aligned interval (left actual, right actual) plus a target line per side where a target exists. If both sides share the same target, draw one line labeled for both. No benchmark bars. Sides distinguished by color **and** pattern/label (not color alone).
 - Interval selector: Day | Week | Month | Quarter. Default from §3. Extend the existing granularity dropdown UI and lift the Usage module's bucketing into a shared util with `quarter` added.
 - **Alignment:** buckets are aligned by **position within each side's period**, not by calendar date:
@@ -296,7 +302,7 @@ The engine also evaluates **site-level** results for Site Drivers using the same
 - **Compact side names** (Target Status, and anywhere else a side is named in compact form): name each side by the part of its generated label that differs. Only the timeframes differ → timeframe ("Today: Met"). Only the sites differ → site ("Lincoln Elementary: Met"). Both differ → full label. Identical labels → full labels.
 - Classification badges use the `insightsFavorable` / `insightsNeutral` / `insightsUnfavorable` tokens **plus** text and an icon (`TrendIndicator`). Informational rows use a neutral "Informational" badge.
 - Needs Attention rows show their reason(s): "Declined", "Below Target", or both.
-- Clicking a row focuses that KPI (highlighted); a clear control removes focus.
+- Clicking a row focuses that KPI (highlighted) and opens its trend inline under the row (§7); the panel's × button, "Hide trend", or clicking the row again clears focus.
 - Model the table on `MPLHSchoolTable`; store numbers, format at render time.
 - No mini charts or gauges in rows.
 
@@ -369,7 +375,7 @@ Reuse `CopyMenu`, `CSVRenderer`/`ICSVReportData`, `ExportMenu`, `html-to-image`,
   - Site Drivers is the row summary text (lines joined with "; "). The column is left out entirely when no side has more than one site (matching the table).
   - Filename `Performance_Comparison_KPIs_<YYYY-MM-DD>.csv` (local date of the download, computed when the user clicks Download CSV).
   - Builder: `ui/kpiTableExport.ts` (pure, unit tested).
-- **Trend (UI only):** one menu in the panel title row with "Copy Data", "Copy Image", "Download CSV", and "Download PNG". The icon is disabled, with a tooltip saying why, when no KPI is focused or the trend is unavailable.
+- **Trend (UI only):** one menu in the inline trend panel's header row with "Copy Data", "Copy Image", "Download CSV", and "Download PNG". The icon is disabled, with a tooltip saying why, when the trend is unavailable. (It only exists while a KPI's trend is open.)
 - **Site Drivers drawer (real):** a copy icon per table (tab-separated, client side, toast "Copied to clipboard"); no download. Production should include KPI, labels, interval, actuals, targets, and the partial note.
 - **Page PDF (UI only):** header Download → "Download PDF". Disabled, with a tooltip, until both sides are set. Production should produce `IPDFDashReportData`: title, both generated labels, site scopes, timeframes, current filters, Summary, KPI table (with compact Site Drivers summaries), and the focused KPI's trend image when available. No interactive controls, no Schoolie. Filename `Performance_Comparison_<YYYY-MM-DD>.pdf`. District/user names come from the current user, not hardcoded strings.
 - Copy and Download icons follow the dashboard's placement and styling, sit in the panel title rows, and hide while a panel is collapsed. Menus layer above the overlay.

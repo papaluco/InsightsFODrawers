@@ -22,7 +22,7 @@ interface PerformanceComparisonContentProps {
   onCloseSchoolie: () => void;
 }
 
-/** Page body: Setup → Summary / KPI Comparison (with the filters) / Performance Trend (spec §6). */
+/** Page body: Setup → Summary / KPI Comparison (with the filters, and each KPI's trend inline) (spec §6). */
 const PerformanceComparisonContent: React.FC<PerformanceComparisonContentProps> = ({ isSchoolieOpen, onCloseSchoolie }) => {
   const comparison = useComparison();
   const { contextKey, analysisContext } = useSchoolieComparisonContext(comparison);
